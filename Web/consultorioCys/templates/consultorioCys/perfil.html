@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+    <ion-toolbar>
+      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item [routerLink]="['/principal']">
+          <mat-icon>home</mat-icon>
+          <span>Inicio</span>
+        </button>
+        <button mat-menu-item [routerLink]="['/perfil']">
+          <mat-icon>person</mat-icon>
+          <span>Mi Perfil</span>
+        </button>
+        <button mat-menu-item [routerLink]="['/home']">
+          <mat-icon>cancel</mat-icon>
+          <span>Cerrar Sesion</span>
+        </button>
+      </mat-menu>
+    </ion-toolbar>
+</ion-header>
+<ion-content id="container">
+    <center>
+      <img src="{{imagen}}" alt="La imagen aun no a sido tomada" style="width: 100px;">
+    </center>
+    <ion-item>
+      <ion-label>Nombre: {{nombre}} {{apellido}} </ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>Correo: {{correo}}</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>Telefono: +56 9 {{telefono}}</ion-label>
+    </ion-item>
+    

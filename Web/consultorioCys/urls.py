@@ -1,6 +1,8 @@
 from django.urls import path
-from . import views
+from .views import inicio, perfil, historial
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('',inicio,name="inicio"),
+    path('historial/',historial,name="historial"),
+    path('perfil/',perfil,name="perfil"),
 ]
