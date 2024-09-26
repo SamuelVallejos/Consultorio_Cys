@@ -78,12 +78,8 @@ WSGI_APPLICATION = 'capstone.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ConsultoriaCys',
-        'USER': 'Javierrojas12',
-        'PASSWORD': 'YES',
-        'HOST': 'localhost',  # Cambia si tu base de datos no está en localhost
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

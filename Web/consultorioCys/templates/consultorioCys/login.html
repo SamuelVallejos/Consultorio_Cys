@@ -58,6 +58,9 @@
             {% csrf_token %}
             {{ form.as_p }}
             <input type="submit" value="Iniciar Sesión">
+            <a href="{% url 'register' %}">
+                <button type="button" style="background-color: #add8e6; color: white; border: none; padding: 10px; width: 100%;">Registrarse</button>
+            </a>
         </form>
     </div>
 </body>
