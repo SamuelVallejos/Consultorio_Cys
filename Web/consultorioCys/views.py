@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login  # Importa y renombra la función
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth import logout
 
 def inicio(request):
     return render(request, 'consultorioCys/inicio.html')
@@ -33,3 +34,6 @@ def register_view(request):
     else:
         form = UserCreationForm()
     return render(request, 'consultorioCys/register.html', {'form': form})
+def logout_view(request):
+    logout(request)
+    return redirect('login')
