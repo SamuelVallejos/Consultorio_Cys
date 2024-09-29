@@ -13,7 +13,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-        }
+        } 
         .form-container {
             background-color: #fff;
             border-radius: 15px;
@@ -68,16 +68,15 @@
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Registro de Usuario</h2>
-        <form method="POST" action="{% url 'register' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Registrarse">
-        </form>
-        <div class="login-link">
-            <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></p>
-        </div>
-    </div>
+    
+
+    { % block content %}
+  <h1>Mi Perfil</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar cambios</button>
+  </form>
+
 </body>
 </html>
