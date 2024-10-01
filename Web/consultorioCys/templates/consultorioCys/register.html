@@ -69,12 +69,10 @@
 </head>
 <body>
     
-
-    { % block content %}
   <h1>Mi Perfil</h1>
   <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+          {% csrf_token %}
+             {{ form.as_p }}
     <button type="submit">Guardar cambios</button>
   </form>
 
