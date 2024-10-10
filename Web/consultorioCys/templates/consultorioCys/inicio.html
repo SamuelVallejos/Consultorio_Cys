@@ -48,11 +48,10 @@
 
                 <form class="d-flex">
                     {% if user.is_authenticated %}
-                    <button class="button" style="background-color: #04AA6D;" href="perfil.html">
+                    <a class="button" style="background-color: #04AA6D;" href="{% url 'perfil' %}">
                         <img src="/static/consultorioCys/img/usuario.png" class="icon">
                         <div class="user-welcome"> {{ user.username }}</div>
-                        
-                    </button>
+                    </a>
                     {% else %}
                     <div class="user-welcome">Bienvenido al sitio</div>
                     
@@ -132,6 +131,9 @@
             <span class="visually-hidden">Siguiente</span>
         </button>
     </div>
+
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>

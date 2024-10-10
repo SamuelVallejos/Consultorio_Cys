@@ -1,0 +1,28 @@
+
+{% extends 'base_generic.html' %}
+
+{% block content %}
+    <div class="dashboard">
+        <h2>Bienvenido, Dr. {{ user.username }}</h2>
+        <p>Este es su panel de control. Desde aquí puede gestionar los doctores y pacientes.</p>
+
+        <div class="dashboard-options">
+            <!-- Opción para agregar un nuevo doctor -->
+            <a href="{% url 'add_doctor' %}" class="button" style="background-color: #04AA6D;">
+                <img src="/static/consultorioCys/img/usuario.png" class="icon">
+                Agregar Nuevo Doctor
+            </a>
+
+            <!-- Otras opciones que se pueden incluir -->
+            <a href="{% url 'historial' %}" class="button" style="background-color: #f39c12;">
+                <img src="/static/consultorioCys/img/historial.png" class="icon">
+                Ver Historial de Pacientes
+            </a>
+
+            <a href="{% url 'perfil' %}" class="button" style="background-color: #3498db;">
+                <img src="/static/consultorioCys/img/perfil.png" class="icon">
+                Mi Perfil
+            </a>
+        </div>
+    </div>
+{% endblock %}

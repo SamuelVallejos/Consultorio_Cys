@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mi Sitio{% endblock %}</title>
+    <link rel="stylesheet" href="/static/consultorioCys/css/general.css">
+</head>
+<body>
+    <header>
+        <h1>{% block header %}Cabecera del sitio{% endblock %}</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{% url 'inicio' %}">Inicio</a></li>
+            <li><a href="{% url 'perfil' %}">Perfil</a></li>
+            <li><a href="{% url 'logout' %}">Cerrar Sesión</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% block content %}
+        <!-- Aquí va el contenido de cada plantilla hija -->
+        {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2024 Mi Sitio. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
