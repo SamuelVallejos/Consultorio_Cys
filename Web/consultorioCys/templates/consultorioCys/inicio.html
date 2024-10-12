@@ -10,68 +10,85 @@
     <link rel="stylesheet" href="/static/consultorioCys/css/general.css">
 </head>
 
-<body>
-    <!-- inicio del menu -->
-    <nav class="navbar navbar-expand-lg navbar-custom center">
-        <div class="container bar">
-            <a class="navbar-brand" href="#">
-                <img class="imagen" href="inicio.html" src="/static/consultorioCys/img/Consultoria.png"
-                    style="height: 100px; padding-top: 15px; border-radius: 35px;" alt="Doctor Icon" class="img-fluid">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="historial">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login">Iniciar Sesión</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Opciones
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="perfil">Acción 1</a></li>
-                            <li><a class="dropdown-item" href="#">Acción 2</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Otra Acción</a></li>
+<body class="back">
+
+    <!-- inicio de la barra superior -->
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg center">
+            <div class="container-fluid bar">
+                <a class="navbar-brand" href="#">
+                    <img class="img-fluid margen" style="height: 60px; border-radius: 35px;" href="/"
+                        src="/static/consultorioCys/img/Consultoria.png" alt="Doctor Icon">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Dropdown
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="historial">Historial</a></li>
+                                <li><a class="dropdown-item" href="/">2</a></li>
+                                <li><a class="dropdown-item" href="/">3</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    {% if user.is_authenticated %}
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn boton dropdown-toggle" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <img src="/static/consultorioCys/img/usuario.png" class="icon">
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="/">Opciones?</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
                         </ul>
-                    </li>
-                    
-                </ul>
-
-                <form class="d-flex">
-                    {% if user.is_authenticated %}
-                    <a class="button" style="background-color: #04AA6D;" href="{% url 'perfil' %}">
-                        <img src="/static/consultorioCys/img/usuario.png" class="icon">
-                        <div class="user-welcome"> {{ user.username }}</div>
-                    </a>
+                    </div>
                     {% else %}
-                    <div class="user-welcome">Bienvenido al sitio</div>
-                    
+                    <div class="boton">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="login">Iniciar Sesión</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="register">Registrarse</a>
+                            </li>
+                        </ul>
+                    </div>
                     {% endif %}
 
-                    
-                    {% if user.is_authenticated %}
-                    <button class="button" style="background-color: #aa0404;" href="perfil">
-                        <a href="{% url 'logout' %}" class="btn btn-red button">Cerrar
-                            Sesión</a>
-                    </button>
-                    {% endif %}
-                   
-
-                </form>
+                </div>
             </div>
-        </div>
-    </nav>
-    <!-- fin del menu -->
+        </nav>
+    </div>
+    <!-- fin de la barra superior -->
 
+    <!-- Cuerpo pagina -->
+    <div class="container bar">
+        dawjkdawijdhn
+    </div>
+
+    <!-- Fin Cuerpo pagina -->
+
+    <!-- Pie de pagina -->
+
+
+    <!-- Fin Pie de pagina -->
+
+
+
+    <!-- fin pagina -->
 
     <!-- animacion menu -->
     <script>
@@ -80,60 +97,7 @@
             document.getElementById('navbarSupportedContent').classList.add('show');
         });
     </script>
-
-
-    <!-- fin -->
-
-    <div style="width:80%; height: 300px; margin: auto; border-radius: 30px; margin-top: 300px;"
-        id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active"
-                aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1"
-                aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2"
-                aria-label="Slide 3"></button>
-        </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="/static/consultorioCys/img/Consultoria.png" class="d-block w-100" alt="Imagen 1"
-                    style="height: 300px; object-fit: cover;">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Primera Imagen</h5>
-                    <p>Descripción de la primera imagen.</p>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <img src="/static/consultorioCys/img/Consultoria.png" class="d-block w-100" alt="Imagen 2"
-                    style="height: 300px; object-fit: cover;">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Segunda Imagen</h5>
-                    <p>Descripción de la segunda imagen.</p>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <img src="https://via.placeholder.com/1200x500.png?text=Imagen+3" class="d-block w-100" alt="Imagen 3"
-                    style="height: 300px; object-fit: cover;">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Tercera Imagen</h5>
-                    <p>Descripción de la tercera imagen.</p>
-                </div>
-            </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions"
-            data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions"
-            data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-    </div>
-
-
-
+    <!-- fin animacion menu -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>

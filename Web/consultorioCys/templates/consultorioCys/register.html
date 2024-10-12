@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro</title>
-    <link rel="stylesheet" href="/static/consultorioCys/css/register.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil</title>
+  <link rel="stylesheet" href="/static/consultorioCys/css/register.css">
 </head>
+
 <body>
-    
+
   <h1>Mi Perfil</h1>
   <form method="post">
-          {% csrf_token %}
-             {{ form.as_p }}
+    {% csrf_token %}
+    {{ form.as_p }}
     <button type="submit">Guardar cambios</button>
   </form>
 
 </body>
+
 </html>
