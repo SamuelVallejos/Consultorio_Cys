@@ -10,13 +10,14 @@
     <link rel="stylesheet" href="/static/consultorioCys/css/general.css">
 </head>
 
-<body class="back">
+<body class="back"
+    style="background-size: cover; background-position: center; background-repeat: no-repeat; height: 100vh;">
 
     <!-- inicio de la barra superior -->
     <div class="container-fluid">
         <nav class="navbar navbar-expand-lg center">
             <div class="container-fluid bar">
-                <a class="navbar-brand" href="#">
+                <a class="navbar-brand" href="/">
                     <img class="img-fluid margen" style="height: 60px; border-radius: 35px;" href="/"
                         src="/static/consultorioCys/img/Consultoria.png" alt="Doctor Icon">
                 </a>
@@ -28,12 +29,12 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                            <a class="nav-link active" aria-current="page" href="/">Inicio</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Dropdown
+                                Documentos
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="historial">Historial</a></li>
@@ -49,7 +50,7 @@
                             aria-expanded="false">
                             <img src="/static/consultorioCys/img/usuario.png" class="icon">
                         </button>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi Perfil</a></li>
                             <li><a class="dropdown-item" href="/">Opciones?</a></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
@@ -75,19 +76,51 @@
     <!-- fin de la barra superior -->
 
     <!-- Cuerpo pagina -->
-    <div class="container bar">
-        dawjkdawijdhn
+    <!-- Pedir archivo -->
+    <div class="container bar parchivo" style="    display: flex;
+    justify-content: center; align-items: center;">
+        <div style="width: 100%; max-width: 400px;">
+            <h3 class="center">Acceso Paciente</h3>
+            <div class="container">
+                <form action="/login" method="POST">
+                    <div class="row margen" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                        <div class="col margen end" style="margin-right: 10px;">
+                            <label for="rut">RUT:</label>
+                        </div>
+                        <div class="col margen start">
+                            <input type="text" id="rut" name="rut" placeholder="Ingresa tu RUT" required
+                                style="width: 100%;">
+                        </div>
+                    </div>
+                    <div class="row" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                        <div class="col" style="margin-right: 10px;">
+                            <label for="password">Contraseña:</label>
+                        </div>
+                        <div class="col">
+                            <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña"
+                                required style="width: 100%;">
+                        </div>
+                    </div>
+                    <div class="center" style="display: flex; justify-content: center; margin-top: 15px;">
+                        <button type="submit" class="button2" style="padding: 10px 20px;">Iniciar Sesión</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
+    <!-- Fin Pedir archivo -->
+    <!-- Subir archivo -->
+    <div class="container bar" style="margin-top: 20px;">
+        Subir archivo
+    </div>
+    <!-- Fin Subir archivo -->
     <!-- Fin Cuerpo pagina -->
 
     <!-- Pie de pagina -->
 
 
+
     <!-- Fin Pie de pagina -->
-
-
-
     <!-- fin pagina -->
 
     <!-- animacion menu -->

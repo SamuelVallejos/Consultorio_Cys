@@ -1,14 +1,16 @@
 body {
+    background-image: url("/static/consultorioCys/img/fondoPantalla.png");
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
     color: #333;
     text-align: center;
     margin: auto;
 }
 
-.back {
-    background-color: white;
-    background-image: url("/static/consultorioCys/img/fondoPantalla.png");
+.parchivo{
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .center {
@@ -20,8 +22,8 @@ body {
 }
 
 .margen {
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .nav-link {
@@ -90,5 +92,16 @@ body {
     border-radius: 50%;
     display: flex;
     align-items: center;
+    cursor: pointer;
+}
+
+.button2 {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
     cursor: pointer;
 }
