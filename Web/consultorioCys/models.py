@@ -53,3 +53,10 @@ class PacienteServicio(models.Model):
     
     def __str__(self):
         return self.descripcion
+
+
+class Consultorio(models.Model):
+    id_consultorio = models.AutoField(primary_key=True)
+    region_con = models.CharField(max_length=30)
+    comuna_con = models.CharField(max_length=30)
+    direccion_con = models.CharField(max_length=100)

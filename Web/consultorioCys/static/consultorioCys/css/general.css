@@ -1,7 +1,6 @@
 body {
-    background-image: url("/static/consultorioCys/img/fondoPantalla.png");
+    background-color: rgb(255, 255, 255);
     font-family: Arial, sans-serif;
-    color: #333;
     text-align: center;
     margin: auto;
 }
