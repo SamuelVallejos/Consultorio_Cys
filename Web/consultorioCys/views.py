@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import logout
@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
 from django.contrib.auth.models import Group
+from .models import Doctor
+from .models import Paciente
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -57,31 +59,6 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'consultorioCys/login.html', {'form': form})
 
-def register_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-
-            # Verificar si es doctor, paciente o admin (puedes agregar un campo en el form para verificar)
-            if form.cleaned_data.get('is_doctor'):
-                group = Group.objects.get(name='Doctor')
-                user.groups.add(group)
-                login(request, user)
-                return redirect('doctor_dashboard')
-            elif form.cleaned_data.get('is_administrador'):
-                group = Group.objects.get(name='Administrador')
-                user.groups.add(group)
-                login(request, user)
-                return redirect('admin_dashboard')
-            else:
-                group = Group.objects.get(name='Paciente')
-                user.groups.add(group)
-                login(request, user)
-                return redirect('paciente_dashboard')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'consultorioCys/register.html', {'form': form})
 
 def logout_view(request):
     logout(request)
@@ -135,3 +112,27 @@ def add_doctor_view(request):
 def paciente_dashboard(request):
     # Lógica específica para pacientes
     return render(request, 'consultorioCys/paciente_dashboard.html')
+
+
+def informe_doctores(request):
+    # Obtener todos los doctores desde la base de datos
+    doctores = Doctor.objects.all()
+
+    # Pasar los datos de los doctores a la plantilla 'informe_doctores.html'
+    return render(request, 'informe_doctores.html', {'doctores': doctores})
+
+def buscar_paciente(request):
+    if request.method == 'POST':
+        # Obtener el RUT ingresado en el formulario
+        rut = request.POST.get('rut')
+
+        # Buscar el paciente en la base de datos por su RUT
+        try:
+            paciente = Paciente.objects.get(rut_paciente=rut)
+        except Paciente.DoesNotExist:
+            # Si el paciente no existe, mostrar un mensaje de error
+            return render(request, 'paciente_no_encontrado.html', {'rut': rut})
+
+        # Si se encuentra el paciente, mostrar sus datos en una plantilla
+        return render(request, 'detalle_paciente.html', {'paciente': paciente})
+    return render(request, 'inicio.html')

@@ -78,8 +78,12 @@ WSGI_APPLICATION = 'capstone.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # Le decimos que use MySQL
+        'NAME': 'consultoriocys',  # La nueva caja que creaste
+        'USER': 'javier',  # El amigo que creaste
+        'PASSWORD': 'Zeus1998+',  # La contraseña del amigo
+        'HOST': 'localhost',  # Le decimos que está en tu computadora
+        'PORT': '3306',  # El puerto que usa MySQL
     }
 }
 

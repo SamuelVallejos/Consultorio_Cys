@@ -11,4 +11,6 @@ urlpatterns = [
     path('dashboard/usuario/', views.usuario_dashboard, name="usuario_dashboard"),
     path('doctor/add/', views.add_doctor_view, name="add_doctor"),
     path('ia/', views.ia, name="ia"), 
+    path('informe_doctores/', views.informe_doctores, name='informe_doctores'),
+    path('buscar_paciente/', views.buscar_paciente, name='buscar_paciente'),
 ]

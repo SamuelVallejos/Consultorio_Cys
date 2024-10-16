@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de Doctores</title>
+</head>
+<body>
+    <h1>Informe de Doctores</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>RUT</th>
+                <th>Nombres</th>
+                <th>Primer Apellido</th>
+                <th>Segundo Apellido</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Especialidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doctor in doctores %}
+                <tr>
+                    <td>{{ doctor.rut_doctor }}</td>
+                    <td>{{ doctor.nombres_doctor }}</td>
+                    <td>{{ doctor.primer_apellido_doctor }}</td>
+                    <td>{{ doctor.segundo_apellido_doctor }}</td>
+                    <td>{{ doctor.correo_doctor }}</td>
+                    <td>{{ doctor.telefono_doctor }}</td>
+                    <td>{{ doctor.especialidad_doctor }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">No hay doctores disponibles.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
