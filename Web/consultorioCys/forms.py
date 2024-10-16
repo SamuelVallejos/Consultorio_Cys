@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Group
-from .models import Doctor, Administrador, Paciente, Informe
+from .models import Doctor, Paciente, Informe
 
 class CustomUserEditForm(forms.ModelForm):
     full_name = forms.CharField(max_length=100, required=False, label="Nombre Completo")
@@ -35,10 +35,11 @@ class CustomUserCreationForm(forms.ModelForm):
     password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirmar Contraseña', widget=forms.PasswordInput)
     is_doctor = forms.BooleanField(required=False, label='¿Es doctor?')
+    is_admin = forms.BooleanField(required=False, label='¿Es administrador?')
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'is_doctor']
+        fields = ['username', 'email', 'is_doctor', 'is_admin']
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -54,13 +55,14 @@ class CustomUserCreationForm(forms.ModelForm):
             user.save()
 
             # Asignar al grupo correspondiente
-            is_doctor = self.cleaned_data['is_doctor']
-            if is_doctor:
+            if self.cleaned_data['is_doctor']:
                 group = Group.objects.get(name='Doctor')
+            elif self.cleaned_data['is_admin']:
+                group = Group.objects.get(name='Administrador')
             else:
-                group = Group.objects.get(name='Usuario')
+                group = Group.objects.get(name='Paciente')
 
-            user.groups.add(group)  # Añadir el usuario al grupo
+            user.groups.add(group)
         return user
 
 class AddDoctorForm(forms.ModelForm):
@@ -92,17 +94,7 @@ class AddPacienteForm(forms.ModelForm):
             'genero_paciente'
         ]
 
-class AddAdministradorForm(forms.ModelForm):
-    class Meta:
-        model = Administrador
-        fields = [
-            'rut_administrador', 
-            'nombres_administrador', 
-            'primer_apellido_administrador', 
-            'segundo_apellido_administrador', 
-            'correo_administrador', 
-            'telefono_administrador'
-        ]
+# La clase AddAdministradorForm ha sido eliminada
 
 class AddInformeForm(forms.ModelForm):
     class Meta:

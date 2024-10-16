@@ -39,8 +39,18 @@ def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            auth_login(request, form.get_user())
-            return redirect('/')
+            user = form.get_user()
+            auth_login(request, user)
+            
+            # Redirigir según el grupo
+            if user.groups.filter(name='Administrador').exists():
+                return redirect('admin_dashboard')
+            elif user.groups.filter(name='Doctor').exists():
+                return redirect('doctor_dashboard')
+            elif user.groups.filter(name='Paciente').exists():
+                return redirect('paciente_dashboard')
+            else:
+                return redirect('inicio')
         else:
             messages.error(request, 'Invalid username or password.')
     else:
@@ -53,19 +63,22 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
 
-            # Verificar si es doctor
-            if form.cleaned_data['is_doctor']:
-                # Añadir al grupo "Doctor"
+            # Verificar si es doctor, paciente o admin (puedes agregar un campo en el form para verificar)
+            if form.cleaned_data.get('is_doctor'):
                 group = Group.objects.get(name='Doctor')
                 user.groups.add(group)
-                login(request, user)  # Autenticar automáticamente
+                login(request, user)
                 return redirect('doctor_dashboard')
-            else:
-                # Añadir al grupo "Usuario"
-                group = Group.objects.get(name='Usuario')
+            elif form.cleaned_data.get('is_administrador'):
+                group = Group.objects.get(name='Administrador')
                 user.groups.add(group)
-                login(request, user)  # Autenticar automáticamente
-                return redirect('usuario_dashboard')
+                login(request, user)
+                return redirect('admin_dashboard')
+            else:
+                group = Group.objects.get(name='Paciente')
+                user.groups.add(group)
+                login(request, user)
+                return redirect('paciente_dashboard')
     else:
         form = CustomUserCreationForm()
     return render(request, 'consultorioCys/register.html', {'form': form})
@@ -87,6 +100,15 @@ def doctor_dashboard(request):
     # Lógica específica para doctores
     return render(request, 'consultorioCys/doctor_dashboard.html')
 
+# Función auxiliar para verificar si es admin
+def is_administrador(user):
+    return user.groups.filter(name='Administrador').exists()
+
+@login_required
+@user_passes_test(is_administrador)
+def admin_dashboard(request):
+    return render(request, 'consultorioCys/admin_dashboard.html')
+
 @login_required
 @user_passes_test(is_usuario)
 def usuario_dashboard(request):
@@ -107,3 +129,9 @@ def add_doctor_view(request):
     else:
         form = AddDoctorForm()
     return render(request, 'consultorioCys/add_doctor.html', {'form': form})
+
+@login_required
+@user_passes_test(lambda u: u.groups.filter(name='Paciente').exists())
+def paciente_dashboard(request):
+    # Lógica específica para pacientes
+    return render(request, 'consultorioCys/paciente_dashboard.html')

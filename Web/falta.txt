@@ -1,0 +1,12 @@
+            Falta
+
+Backend
+    - todo
+
+Frontend
+    - historial
+    - historial_personal
+    - ia
+    - inicio
+    - login
+    - perfil
