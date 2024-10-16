@@ -26,6 +26,9 @@ def handle_form_submission(request, form_class, template_name, success_url, inst
 def inicio(request):
     return render(request, 'consultorioCys/inicio.html')
 
+def ia(request):
+    return render(request, 'consultorioCys/ia.html')
+
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
