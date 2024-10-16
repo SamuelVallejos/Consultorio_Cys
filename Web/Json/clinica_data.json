@@ -1,0 +1,14 @@
+[
+    {
+        "id_clinica": 1,
+        "nombre_clinica": "Clínica del Corazón",
+        "correo_clinica": "contacto@clinicacorazon.cl",
+        "telefono_clinica": "123456789"
+    },
+    {
+        "id_clinica": 2,
+        "nombre_clinica": "Clínica Pediátrica",
+        "correo_clinica": "contacto@clinicapediatrica.cl",
+        "telefono_clinica": "987654321"
+    }
+]

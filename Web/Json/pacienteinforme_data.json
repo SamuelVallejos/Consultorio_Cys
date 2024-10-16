@@ -1,0 +1,14 @@
+[
+    {
+        "id_paciente_informe": 1,
+        "paciente": "98765432-1",
+        "informe": 1,
+        "fecha": "2024-10-10"
+    },
+    {
+        "id_paciente_informe": 2,
+        "paciente": "87654321-0",
+        "informe": 2,
+        "fecha": "2024-10-15"
+    }
+]

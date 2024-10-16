@@ -1,0 +1,24 @@
+[
+    {
+        "rut_paciente": "87654321-0",
+        "nombres_paciente": "Carlos",
+        "primer_apellido_paciente": "Torres",
+        "segundo_apellido_paciente": "Jiménez",
+        "correo_paciente": "carlos.torres@example.com",
+        "telefono_paciente": "123456780",
+        "fecha_nacimiento_paciente": "1990-02-10",
+        "direccion_paciente": "Calle Falsa 123",
+        "genero_paciente": "M"
+    },
+    {
+        "rut_paciente": "23456789-1",
+        "nombres_paciente": "Ana",
+        "primer_apellido_paciente": "García",
+        "segundo_apellido_paciente": "Fernández",
+        "correo_paciente": "ana.garcia@example.com",
+        "telefono_paciente": "987654320",
+        "fecha_nacimiento_paciente": "1995-07-22",
+        "direccion_paciente": "Avenida Siempre Viva 742",
+        "genero_paciente": "F"
+    }
+]

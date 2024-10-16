@@ -1,0 +1,18 @@
+[
+    {
+        "id_sede": 1,
+        "clinica": 1,
+        "region_sede": "Metropolitana",
+        "comuna_sede": "Santiago",
+        "direccion_sede": "Av. Libertador 456",
+        "telefono_sede": "123456780"
+    },
+    {
+        "id_sede": 2,
+        "clinica": 2, 
+        "region_sede": "Metropolitana",
+        "comuna_sede": "Santiago",
+        "direccion_sede": "Calle Bella Vista 789",
+        "telefono_sede": "987654321"
+    }
+]

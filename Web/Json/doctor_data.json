@@ -1,0 +1,22 @@
+[
+    {
+        "rut_doctor": "12345678-9",
+        "nombres_doctor": "Juan",
+        "primer_apellido_doctor": "Pérez",
+        "segundo_apellido_doctor": "Gómez",
+        "correo_doctor": "juan.perez@example.com",
+        "telefono_doctor": "123456789",
+        "fecha_nacimiento_doctor": "1980-05-15",
+        "especialidad_doctor": "Cardiología"
+    },
+    {
+        "rut_doctor": "98765432-1",
+        "nombres_doctor": "María",
+        "primer_apellido_doctor": "López",
+        "segundo_apellido_doctor": "Martínez",
+        "correo_doctor": "maria.lopez@example.com",
+        "telefono_doctor": "987654321",
+        "fecha_nacimiento_doctor": "1985-11-20",
+        "especialidad_doctor": "Pediatría"
+    }
+]
