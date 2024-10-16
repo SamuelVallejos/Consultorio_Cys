@@ -3,8 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Group
-from .models import Doctor
-
+from .models import Doctor, Administrador, Paciente, Informe
 
 class CustomUserEditForm(forms.ModelForm):
     full_name = forms.CharField(max_length=100, required=False, label="Nombre Completo")
@@ -31,6 +30,7 @@ class CustomUserEditForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
 class CustomUserCreationForm(forms.ModelForm):
     password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirmar Contraseña', widget=forms.PasswordInput)
@@ -66,4 +66,53 @@ class CustomUserCreationForm(forms.ModelForm):
 class AddDoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
-        fields = ['nombre_completo', 'area_desempeño', 'fec_nac', 'num_telefono', 'sitio']
+        fields = [
+            'rut_doctor', 
+            'nombres_doctor', 
+            'primer_apellido_doctor', 
+            'segundo_apellido_doctor', 
+            'correo_doctor', 
+            'telefono_doctor', 
+            'fecha_nacimiento_doctor', 
+            'especialidad_doctor'
+        ]
+
+class AddPacienteForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            'rut_paciente', 
+            'nombres_paciente', 
+            'primer_apellido_paciente', 
+            'segundo_apellido_paciente', 
+            'correo_paciente', 
+            'telefono_paciente', 
+            'fecha_nacimiento_paciente', 
+            'direccion_paciente', 
+            'genero_paciente'
+        ]
+
+class AddAdministradorForm(forms.ModelForm):
+    class Meta:
+        model = Administrador
+        fields = [
+            'rut_administrador', 
+            'nombres_administrador', 
+            'primer_apellido_administrador', 
+            'segundo_apellido_administrador', 
+            'correo_administrador', 
+            'telefono_administrador'
+        ]
+
+class AddInformeForm(forms.ModelForm):
+    class Meta:
+        model = Informe
+        fields = [
+            'doctor', 
+            'paciente', 
+            'titulo_informe', 
+            'descripcion_informe', 
+            'notas_doctor', 
+            'instrucciones_tratamiento', 
+            'documentos_extra'
+        ]
