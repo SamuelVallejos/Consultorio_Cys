@@ -1,0 +1,75 @@
+datos para llenar las tablas
+
+Ejeturar en cmd "python manage.py shell"
+
+pegar esto: from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica
+
+------------------------------------------------------------------------------
+
+doctor = Doctor(
+    rut_doctor='12345678-9',
+    nombres_doctor='Juan',
+    primer_apellido_doctor='Pérez',
+    segundo_apellido_doctor='González',
+    correo_doctor='juan.perez@example.com',
+    telefono_doctor='123456789',
+    fecha_nacimiento_doctor='1980-01-01',
+    especialidad_doctor='Cardiología'
+)
+doctor.set_password('contrasena123')
+doctor.save()
+
+------------------------------------------------------------------------------
+
+paciente = Paciente(
+    rut_paciente='98765432-1',
+    nombres_paciente='María',
+    primer_apellido_paciente='López',
+    segundo_apellido_paciente='Martínez',
+    correo_paciente='maria.lopez@example.com',
+    telefono_paciente='987654321',
+    fecha_nacimiento_paciente='1990-05-15',
+    direccion_paciente='Av. Siempre Viva 123',
+    genero_paciente='F'
+)
+paciente.set_password('contrasena123') 
+paciente.save() 
+
+------------------------------------------------------------------------------
+
+doctor = Doctor.objects.get(rut_doctor='12345678-9')
+paciente = Paciente.objects.get(rut_paciente='98765432-1') 
+
+informe = Informe(
+    doctor=doctor,
+    paciente=paciente,
+    titulo_informe='Consulta Cardiológica',
+    descripcion_informe='Informe de consulta cardiológica realizado.',
+    notas_doctor='El paciente muestra síntomas de fatiga.',
+    instrucciones_tratamiento='Recomendaciones de descanso y revisión.',
+    documentos_extra=None
+)
+informe.save()
+
+------------------------------------------------------------------------------
+
+clinica = Clinica(
+    nombre_clinica='Clínica Salud Total', 
+    correo_clinica='contacto@clinicasaludtotal.cl', 
+    telefono_clinica='123456789'
+)
+clinica.save()
+
+------------------------------------------------------------------------------
+
+clinica = Clinica.objects.get(nombre_clinica='Clínica Salud Total') 
+
+nueva_sede = SedeClinica(
+...     clinica=clinica,
+...     region_sede='Región Metropolitana',
+...     comuna_sede='Santiago',
+...     direccion_sede='Av. Siempre Viva 1234',
+...     telefono_sede='987654321'
+... )
+>>> nueva_sede.save()
+

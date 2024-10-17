@@ -44,35 +44,17 @@ def perfil_view(request):
     return render(request, 'consultorioCys/perfil.html')
 
 def login_view(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
+    if request.method == "POST":
+        form = RUTAuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            rut = form.cleaned_data['rut']
-            contrasena = form.cleaned_data['contrasena']
-
-            # Autenticación de Doctor
-            try:
-                doctor = Doctor.objects.get(rut_doctor=rut)
-                if doctor.check_password(contrasena):
-                    login(request, doctor)  # Iniciar sesión como doctor
-                    return redirect('doctor_dashboard')
-            except Doctor.DoesNotExist:
-                pass
-
-            # Autenticación de Paciente
-            try:
-                paciente = Paciente.objects.get(rut_paciente=rut)
-                if paciente.check_password(contrasena):
-                    login(request, paciente)  # Iniciar sesión como paciente
-                    return redirect('paciente_dashboard')
-            except Paciente.DoesNotExist:
-                pass
-
-            # Mensaje de error si las credenciales son incorrectas
-            return render(request, 'login.html', {'form': form, 'error': 'Credenciales inválidas.'})
-
+            user = form.get_user()
+            login(request, user)  # Iniciar sesión
+            if user.is_doctor:  # Cambia esto según tu lógica
+                return redirect('inicio')
+            elif user.is_paciente:  # Cambia esto según tu lógica
+                return redirect('inicio')
     else:
-        form = LoginForm()
+        form = RUTAuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
 @login_required
