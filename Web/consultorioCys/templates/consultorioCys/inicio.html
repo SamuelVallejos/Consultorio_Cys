@@ -75,37 +75,40 @@
 
             {% if user.is_authenticated %}
             <div class="btn-group" role="group">
-                <button
-                    type="button"
-                    class="btn boton dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                >
-                    <img
-                        src="/static/consultorioCys/img/usuario.png"
-                        class="icon"
-                    />
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="{% url 'perfil' %}">Mi Perfil</a>
-                    </li>
-                    <li><a class="dropdown-item" href="/">Opciones?</a></li>
-                    <li>
-                        <a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a>
-                    </li>
-                </ul>
+              <button
+                type="button"
+                class="btn boton dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img
+                  src="/static/consultorioCys/img/usuario.png"
+                  class="icon"
+                />
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="{% url 'perfil' %}"
+                    >Mi Perfil</a
+                  >
+                </li>
+                <li><a class="dropdown-item" href="/">Opciones?</a></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'logout' %}"
+                    >Cerrar Sesión</a
+                  >
+                </li>
+              </ul>
             </div>
             {% else %}
             <div class="boton" style="margin-right: 10px">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
-                    </li>
-                </ul>
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'login' %}">Iniciar</a>
+                </li>
+              </ul>
             </div>
             {% endif %}
-            
           </div>
         </div>
       </nav>

@@ -6,12 +6,27 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
+from .models import Doctor, Paciente
 from django.contrib.auth.models import Group
-from .models import Doctor
-from .models import Paciente
-from .forms import RUTAuthenticationForm, LoginForm
+from .forms import RUTAuthenticationForm
 from django.contrib.auth.hashers import check_password
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from .forms import LoginForm
+
+def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
+    """Utility function to handle form submissions."""
+    if request.method == 'POST':
+        form = form_class(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            # Solo autenticar si se pasa como parámetro
+            if authenticate_user:
+                auth_login(request, form.get_user()) if instance is None else None
+            return redirect(success_url)
+    else:
+        form = form_class(instance=instance)
+    return render(request, template_name, {'form': form})
 
 def inicio(request):
     return render(request, 'consultorioCys/inicio.html')
@@ -26,78 +41,38 @@ def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
 def perfil_view(request):
-    user_type = request.session.get('user_type')
-    user_id = request.session.get('user_id')
-
-    if user_type == 'doctor':
-        doctor = Doctor.objects.get(rut_doctor=user_id)
-        context = {
-            'nombres': doctor.nombres_doctor,
-            'apellido': doctor.primer_apellido_doctor,
-            'correo': doctor.correo_doctor,
-            'telefono': doctor.telefono_doctor,
-            'especialidad': doctor.especialidad_doctor,
-        }
-    elif user_type == 'paciente':
-        paciente = Paciente.objects.get(rut_paciente=user_id)
-        context = {
-            'nombres': paciente.nombres_paciente,
-            'apellido': paciente.primer_apellido_paciente,
-            'correo': paciente.correo_paciente,
-            'telefono': paciente.telefono_paciente,
-        }
-    else:
-        # Manejar el caso donde no hay sesión activa
-        messages.error(request, 'No hay sesión activa')
-        return redirect('login')  # Redirigir a la página de login
-
-    return render(request, 'perfil.html', context)
-
-
-# views.py
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Doctor, Paciente
-from .forms import LoginForm
-
-# views.py
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Doctor, Paciente
-from .forms import LoginForm
-
-from consultorioCys.models import Doctor, Paciente
-doctor = Doctor.objects.filter(rut_doctor='RUT_DEL_DOCTOR').first()
-print(doctor)  # Esto debería imprimir los detalles del doctor si existe
-paciente = Paciente.objects.filter(rut_paciente='RUT_DEL_PACIENTE').first()
-print(paciente)  # Esto debería imprimir los detalles del paciente si existe
+    return render(request, 'consultorioCys/perfil.html')
 
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
             rut = form.cleaned_data['rut']
-            password = form.cleaned_data['password']
-            
-            # Intenta encontrar al doctor
+            contrasena = form.cleaned_data['contrasena']
+
+            # Autenticación de Doctor
             try:
                 doctor = Doctor.objects.get(rut_doctor=rut)
-                if doctor.check_password(password):
-                    login(request, doctor)  # Esto autentica al doctor
+                if doctor.check_password(contrasena):
+                    login(request, doctor)  # Iniciar sesión como doctor
                     return redirect('doctor_dashboard')
             except Doctor.DoesNotExist:
-                # Intenta encontrar al paciente
-                try:
-                    paciente = Paciente.objects.get(rut_paciente=rut)
-                    if paciente.check_password(password):
-                        login(request, paciente)  # Esto autentica al paciente
-                        return redirect('paciente_dashboard')
-                except Paciente.DoesNotExist:
-                    messages.error(request, 'El RUT no existe en la base de datos')
-    
+                pass
+
+            # Autenticación de Paciente
+            try:
+                paciente = Paciente.objects.get(rut_paciente=rut)
+                if paciente.check_password(contrasena):
+                    login(request, paciente)  # Iniciar sesión como paciente
+                    return redirect('paciente_dashboard')
+            except Paciente.DoesNotExist:
+                pass
+
+            # Mensaje de error si las credenciales son incorrectas
+            return render(request, 'login.html', {'form': form, 'error': 'Credenciales inválidas.'})
+
     else:
         form = LoginForm()
-    
     return render(request, 'login.html', {'form': form})
 
 @login_required
@@ -111,20 +86,27 @@ def paciente_dashboard(request):
     return render(request, 'consultorioCys/paciente_dashboard.html')
 
 def logout_view(request):
-    request.session.flush()  # Limpia la sesión
+    logout(request)
     return redirect('login')
 
 def is_doctor(user):
     return user.groups.filter(name='Doctor').exists()
 
+# Función auxiliar para verificar si es usuario
 def is_usuario(user):
     return user.groups.filter(name='Usuario').exists()
 
 @login_required
 @user_passes_test(is_doctor)
 def doctor_dashboard(request):
-    # Lógica específica para doctores
-    return render(request, 'consultorioCys/doctor_dashboard.html')
+    if request.user.is_authenticated and isinstance(request.user, Doctor):
+        return render(request, 'doctor_dashboard.html', {'doctor': request.user})
+    return redirect('login')
+
+def paciente_dashboard(request):
+    if request.user.is_authenticated and isinstance(request.user, Paciente):
+        return render(request, 'paciente_dashboard.html', {'paciente': request.user})
+    return redirect('login')
 
 @login_required
 @user_passes_test(is_usuario)
