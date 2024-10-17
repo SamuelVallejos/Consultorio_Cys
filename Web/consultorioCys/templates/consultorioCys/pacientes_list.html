@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Pacientes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        .patient-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .patient-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+        .patient-card:hover {
+            transform: translateY(-10px);
+        }
+        .patient-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .patient-details p {
+            margin: 10px 0;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .action-buttons a {
+            text-decoration: none;
+            padding: 10px 15px;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-edit {
+            background-color: #4a90e2;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+        }
+        .btn-edit:hover {
+            background-color: #357ABD;
+        }
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Listado de Pacientes</h1>
+    
+    <div class="patient-container">
+        {% for paciente in pacientes %}
+        <div class="patient-card">
+            <div class="patient-number">Paciente #{{ forloop.counter }}</div>
+            <div class="patient-details">
+                <p><strong>Nombre:</strong> {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}</p>
+                <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
+                <p><strong>Correo:</strong> {{ paciente.correo_paciente }}</p>
+                <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
+            </div>
+            <div class="action-buttons">
+                <a class="btn-edit" href="{% url 'editar_paciente' paciente.rut_paciente %}">Editar</a>
+                <a class="btn-delete" href="{% url 'eliminar_paciente' paciente.rut_paciente %}">Eliminar</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

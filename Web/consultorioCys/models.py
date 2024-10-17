@@ -19,11 +19,9 @@ class Doctor(models.Model):
     def __str__(self):
         return f"Dr. {self.nombres_doctor} {self.primer_apellido_doctor}"
     
-        # Agregar método para establecer la contraseña
     def set_password(self, raw_password):
         self.contrasena_doctor = make_password(raw_password)
 
-    # Agregar método para verificar la contraseña
     def check_password(self, raw_password):
         return check_password(raw_password, self.contrasena_doctor)
 
@@ -38,7 +36,6 @@ class Paciente(models.Model):
     fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
     direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
     contrasena_paciente = models.CharField(max_length=128) # Campo para la contraseña encriptada
-
 
     GENDER_CHOICES = [
         ('M', 'Male'),
@@ -56,10 +53,11 @@ class Paciente(models.Model):
     
     def set_password(self, raw_password):
         self.contrasena_paciente = make_password(raw_password)
+        self.save()
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.contrasena_paciente)
-
+    
 class Informe(models.Model):
     id_informe = models.AutoField(primary_key=True)  # ID Informe
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)  # ID Doctor

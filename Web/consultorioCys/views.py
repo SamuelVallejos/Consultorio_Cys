@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import logout
-from .forms import CustomUserCreationForm, CustomUserEditForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
@@ -10,6 +9,9 @@ from django.contrib.auth import login
 from django.contrib.auth.models import Group
 from .models import Doctor
 from .models import Paciente
+from .forms import RUTAuthenticationForm
+from django.contrib.auth.hashers import check_password
+
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -31,34 +33,42 @@ def inicio(request):
 def ia(request):
     return render(request, 'consultorioCys/ia.html')
 
+def historial_personal(request):
+    return render(request, 'consultorioCys/historial_personal.html')
+
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
 def perfil_view(request):
-    return handle_form_submission(request, CustomUserEditForm, 'consultorioCys/perfil.html', 'perfil', instance=request.user)
+    return render(request, 'consultorioCys/perfil.html')
 
 def login_view(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+    if request.method == "POST":
+        form = RUTAuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            auth_login(request, user)
-            
-            # Redirigir según el grupo
-            if user.groups.filter(name='Administrador').exists():
-                return redirect('admin_dashboard')
-            elif user.groups.filter(name='Doctor').exists():
+            login(request, user)  # Iniciar sesión
+            if isinstance(user, Doctor):
                 return redirect('doctor_dashboard')
-            elif user.groups.filter(name='Paciente').exists():
-                return redirect('paciente_dashboard')
-            else:
-                return redirect('inicio')
+            elif isinstance(user, Paciente):
+                return redirect('usuario_dashboard')
         else:
-            messages.error(request, 'Invalid username or password.')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'consultorioCys/login.html', {'form': form})
+            print(form.errors)  # Imprimir errores para depuración
 
+    else:
+        form = RUTAuthenticationForm()
+    return render(request, 'login.html', {'form': form})
+
+
+@login_required
+@user_passes_test(lambda u: u.groups.filter(name='Doctor').exists())
+def doctor_dashboard(request):
+    return render(request, 'consultorioCys/doctor_dashboard.html')
+
+@login_required
+@user_passes_test(lambda u: u.groups.filter(name='Paciente').exists())
+def paciente_dashboard(request):
+    return render(request, 'consultorioCys/paciente_dashboard.html')
 
 def logout_view(request):
     logout(request)
@@ -76,15 +86,6 @@ def is_usuario(user):
 def doctor_dashboard(request):
     # Lógica específica para doctores
     return render(request, 'consultorioCys/doctor_dashboard.html')
-
-# Función auxiliar para verificar si es admin
-def is_administrador(user):
-    return user.groups.filter(name='Administrador').exists()
-
-@login_required
-@user_passes_test(is_administrador)
-def admin_dashboard(request):
-    return render(request, 'consultorioCys/admin_dashboard.html')
 
 @login_required
 @user_passes_test(is_usuario)
@@ -154,3 +155,25 @@ def login_doctor(request):
             messages.error(request, 'Contraseña incorrecta.')
 
     return render(request, 'consultorioCys/login_doctor.html')
+
+def listar_pacientes(request):
+    pacientes = Paciente.objects.all()  # Obtener todos los pacientes
+    return render(request, 'consultorioCys/pacientes_list.html', {'pacientes': pacientes})
+
+# Vista para eliminar paciente
+def eliminar_paciente(request, rut_paciente):
+    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
+    
+    if request.method == 'POST':
+        paciente.delete()
+        messages.success(request, 'Paciente eliminado correctamente.')
+        return redirect('listar_pacientes')
+
+    return render(request, 'consultorioCys/confirmar_borrar.html', {'paciente': paciente})
+
+# Vista para editar paciente (redirección simulada)
+def editar_paciente(request, rut_paciente):
+    # Simulación de redirección a una página de edición de paciente
+    # Solo redirige a una página con mensaje (para completar según necesidad)
+    messages.info(request, f"Redirigido para editar paciente con RUT: {rut_paciente}")
+    return redirect('listar_pacientes')
