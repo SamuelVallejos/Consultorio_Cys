@@ -136,3 +136,21 @@ def buscar_paciente(request):
         # Si se encuentra el paciente, mostrar sus datos en una plantilla
         return render(request, 'detalle_paciente.html', {'paciente': paciente})
     return render(request, 'inicio.html')
+
+def login_doctor(request):
+    if request.method == 'POST':
+        rut = request.POST.get('rut')  # Obtener el RUT del formulario
+        password = request.POST.get('contrasena_doctor')  # Obtener la contraseña
+
+        # Verificar la existencia del doctor
+        doctor = get_object_or_404(Doctor, rut_doctor=rut)
+        
+        # Verificar la contraseña
+        if doctor.check_password(password):
+            # Iniciar sesión
+            auth_login(request, doctor)
+            return redirect('doctor_dashboard')
+        else:
+            messages.error(request, 'Contraseña incorrecta.')
+
+    return render(request, 'consultorioCys/login_doctor.html')

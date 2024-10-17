@@ -66,6 +66,8 @@ class CustomUserCreationForm(forms.ModelForm):
         return user
 
 class AddDoctorForm(forms.ModelForm):
+    contrasena_doctor = forms.CharField(widget=forms.PasswordInput, label='Contraseña')
+
     class Meta:
         model = Doctor
         fields = [
@@ -76,8 +78,16 @@ class AddDoctorForm(forms.ModelForm):
             'correo_doctor', 
             'telefono_doctor', 
             'fecha_nacimiento_doctor', 
-            'especialidad_doctor'
+            'especialidad_doctor',
+            'contrasena_doctor'  # Incluir el campo de contraseña
         ]
+
+    def save(self, commit=True):
+        doctor = super().save(commit=False)
+        doctor.set_password(self.cleaned_data['contrasena_doctor'])  # Hashing la contraseña
+        if commit:
+            doctor.save()
+        return doctor
 
 class AddPacienteForm(forms.ModelForm):
     class Meta:
@@ -93,8 +103,6 @@ class AddPacienteForm(forms.ModelForm):
             'direccion_paciente', 
             'genero_paciente'
         ]
-
-# La clase AddAdministradorForm ha sido eliminada
 
 class AddInformeForm(forms.ModelForm):
     class Meta:

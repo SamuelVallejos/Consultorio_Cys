@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 class Doctor(models.Model):
     rut_doctor = models.CharField(max_length=10, primary_key=True)  # ID (Rut) Doctor
@@ -9,6 +10,7 @@ class Doctor(models.Model):
     telefono_doctor = models.CharField(max_length=15)  # N° Teléfono Doctor
     fecha_nacimiento_doctor = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Doctor
     especialidad_doctor = models.CharField(max_length=100)  # Especialidad Doctor
+    contrasena_doctor = models.CharField(max_length=128) # Campo para la contraseña encriptada
 
     class Meta:
         verbose_name = "Doctor"
@@ -16,6 +18,14 @@ class Doctor(models.Model):
 
     def __str__(self):
         return f"Dr. {self.nombres_doctor} {self.primer_apellido_doctor}"
+    
+        # Agregar método para establecer la contraseña
+    def set_password(self, raw_password):
+        self.contrasena_doctor = make_password(raw_password)
+
+    # Agregar método para verificar la contraseña
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.contrasena_doctor)
 
 
 class Paciente(models.Model):
@@ -27,12 +37,13 @@ class Paciente(models.Model):
     telefono_paciente = models.CharField(max_length=15)  # N° Teléfono Paciente
     fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
     direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
+    contrasena_paciente = models.CharField(max_length=128) # Campo para la contraseña encriptada
+
 
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
         ('NB', 'Non-binary'),
-        # Agrega más opciones según sea necesario
     ]
     genero_paciente = models.CharField(max_length=2, choices=GENDER_CHOICES)  # Género Paciente
 
@@ -42,7 +53,12 @@ class Paciente(models.Model):
 
     def __str__(self):
         return f"{self.nombres_paciente} {self.primer_apellido_paciente}"
+    
+    def set_password(self, raw_password):
+        self.contrasena_paciente = make_password(raw_password)
 
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.contrasena_paciente)
 
 class Informe(models.Model):
     id_informe = models.AutoField(primary_key=True)  # ID Informe
