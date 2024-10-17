@@ -12,7 +12,6 @@ class Doctor(models.Model):
     fecha_nacimiento_doctor = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Doctor
     especialidad_doctor = models.CharField(max_length=100)  # Especialidad Doctor
     contrasena_doctor = models.CharField(max_length=128) # Campo para la contraseña encriptada
-    last_login = models.DateTimeField(default=now)
 
     class Meta:
         verbose_name = "Doctor"
@@ -37,7 +36,6 @@ class Paciente(models.Model):
     fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
     direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
     contrasena_paciente = models.CharField(max_length=128) # Campo para la contraseña encriptada
-    last_login = models.DateTimeField(default=now) 
 
     GENDER_CHOICES = [
         ('M', 'Male'),
