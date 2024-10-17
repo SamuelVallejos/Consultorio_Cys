@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils.timezone import now
 
 class Doctor(models.Model):
     rut_doctor = models.CharField(max_length=10, primary_key=True)  # ID (Rut) Doctor
@@ -11,11 +12,12 @@ class Doctor(models.Model):
     fecha_nacimiento_doctor = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Doctor
     especialidad_doctor = models.CharField(max_length=100)  # Especialidad Doctor
     contrasena_doctor = models.CharField(max_length=128) # Campo para la contraseña encriptada
+    last_login = models.DateTimeField(default=now)
 
     class Meta:
         verbose_name = "Doctor"
         verbose_name_plural = "Doctors"
-
+        
     def __str__(self):
         return f"Dr. {self.nombres_doctor} {self.primer_apellido_doctor}"
     
@@ -24,7 +26,6 @@ class Doctor(models.Model):
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.contrasena_doctor)
-
 
 class Paciente(models.Model):
     rut_paciente = models.CharField(max_length=10, primary_key=True)  # ID (Rut) Paciente
@@ -36,6 +37,7 @@ class Paciente(models.Model):
     fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
     direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
     contrasena_paciente = models.CharField(max_length=128) # Campo para la contraseña encriptada
+    last_login = models.DateTimeField(default=now) 
 
     GENDER_CHOICES = [
         ('M', 'Male'),
@@ -47,13 +49,12 @@ class Paciente(models.Model):
     class Meta:
         verbose_name = "Paciente"
         verbose_name_plural = "Pacientes"
-
+        
     def __str__(self):
         return f"{self.nombres_paciente} {self.primer_apellido_paciente}"
     
     def set_password(self, raw_password):
         self.contrasena_paciente = make_password(raw_password)
-        self.save()
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.contrasena_paciente)

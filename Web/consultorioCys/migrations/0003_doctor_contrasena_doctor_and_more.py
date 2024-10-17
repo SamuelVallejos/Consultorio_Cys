@@ -13,13 +13,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='doctor',
             name='contrasena_doctor',
-            field=models.CharField(default='123231asrfafwf', max_length=128),
+            field=models.CharField(default='12345678', max_length=128),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='paciente',
             name='contrasena_paciente',
-            field=models.CharField(default='dadawq31321', max_length=128),
+            field=models.CharField(default='12345678', max_length=128),
             preserve_default=False,
         ),
     ]

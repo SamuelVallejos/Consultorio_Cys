@@ -10,16 +10,12 @@
 </head>
 
 <body>
-    <a href="{% url 'inicio' %}" class="btn boton">
-        <img src="/static/consultorioCys/img/volver.png" class="icon" style="height: 50px; width: 50px;">
-    </a>
-    <div class="container">
-        <h2>Mi Perfil</h2>
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Actualizar Perfil</button>
-        </form>
-    </div>
+    <h1>Perfil del Usuario</h1>
+    <p>Nombre: {{ nombres }} {{ apellido }}</p>
+    <p>Correo: {{ correo }}</p>
+    <p>Teléfono: {{ telefono }}</p>
+    {% if user_type == 'doctor' %}
+        <p>Especialidad: {{ especialidad }}</p>
+    {% endif %}
 </body>
 </html>
