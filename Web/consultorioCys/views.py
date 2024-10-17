@@ -44,26 +44,87 @@ def perfil_view(request):
     return render(request, 'consultorioCys/perfil.html')
 
 def login_view(request):
-    if request.method == "POST":
-        form = RUTAuthenticationForm(request, data=request.POST)
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            print("Redirigiendo a superusuario...")
+            return redirect('/inicio/')  # Redirigir al inicio si es superusuario
+        else:
+            messages.info(request, "Ya has iniciado sesión.")
+            print("Redirigiendo a inicio por sesión activa...")
+            return redirect('inicio')
+
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
         if form.is_valid():
-            user = form.get_user()
-            login(request, user)  # Iniciar sesión
-            if user.is_doctor:  # Cambia esto según tu lógica
-                return redirect('inicio')
-            elif user.is_paciente:  # Cambia esto según tu lógica
-                return redirect('inicio')
+            rut = form.cleaned_data.get('rut')
+            password = form.cleaned_data.get('password')
+
+            print(f"RUT ingresado: {rut}")
+            print(f"Contraseña ingresada: {password}")
+            print(f"Datos POST: {request.POST}")
+
+            # Intentar autenticar al doctor
+            try:
+                doctor = Doctor.objects.get(rut_doctor=rut)
+                if doctor.check_password(password):
+                    print(f"Doctor encontrado: {doctor}")
+                    print(f"Datos del Doctor: {doctor.__dict__}")
+
+                    # Guardar RUT del doctor en la sesión
+                    request.session['doctor_rut'] = doctor.rut_doctor
+                    print("Redirigiendo al dashboard del doctor...")
+                    return redirect('doctor_dashboard')  # Redirigir al dashboard del doctor
+                else:
+                    messages.error(request, 'Contraseña incorrecta para el doctor.')
+                    print("Contraseña incorrecta para el doctor.")
+            except Doctor.DoesNotExist:
+                # Si no existe el doctor, buscar al paciente
+                try:
+                    paciente = Paciente.objects.get(rut_paciente=rut)
+                    if paciente.check_password(password):
+                        print(f"Paciente encontrado: {paciente}")
+                        print(f"Datos del Paciente: {paciente.__dict__}")
+
+                        # Guardar RUT del paciente en la sesión
+                        request.session['paciente_rut'] = paciente.rut_paciente
+                        print("Redirigiendo al dashboard del paciente...")
+                        return redirect('inicio')  # Redirigir al dashboard del paciente
+                    else:
+                        messages.error(request, 'Contraseña incorrecta para el paciente.')
+                        print("Contraseña incorrecta para el paciente.")
+                except Paciente.DoesNotExist:
+                    messages.error(request, 'RUT no registrado.')
+                    print("RUT no registrado.")
     else:
-        form = RUTAuthenticationForm()
+        form = LoginForm()
+
     return render(request, 'login.html', {'form': form})
 
+def is_doctor(user):
+    return user.groups.filter(name='Doctor').exists()
+
 @login_required
-@user_passes_test(lambda u: u.groups.filter(name='Doctor').exists())
+@user_passes_test(is_doctor)
+def doctor_dashboard(request):
+    if request.user.is_authenticated and isinstance(request.user, Doctor):
+        return render(request, 'consultorioCys/doctor_dashboard.html', {'doctor': request.user})
+    return redirect('login')
+
+def is_paciente(user):
+    return user.groups.filter(name='Paciente').exists()
+
+@login_required
+@user_passes_test(is_paciente)
+def paciente_dashboard(request):
+    if request.user.is_authenticated and isinstance(request.user, Paciente):
+        return render(request, 'consultorioCys/paciente_dashboard.html', {'paciente': request.user})
+    return redirect('login')
+
+@login_required
 def doctor_dashboard(request):
     return render(request, 'consultorioCys/doctor_dashboard.html')
 
 @login_required
-@user_passes_test(lambda u: u.groups.filter(name='Paciente').exists())
 def paciente_dashboard(request):
     return render(request, 'consultorioCys/paciente_dashboard.html')
 
@@ -71,30 +132,9 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def is_doctor(user):
-    return user.groups.filter(name='Doctor').exists()
-
 # Función auxiliar para verificar si es usuario
 def is_usuario(user):
     return user.groups.filter(name='Usuario').exists()
-
-@login_required
-@user_passes_test(is_doctor)
-def doctor_dashboard(request):
-    if request.user.is_authenticated and isinstance(request.user, Doctor):
-        return render(request, 'doctor_dashboard.html', {'doctor': request.user})
-    return redirect('login')
-
-def paciente_dashboard(request):
-    if request.user.is_authenticated and isinstance(request.user, Paciente):
-        return render(request, 'paciente_dashboard.html', {'paciente': request.user})
-    return redirect('login')
-
-@login_required
-@user_passes_test(is_usuario)
-def usuario_dashboard(request):
-    # Lógica específica para usuarios normales
-    return render(request, 'consultorioCys/inicio.html')
 
 def is_doctor(user):
     return user.groups.filter(name='Doctor').exists()
@@ -110,13 +150,6 @@ def add_doctor_view(request):
     else:
         form = AddDoctorForm()
     return render(request, 'consultorioCys/add_doctor.html', {'form': form})
-
-@login_required
-@user_passes_test(lambda u: u.groups.filter(name='Paciente').exists())
-def paciente_dashboard(request):
-    # Lógica específica para pacientes
-    return render(request, 'consultorioCys/paciente_dashboard.html')
-
 
 def informe_doctores(request):
     # Obtener todos los doctores desde la base de datos

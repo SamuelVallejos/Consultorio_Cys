@@ -39,10 +39,8 @@ class RUTAuthenticationForm(forms.Form):
         return self.user_cache
     
 class LoginForm(forms.Form):
-    rut = forms.CharField(label='RUT', max_length=10)
-    contrasena = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
-
-    
+    rut = forms.CharField(max_length=10, label="RUT")
+    password = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
 
 class AddPacienteForm(forms.ModelForm):
     contrasena_paciente = forms.CharField(widget=forms.PasswordInput, label='Contraseña')
