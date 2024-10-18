@@ -80,37 +80,10 @@
   <!-- Cuerpo pagina -->
   <!-- Pedir archivo -->
   {% if user.is_authenticated %}
-  {% if user.doctor %}
-    <h1 class="center">Bienvenido, Dr. {{ user.doctor.nombres_doctor }} {{ user.doctor.primer_apellido_doctor }} {{ user.doctor.segundo_apellido_doctor }}!</h1>
-    <div class="container bar parchivo" style="display: flex; justify-content: center; align-items: center">
-      <div style="width: 100%; max-width: 400px">
-        <h3 class="center">Acceso Paciente</h3>
-        <div class="container">
-          <form action="{% url 'buscar_paciente' %}" method="POST">
-            {% csrf_token %}
-            <div class="row margen" style="display: flex; justify-content: center; margin-bottom: 15px;">
-              <div class="col margen end" style="margin-right: 10px">
-                <label for="rut">RUT:</label>
-              </div>
-              <div class="col margen start">
-                <input type="text" id="rut" name="rut" placeholder="Ingresa tu RUT" required style="width: 100%" />
-              </div>
-            </div>
-            <div class="center" style="display: flex; justify-content: center; margin-top: 15px;">
-              <button type="submit" class="button2" style="padding: 10px 20px">
-                Buscar Paciente
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  {% elif user.paciente %}
-    <h1 class="center">Bienvenido, paciente {{ user.paciente.nombres_paciente }} {{ user.paciente.primer_apellido_paciente }} {{ user.paciente.segundo_apellido_paciente }}!</h1>
-  {% else %}
-    <h1 class="center">Bienvenido!</h1>
+  {% if user.paciente %}
+  <h1 class="center">Bienvenido, paciente {{ user.paciente.nombres_paciente }} {{ user.paciente.primer_apellido_paciente }} {{ user.paciente.segundo_apellido_paciente }}!</h1>
   {% endif %}
-{% endif %}
+  {% endif %}
 
   <!-- animacion menu -->
   <script>

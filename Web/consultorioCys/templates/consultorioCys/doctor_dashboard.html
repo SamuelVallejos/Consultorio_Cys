@@ -83,8 +83,7 @@
     <!-- Pedir archivo -->
     {% if user.is_authenticated %}
     {% if user.doctor %}
-    <h1 class="center">Bienvenido, Dr. {{ user.doctor.nombres_doctor }} {{ user.doctor.primer_apellido_doctor }} {{
-        user.doctor.segundo_apellido_doctor }}!</h1>
+    <h1 class="center">Bienvenido, Dr. {{ user.doctor.nombres_doctor }} {{ user.doctor.primer_apellido_doctor }} {{ user.doctor.segundo_apellido_doctor }}!</h1>
     <div class="container bar parchivo" style="display: flex; justify-content: center; align-items: center">
         <div style="width: 100%; max-width: 400px">
             <h3 class="center">Acceso Paciente</h3>
@@ -109,11 +108,6 @@
             </div>
         </div>
     </div>
-    {% elif user.paciente %}
-    <h1 class="center">Bienvenido, paciente {{ user.paciente.nombres_paciente }} {{
-        user.paciente.primer_apellido_paciente }} {{ user.paciente.segundo_apellido_paciente }}!</h1>
-    {% else %}
-    <h1 class="center">Bienvenido!</h1>
     {% endif %}
     {% endif %}
 
@@ -134,7 +128,6 @@
 
 <!--
 
-{% extends 'base_generic.html' %}
 {% block content %}
     <div class="dashboard">
         <h2>Bienvenido, Dr. {{ user.username }}</h2>

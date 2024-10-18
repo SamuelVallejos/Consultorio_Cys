@@ -46,33 +46,39 @@ def login_view(request):
     if request.method == 'POST':
         rut = request.POST.get('rut')
         password = request.POST.get('contrasena')
-        rol = request.POST.get('rol')  # Obtiene el rol seleccionado (paciente o doctor)
+        rol = request.POST.get('rol')  # Paciente o doctor
 
         try:
+            # Busca el usuario por RUT
             usuario = Usuario.objects.get(rut=rut)
+            
+            # Verifica la contraseña
             if usuario.check_password(password):
                 # Verifica el rol seleccionado
-                if rol == 'paciente':
-                    if hasattr(usuario, 'paciente'):
-                        login(request, usuario)  # Iniciar sesión como paciente
-                        return redirect('inicio')  # Redirigir al inicio como paciente
-                    else:
-                        messages.error(request, 'No estás registrado como paciente.')
-                        return redirect('login')
+                if rol == 'paciente' and hasattr(usuario, 'paciente'):
+                    login(request, usuario)  # Inicia sesión como paciente
+                    return redirect('inicio')  # Redirige al inicio del paciente
 
-                elif rol == 'doctor':
-                    if hasattr(usuario, 'doctor'):
-                        login(request, usuario)  # Iniciar sesión como doctor
-                        return redirect('doctor_dashboard')  # Redirigir al dashboard del doctor
-                    else:
-                        messages.error(request, 'No estás registrado como doctor.')
-                        return redirect('login')
+                elif rol == 'doctor' and hasattr(usuario, 'doctor'):
+                    login(request, usuario)  # Inicia sesión como doctor
+                    return redirect('doctor_dashboard')  # Redirige al dashboard del doctor
+                
+                else:
+                    # Si el rol no coincide con el usuario
+                    messages.error(request, f'No estás registrado como {rol}.')
+                    return redirect('login')
+            else:
+                # Si la contraseña es incorrecta
+                messages.error(request, 'Contraseña incorrecta.')
+                return redirect('login')
 
         except Usuario.DoesNotExist:
-            messages.error(request, 'Credenciales inválidas.')
+            # Si el RUT no existe en la base de datos
+            messages.error(request, 'RUT o contraseña no se encuentran registrados.')
+            return redirect('login')
 
+    # Renderiza el formulario de login
     return render(request, 'consultorioCys/login.html')
-
 
 
 @login_required
