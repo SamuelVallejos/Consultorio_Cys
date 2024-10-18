@@ -173,3 +173,45 @@ nueva_sede2 = SedeClinica(
 nueva_sede2.save()
 
 exit()
+
+-------------------------------------------------------------------------------------------
+
+from consultorioCys.models import Doctor, Paciente, Usuario
+
+usuario_compartido = Usuario(
+    rut='54678912-3',
+    email='doctor.paciente@example.com',
+    nombre='Carlos',
+    apellido='Soto'
+)
+usuario_compartido.set_password('contrasena123')
+usuario_compartido.save() 
+
+doctor_compartido = Doctor(
+    usuario=usuario_compartido,  # Asociar con el usuario creado
+    rut_doctor='54678912-3',
+    nombres_doctor='Carlos',
+    primer_apellido_doctor='Soto',
+    segundo_apellido_doctor='Fernández',
+    correo_doctor='carlos.soto@doctor.com',
+    telefono_doctor='123456789',
+    fecha_nacimiento_doctor='1985-03-10',
+    especialidad_doctor='Medicina General'
+)
+doctor_compartido.save()
+
+paciente_compartido = Paciente(
+    usuario=usuario_compartido,  # Asociar con el usuario creado
+    rut_paciente='54678912-3',
+    nombres_paciente='Carlos',
+    primer_apellido_paciente='Soto',
+    segundo_apellido_paciente='Fernández',
+    correo_paciente='carlos.soto@paciente.com',
+    telefono_paciente='987654321',
+    fecha_nacimiento_paciente='1985-03-10',
+    direccion_paciente='Av. Independencia 456',
+    genero_paciente='M'
+)
+paciente_compartido.save()
+
+exit()
