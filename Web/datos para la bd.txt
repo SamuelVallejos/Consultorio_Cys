@@ -1,13 +1,13 @@
 datos para llenar las tablas
 
-Ejeturar en cmd "python manage.py shell"
-
-pegar esto: from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica
+Ejeturar en cmd "python manage.py shell" y pega lo siguiente
 
 ------------------------------------------------------------------------------
 
+from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario
+
 doctor = Doctor(
-    rut_doctor='12345678-9',
+    rut_doctor='12345678-1',
     nombres_doctor='Juan',
     primer_apellido_doctor='Pérez',
     segundo_apellido_doctor='González',
@@ -19,10 +19,21 @@ doctor = Doctor(
 doctor.set_password('contrasena123')
 doctor.save()
 
-------------------------------------------------------------------------------
+doctor2 = Doctor(
+    rut_doctor='87654321-2',
+    nombres_doctor='Ana',
+    primer_apellido_doctor='Gómez',
+    segundo_apellido_doctor='Fernández',
+    correo_doctor='ana.gomez@example.com',
+    telefono_doctor='987654321',
+    fecha_nacimiento_doctor='1975-02-15',
+    especialidad_doctor='Pediatría'
+)
+doctor2.set_password('contrasena123')
+doctor2.save()
 
 paciente = Paciente(
-    rut_paciente='98765432-1',
+    rut_paciente='98765432-3,
     nombres_paciente='María',
     primer_apellido_paciente='López',
     segundo_apellido_paciente='Martínez',
@@ -35,10 +46,25 @@ paciente = Paciente(
 paciente.set_password('contrasena123') 
 paciente.save() 
 
-------------------------------------------------------------------------------
+paciente2 = Paciente(
+    rut_paciente='12345679-4',
+    nombres_paciente='Carlos',
+    primer_apellido_paciente='Sánchez',
+    segundo_apellido_paciente='Torres',
+    correo_paciente='carlos.sanchez@example.com',
+    telefono_paciente='123987456',
+    fecha_nacimiento_paciente='1995-08-20',
+    direccion_paciente='Calle Falsa 456',
+    genero_paciente='M'
+)
+paciente2.set_password('contrasena123') 
+paciente2.save() 
 
-doctor = Doctor.objects.get(rut_doctor='12345678-9')
-paciente = Paciente.objects.get(rut_paciente='98765432-1') 
+doctor = Doctor.objects.get(rut_doctor='12345678-1')
+paciente = Paciente.objects.get(rut_paciente='98765432-2') 
+
+doctor2 = Doctor.objects.get(rut_doctor='87654321-3')
+paciente2 = Paciente.objects.get(rut_paciente='12345679-4') 
 
 informe = Informe(
     doctor=doctor,
@@ -51,7 +77,16 @@ informe = Informe(
 )
 informe.save()
 
-------------------------------------------------------------------------------
+informe2 = Informe(
+    doctor=doctor2,
+    paciente=paciente2,
+    titulo_informe='Consulta Pediátrica',
+    descripcion_informe='Informe de consulta pediátrica realizado.',
+    notas_doctor='El paciente está sano y activo.',
+    instrucciones_tratamiento='Mantener una dieta equilibrada.',
+    documentos_extra=None
+)
+informe2.save()
 
 clinica = Clinica(
     nombre_clinica='Clínica Salud Total', 
@@ -60,16 +95,51 @@ clinica = Clinica(
 )
 clinica.save()
 
-------------------------------------------------------------------------------
+clinica2 = Clinica(
+    nombre_clinica='Clínica Familiar', 
+    correo_clinica='contacto@clinicafamiliar.cl', 
+    telefono_clinica='456123789'
+)
+clinica2.save()
 
 clinica = Clinica.objects.get(nombre_clinica='Clínica Salud Total') 
 
 nueva_sede = SedeClinica(
-...     clinica=clinica,
-...     region_sede='Región Metropolitana',
-...     comuna_sede='Santiago',
-...     direccion_sede='Av. Siempre Viva 1234',
-...     telefono_sede='987654321'
-... )
->>> nueva_sede.save()
+    clinica=clinica,
+    region_sede='Región Metropolitana',
+    comuna_sede='Santiago',
+    direccion_sede='Av. Siempre Viva 1234',
+    telefono_sede='987654321'
+)
+nueva_sede.save()
 
+clinica2 = Clinica.objects.get(nombre_clinica='Clínica Familiar') 
+
+nueva_sede2 = SedeClinica(
+    clinica=clinica2,
+    region_sede='Región Valparaíso',
+    comuna_sede='Viña del Mar',
+    direccion_sede='Avenida Libertad 789',
+    telefono_sede='654321987'
+)
+nueva_sede2.save()
+
+usuario = Usuario(
+    rut='12345678-5',
+    email='juan.perez@usuario.com',
+    nombre='Juan',
+    apellido='Pérez'
+)
+usuario.set_password('contrasena123')
+usuario.save()
+
+usuario2 = Usuario(
+    rut='87654321-6',
+    email='ana.gomez@usuario.com',
+    nombre='Ana',
+    apellido='Gómez'
+)
+usuario2.set_password('contrasena123')
+usuario2.save()
+
+exit()

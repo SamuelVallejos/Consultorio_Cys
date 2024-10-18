@@ -6,13 +6,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
-from .models import Doctor, Paciente
+from .models import Doctor, Paciente, Informe, Usuario
 from django.contrib.auth.models import Group
 from .forms import RUTAuthenticationForm
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm
+from django.http import JsonResponse
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -41,51 +42,30 @@ def historial_personal(request):
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
-def perfil_view(request):
-    return render(request, 'consultorioCys/perfil.html')
-
 def login_view(request):
-    if request.user.is_authenticated:
-        print("Usuario ya autenticado. Redirigiendo...")
-        return redirect('inicio')  # Redirige a la página de inicio
-
     if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            rut = form.cleaned_data.get('rut')
-            password = form.cleaned_data.get('password')
+        rut = request.POST.get('rut')
+        password = request.POST.get('contrasena')
 
-            print(f"RUT ingresado: {rut}")
-            print(f"Contraseña ingresada: {password}")
+        try:
+            usuario = Usuario.objects.get(rut=rut)
+            if usuario.check_password(password):
+                login(request, usuario)
+                return redirect('inicio')  # Cambia esto
+            else:
+                messages.error(request, 'Credenciales inválidas.')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Credenciales inválidas.')
 
-            # Intentar autenticar al doctor
-            try:
-                doctor = Doctor.objects.get(rut_doctor=rut)
-                if doctor.check_password(password):
-                    print("Doctor autenticado. Redirigiendo a la página de inicio...")
-                    request.session['doctor_rut'] = doctor.rut_doctor
-                    return redirect('inicio')  # Asegúrate de que este nombre coincide con el de urls.py
-                else:
-                    messages.error(request, 'Contraseña incorrecta.')
-                    print("Contraseña incorrecta.")
-            except Doctor.DoesNotExist:
-                try:
-                    # Intentar autenticar al paciente
-                    paciente = Paciente.objects.get(rut_paciente=rut)
-                    if paciente.check_password(password):
-                        print("Paciente autenticado. Redirigiendo a la página de inicio...")
-                        request.session['paciente_rut'] = paciente.rut_paciente
-                        return redirect('inicio')  # Redirige al inicio para pacientes también
-                    else:
-                        messages.error(request, 'Contraseña incorrecta.')
-                        print("Contraseña incorrecta.")
-                except Paciente.DoesNotExist:
-                    messages.error(request, 'RUT no registrado.')
-                    print("RUT no registrado.")
-    else:
-        form = LoginForm()
+    return render(request, 'consultorioCys/login.html')
 
-    return render(request, 'login.html', {'form': form})
+@login_required
+def perfil_view(request):
+    return render(request, 'perfil.html', {'user': request.user})
+
+def logout_view(request):
+    logout(request)
+    return redirect('inicio')
 
 def is_doctor(user):
     return user.groups.filter(name='Doctor').exists()
@@ -115,11 +95,6 @@ def doctor_dashboard(request):
 def paciente_dashboard(request):
     return render(request, 'consultorioCys/paciente_dashboard.html')
 
-def logout_view(request):
-    logout(request)
-    return redirect('login')
-
-# Función auxiliar para verificar si es usuario
 def is_usuario(user):
     return user.groups.filter(name='Usuario').exists()
 

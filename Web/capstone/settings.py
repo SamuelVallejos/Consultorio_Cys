@@ -145,3 +145,5 @@ SESSION_COOKIE_AGE = 10800  # 3 horas
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+
+AUTH_USER_MODEL = 'consultorioCys.Usuario'
