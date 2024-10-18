@@ -1,3 +1,13 @@
+mysql -u javier -p
+Zeus1998+
+CREATE DATABASE consultoriocys;
+USE consultoriocys;
+SHOW DATABASES;
+EXIT;
+
+python manage.py makemigrations consultorioCys
+python manage.py migrate
+
 datos para llenar las tablas
 
 Ejeturar en cmd "python manage.py shell" y pega lo siguiente
@@ -6,7 +16,28 @@ Ejeturar en cmd "python manage.py shell" y pega lo siguiente
 
 from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario
 
-doctor = Doctor(
+# Crear usuarios (doctores)
+usuario_doctor1 = Usuario(
+    rut='12345678-1',
+    email='juan.perez@usuario.com',
+    nombre='Juan',
+    apellido='Pérez'
+)
+usuario_doctor1.set_password('contrasena123')
+usuario_doctor1.save()
+
+usuario_doctor2 = Usuario(
+    rut='87654321-2',
+    email='ana.gomez@usuario.com',
+    nombre='Ana',
+    apellido='Gómez'
+)
+usuario_doctor2.set_password('contrasena123')
+usuario_doctor2.save()
+
+# Crear doctores
+doctor1 = Doctor(
+    usuario=usuario_doctor1,  # Relacionar con usuario
     rut_doctor='12345678-1',
     nombres_doctor='Juan',
     primer_apellido_doctor='Pérez',
@@ -16,10 +47,10 @@ doctor = Doctor(
     fecha_nacimiento_doctor='1980-01-01',
     especialidad_doctor='Cardiología'
 )
-doctor.set_password('contrasena123')
-doctor.save()
+doctor1.save()
 
 doctor2 = Doctor(
+    usuario=usuario_doctor2,  # Relacionar con usuario
     rut_doctor='87654321-2',
     nombres_doctor='Ana',
     primer_apellido_doctor='Gómez',
@@ -29,11 +60,21 @@ doctor2 = Doctor(
     fecha_nacimiento_doctor='1975-02-15',
     especialidad_doctor='Pediatría'
 )
-doctor2.set_password('contrasena123')
 doctor2.save()
 
-paciente = Paciente(
-    rut_paciente='98765432-3,
+# Crear pacientes
+usuario_paciente1 = Usuario(
+    rut='98765432-3',
+    email='maria.lopez@example.com',
+    nombre='María',
+    apellido='López'
+)
+usuario_paciente1.set_password('contrasena123')
+usuario_paciente1.save()
+
+paciente1 = Paciente(
+    usuario=usuario_paciente1,  # Relacionar con usuario
+    rut_paciente='98765432-3',
     nombres_paciente='María',
     primer_apellido_paciente='López',
     segundo_apellido_paciente='Martínez',
@@ -43,10 +84,19 @@ paciente = Paciente(
     direccion_paciente='Av. Siempre Viva 123',
     genero_paciente='F'
 )
-paciente.set_password('contrasena123') 
-paciente.save() 
+paciente1.save()
+
+usuario_paciente2 = Usuario(
+    rut='12345679-4',
+    email='carlos.sanchez@example.com',
+    nombre='Carlos',
+    apellido='Sánchez'
+)
+usuario_paciente2.set_password('contrasena123')
+usuario_paciente2.save()
 
 paciente2 = Paciente(
+    usuario=usuario_paciente2,  # Relacionar con usuario
     rut_paciente='12345679-4',
     nombres_paciente='Carlos',
     primer_apellido_paciente='Sánchez',
@@ -57,29 +107,29 @@ paciente2 = Paciente(
     direccion_paciente='Calle Falsa 456',
     genero_paciente='M'
 )
-paciente2.set_password('contrasena123') 
-paciente2.save() 
+paciente2.save()
 
-doctor = Doctor.objects.get(rut_doctor='12345678-1')
-paciente = Paciente.objects.get(rut_paciente='98765432-2') 
+# Crear informes
+doctor_obj1 = Doctor.objects.get(rut_doctor='12345678-1')
+paciente_obj1 = Paciente.objects.get(rut_paciente='98765432-3')
 
-doctor2 = Doctor.objects.get(rut_doctor='87654321-3')
-paciente2 = Paciente.objects.get(rut_paciente='12345679-4') 
+doctor_obj2 = Doctor.objects.get(rut_doctor='87654321-2')
+paciente_obj2 = Paciente.objects.get(rut_paciente='12345679-4')
 
-informe = Informe(
-    doctor=doctor,
-    paciente=paciente,
+informe1 = Informe(
+    doctor=doctor_obj1,
+    paciente=paciente_obj1,
     titulo_informe='Consulta Cardiológica',
     descripcion_informe='Informe de consulta cardiológica realizado.',
     notas_doctor='El paciente muestra síntomas de fatiga.',
     instrucciones_tratamiento='Recomendaciones de descanso y revisión.',
     documentos_extra=None
 )
-informe.save()
+informe1.save()
 
 informe2 = Informe(
-    doctor=doctor2,
-    paciente=paciente2,
+    doctor=doctor_obj2,
+    paciente=paciente_obj2,
     titulo_informe='Consulta Pediátrica',
     descripcion_informe='Informe de consulta pediátrica realizado.',
     notas_doctor='El paciente está sano y activo.',
@@ -88,32 +138,30 @@ informe2 = Informe(
 )
 informe2.save()
 
-clinica = Clinica(
-    nombre_clinica='Clínica Salud Total', 
-    correo_clinica='contacto@clinicasaludtotal.cl', 
+# Crear clínicas
+clinica1 = Clinica(
+    nombre_clinica='Clínica Salud Total',
+    correo_clinica='contacto@clinicasaludtotal.cl',
     telefono_clinica='123456789'
 )
-clinica.save()
+clinica1.save()
 
 clinica2 = Clinica(
-    nombre_clinica='Clínica Familiar', 
-    correo_clinica='contacto@clinicafamiliar.cl', 
+    nombre_clinica='Clínica Familiar',
+    correo_clinica='contacto@clinicafamiliar.cl',
     telefono_clinica='456123789'
 )
 clinica2.save()
 
-clinica = Clinica.objects.get(nombre_clinica='Clínica Salud Total') 
-
-nueva_sede = SedeClinica(
-    clinica=clinica,
+# Crear sedes
+nueva_sede1 = SedeClinica(
+    clinica=clinica1,
     region_sede='Región Metropolitana',
     comuna_sede='Santiago',
     direccion_sede='Av. Siempre Viva 1234',
     telefono_sede='987654321'
 )
-nueva_sede.save()
-
-clinica2 = Clinica.objects.get(nombre_clinica='Clínica Familiar') 
+nueva_sede1.save()
 
 nueva_sede2 = SedeClinica(
     clinica=clinica2,
@@ -123,23 +171,5 @@ nueva_sede2 = SedeClinica(
     telefono_sede='654321987'
 )
 nueva_sede2.save()
-
-usuario = Usuario(
-    rut='12345678-5',
-    email='juan.perez@usuario.com',
-    nombre='Juan',
-    apellido='Pérez'
-)
-usuario.set_password('contrasena123')
-usuario.save()
-
-usuario2 = Usuario(
-    rut='87654321-6',
-    email='ana.gomez@usuario.com',
-    nombre='Ana',
-    apellido='Gómez'
-)
-usuario2.set_password('contrasena123')
-usuario2.save()
 
 exit()

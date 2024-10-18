@@ -31,33 +31,28 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email', 'nombre', 'apellido']  # Otros campos requeridos
 
     def __str__(self):
-        return self.rut
-    
+        return f"{self.nombre} {self.apellido} ({self.rut})"
+
 class Doctor(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     rut_doctor = models.CharField(max_length=10, primary_key=True)  # RUT Doctor
     nombres_doctor = models.CharField(max_length=100)  # Nombre/s Doctor
     primer_apellido_doctor = models.CharField(max_length=50)  # Primer Apellido Doctor
-    segundo_apellido_doctor = models.CharField(max_length=50)  # Segundo Apellido Doctor
+    segundo_apellido_doctor = models.CharField(max_length=50, blank=True)  # Segundo Apellido Doctor
     correo_doctor = models.EmailField(max_length=100)  # Correo Doctor
     telefono_doctor = models.CharField(max_length=15)  # N° Teléfono Doctor
     fecha_nacimiento_doctor = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Doctor
     especialidad_doctor = models.CharField(max_length=100)  # Especialidad Doctor
-    contrasena_doctor = models.CharField(max_length=128)  # Contraseña encriptada
 
     class Meta:
         verbose_name = "Doctor"
-        verbose_name_plural = "Doctors"
+        verbose_name_plural = "Doctores"
 
     def __str__(self):
         return f"Dr. {self.nombres_doctor} {self.primer_apellido_doctor}"
 
-    def set_password(self, raw_password):
-        self.contrasena_doctor = make_password(raw_password)
-
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.contrasena_doctor)
-
 class Paciente(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     rut_paciente = models.CharField(max_length=10, primary_key=True)  # RUT Paciente
     nombres_paciente = models.CharField(max_length=100)  # Nombre/s Paciente
     primer_apellido_paciente = models.CharField(max_length=50)  # Primer Apellido Paciente
@@ -66,12 +61,11 @@ class Paciente(models.Model):
     telefono_paciente = models.CharField(max_length=15)  # N° Teléfono Paciente
     fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
     direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
-    contrasena_paciente = models.CharField(max_length=128)  # Contraseña encriptada
 
     GENDER_CHOICES = [
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('NB', 'Non-binary'),
+        ('M', 'Masculino'),
+        ('F', 'Femenino'),
+        ('NB', 'No binario'),
     ]
     genero_paciente = models.CharField(max_length=2, choices=GENDER_CHOICES)  # Género Paciente
 
@@ -81,13 +75,6 @@ class Paciente(models.Model):
 
     def __str__(self):
         return f"{self.nombres_paciente} {self.primer_apellido_paciente}"
-
-    def set_password(self, raw_password):
-        self.contrasena_paciente = make_password(raw_password)
-        self.save()
-
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.contrasena_paciente)
 
 class Informe(models.Model):
     id_informe = models.AutoField(primary_key=True)  # ID Informe
