@@ -61,7 +61,19 @@ def login_view(request):
 
 @login_required
 def perfil_view(request):
-    return render(request, 'perfil.html', {'user': request.user})
+    usuario = request.user  # Obtiene el usuario autenticado
+    # Si tienes información del doctor o paciente relacionada, puedes obtenerla así:
+    try:
+        doctor = Doctor.objects.get(usuario=usuario)
+        return render(request, 'consultorioCys/perfil.html', {'usuario': usuario, 'doctor': doctor})
+    except Doctor.DoesNotExist:
+        # Si no es doctor, verifica si es paciente
+        try:
+            paciente = Paciente.objects.get(usuario=usuario)
+            return render(request, 'consultorioCys/perfil.html', {'usuario': usuario, 'paciente': paciente})
+        except Paciente.DoesNotExist:
+            # Si no es doctor ni paciente
+            return render(request, 'consultorioCys/perfil.html', {'usuario': usuario})
 
 def logout_view(request):
     logout(request)
