@@ -46,18 +46,34 @@ def login_view(request):
     if request.method == 'POST':
         rut = request.POST.get('rut')
         password = request.POST.get('contrasena')
+        rol = request.POST.get('rol')  # Obtiene el rol seleccionado (paciente o doctor)
 
         try:
             usuario = Usuario.objects.get(rut=rut)
             if usuario.check_password(password):
-                login(request, usuario)
-                return redirect('inicio')  # Cambia esto
-            else:
-                messages.error(request, 'Credenciales inválidas.')
+                # Verifica el rol seleccionado
+                if rol == 'paciente':
+                    if hasattr(usuario, 'paciente'):
+                        login(request, usuario)  # Iniciar sesión como paciente
+                        return redirect('inicio')  # Redirigir al inicio como paciente
+                    else:
+                        messages.error(request, 'No estás registrado como paciente.')
+                        return redirect('login')
+
+                elif rol == 'doctor':
+                    if hasattr(usuario, 'doctor'):
+                        login(request, usuario)  # Iniciar sesión como doctor
+                        return redirect('doctor_dashboard')  # Redirigir al dashboard del doctor
+                    else:
+                        messages.error(request, 'No estás registrado como doctor.')
+                        return redirect('login')
+
         except Usuario.DoesNotExist:
             messages.error(request, 'Credenciales inválidas.')
 
     return render(request, 'consultorioCys/login.html')
+
+
 
 @login_required
 def perfil_view(request):
@@ -101,6 +117,11 @@ def paciente_dashboard(request):
 
 @login_required
 def doctor_dashboard(request):
+    if hasattr(request.user, 'paciente'):
+        messages.error(request, 'No tienes permisos para acceder a esta sección como paciente.')
+        return redirect('inicio')
+    
+    # Si el usuario es doctor, muestra el dashboard
     return render(request, 'consultorioCys/doctor_dashboard.html')
 
 @login_required
