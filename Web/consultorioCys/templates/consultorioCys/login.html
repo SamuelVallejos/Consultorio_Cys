@@ -6,17 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
   <link rel="stylesheet" href="/static/consultorioCys/css/login.css" />
+
 </head>
 
 <body>
-
+  {% load form_tags %}
+  <h1>Iniciar Sesión</h1>
   <form method="POST">
-    {% csrf_token %}
-    {{ form.rut.label_tag }} {{ form.rut }}
-    {{ form.password.label_tag }} {{ form.password }}
-    <button type="submit">Iniciar Sesión</button>
-</form>
-
+      {% csrf_token %}
+      <div>
+          {% render_form_field form.rut %}
+          {% show_errors form.rut %}
+      </div>
+      <div>
+          {% render_form_field form.password %}
+          {% show_errors form.password %}
+      </div>
+      <button type="submit">Iniciar Sesión</button>
+  </form>
 </body>
 
 </html>

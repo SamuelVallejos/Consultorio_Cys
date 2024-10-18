@@ -29,6 +29,7 @@ def handle_form_submission(request, form_class, template_name, success_url, inst
     return render(request, template_name, {'form': form})
 
 def inicio(request):
+    print(f"Usuario autenticado: {request.user.is_authenticated}")
     return render(request, 'consultorioCys/inicio.html')
 
 def ia(request):
@@ -45,13 +46,8 @@ def perfil_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        if request.user.is_superuser:
-            print("Redirigiendo a superusuario...")
-            return redirect('/inicio/')  # Redirigir al inicio si es superusuario
-        else:
-            messages.info(request, "Ya has iniciado sesión.")
-            print("Redirigiendo a inicio por sesión activa...")
-            return redirect('inicio')
+        print("Usuario ya autenticado. Redirigiendo...")
+        return redirect('inicio')  # Redirige a la página de inicio
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -61,37 +57,28 @@ def login_view(request):
 
             print(f"RUT ingresado: {rut}")
             print(f"Contraseña ingresada: {password}")
-            print(f"Datos POST: {request.POST}")
 
             # Intentar autenticar al doctor
             try:
                 doctor = Doctor.objects.get(rut_doctor=rut)
                 if doctor.check_password(password):
-                    print(f"Doctor encontrado: {doctor}")
-                    print(f"Datos del Doctor: {doctor.__dict__}")
-
-                    # Guardar RUT del doctor en la sesión
+                    print("Doctor autenticado. Redirigiendo a la página de inicio...")
                     request.session['doctor_rut'] = doctor.rut_doctor
-                    print("Redirigiendo al dashboard del doctor...")
-                    return redirect('doctor_dashboard')  # Redirigir al dashboard del doctor
+                    return redirect('inicio')  # Asegúrate de que este nombre coincide con el de urls.py
                 else:
-                    messages.error(request, 'Contraseña incorrecta para el doctor.')
-                    print("Contraseña incorrecta para el doctor.")
+                    messages.error(request, 'Contraseña incorrecta.')
+                    print("Contraseña incorrecta.")
             except Doctor.DoesNotExist:
-                # Si no existe el doctor, buscar al paciente
                 try:
+                    # Intentar autenticar al paciente
                     paciente = Paciente.objects.get(rut_paciente=rut)
                     if paciente.check_password(password):
-                        print(f"Paciente encontrado: {paciente}")
-                        print(f"Datos del Paciente: {paciente.__dict__}")
-
-                        # Guardar RUT del paciente en la sesión
+                        print("Paciente autenticado. Redirigiendo a la página de inicio...")
                         request.session['paciente_rut'] = paciente.rut_paciente
-                        print("Redirigiendo al dashboard del paciente...")
-                        return redirect('inicio')  # Redirigir al dashboard del paciente
+                        return redirect('inicio')  # Redirige al inicio para pacientes también
                     else:
-                        messages.error(request, 'Contraseña incorrecta para el paciente.')
-                        print("Contraseña incorrecta para el paciente.")
+                        messages.error(request, 'Contraseña incorrecta.')
+                        print("Contraseña incorrecta.")
                 except Paciente.DoesNotExist:
                     messages.error(request, 'RUT no registrado.')
                     print("RUT no registrado.")
