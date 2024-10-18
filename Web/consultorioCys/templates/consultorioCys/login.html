@@ -4,29 +4,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
+  <title>consultorioCys | Login</title>
   <link rel="stylesheet" href="/static/consultorioCys/css/login.css" />
 
 </head>
 
-<form id="loginForm" method="POST" action="{% url 'login' %}">
+<body>
+
+<form method="POST" action="{% url 'login' %}">
   {% csrf_token %}
-  <div>
+
+  <!-- Selección de rol (Doctor/Paciente) -->
+  <div class="container" style="text-align: center; margin-bottom: 20px;">
+    <label style="margin-right: 20px;">
+      <input type="radio" name="rol" value="paciente" required checked style="margin-right: 5px;">
+      Paciente
+    </label>
+    <label>
+      <input type="radio" name="rol" value="doctor" style="margin-right: 5px;">
+      Doctor
+    </label>
+  </div>
+
+  <!-- Campos del login -->
+  <div class="container" style="max-width: 300px; margin: 0 auto; text-align: center;">
+    <div class="form-group" style="margin-bottom: 15px;">
       <label for="rut">RUT:</label>
-      <input type="text" id="rut" name="rut" required>
+      <input type="text" name="rut" class="form-control" required>
+    </div>
+    <div class="form-group" style="margin-bottom: 15px;">
+      <label for="password">Contraseña:</label>
+      <input type="password" name="password" class="form-control" required>
+    </div>
   </div>
-  <div>
-      <label for="contrasena">Contraseña:</label>
-      <input type="password" id="contrasena" name="contrasena" required>
+
+  <!-- Botón de inicio de sesión -->
+  <div class="container" style="text-align: center;">
+    <button type="submit" class="btn btn-primary">Iniciar sesión</button>
   </div>
-  <button type="submit">Iniciar sesión</button>
 </form>
 
 {% if messages %}
+<div class="container" style="max-width: 300px; margin: 20px auto; text-align: center;">
   {% for message in messages %}
-      <div class="alert alert-danger">{{ message }}</div>
+  <div class="alert alert-danger">{{ message }}</div>
   {% endfor %}
+</div>
 {% endif %}
+
 
 </body>
 
