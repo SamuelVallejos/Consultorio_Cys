@@ -209,12 +209,13 @@ def crear_paciente(request):
     if request.method == "POST":
         form = PacienteForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            paciente = form.save(commit=False)  # No guardes todavía el paciente
+            paciente.usuario = request.user  # Asigna el usuario logueado
+            paciente.save()  # Ahora guarda el paciente
             return redirect('listar_pacientes')
     else:
         form = PacienteForm()
     return render(request, 'paciente_form.html', {'form': form})
-
 # Editar un paciente existente
 def editar_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
