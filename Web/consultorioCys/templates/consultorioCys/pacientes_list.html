@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listado de Pacientes</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
-        }
+        /* Estilo básico */
         .patient-card {
             border: 1px solid #dcdcdc;
             background-color: #e8f8f5;
@@ -29,32 +28,43 @@
             cursor: pointer;
             border-radius: 5px;
             margin-right: 5px;
+            text-decoration: none;
         }
         .btn-danger {
             background-color: #e74c3c;
         }
+        .btn:hover {
+            background-color: #1b6ca8;
+        }
     </style>
 </head>
 <body>
-    <h1>Listado de Pacientes</h1>
-    <a href="{% url 'crear_paciente' %}" class="btn">Agregar Paciente</a>
-    <div>
-        {% for paciente in pacientes %}
-            <div class="patient-card">
-                <strong>{{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</strong><br>
-                <em>{{ paciente.correo_paciente }}</em><br>
-                <div class="actions">
-                    <a href="{% url 'editar_paciente' paciente.pk %}" class="btn">Editar</a>
-                    <a href="{% url 'eliminar_paciente' paciente.pk %}" class="btn btn-danger">Eliminar</a>
+
+<h1>Listado de Pacientes</h1>
+<a href="{% url 'crear_paciente' %}" class="btn">Agregar Paciente</a>
+
+<div>
+    {% for paciente in pacientes %}
+        <div class="patient-card">
+            <strong>{{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</strong><br>
+            <em>{{ paciente.correo_paciente }}</em><br>
+            <div class="actions">
+                <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn">Editar</a>
+                <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-danger">Eliminar</a>
+                {% if paciente.informe_set.all %}
                     <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn">Ver Informe</a>
-                    {% if paciente.archivo %}
-                        <a href="{{ paciente.archivo.url }}" class="btn" target="_blank">Ver Archivo</a>
-                    {% endif %}
-                </div>
+                {% else %}
+                    <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn">Crear Informe</a>
+                {% endif %}
+                {% if paciente.archivo %}
+                    <a href="{{ paciente.archivo.url }}" class="btn" target="_blank">Ver Archivo</a>
+                {% endif %}
             </div>
-        {% empty %}
-            <p>No hay pacientes registrados.</p>
-        {% endfor %}
-    </div>
+        </div>
+    {% empty %}
+        <p>No hay pacientes registrados.</p>
+    {% endfor %}
+</div>
+
 </body>
 </html>

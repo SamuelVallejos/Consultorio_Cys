@@ -16,6 +16,9 @@ from .forms import LoginForm
 from django.http import JsonResponse
 from .models import Paciente, Informe
 from .forms import PacienteForm
+from .forms import InformeForm
+
+
 
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
@@ -201,6 +204,7 @@ def login_doctor(request):
 
 # Listado de pacientes
 def listar_pacientes(request):
+    pacientes = Paciente.objects.prefetch_related('informe_set')
     pacientes = Paciente.objects.all()
     return render(request, 'pacientes_list.html', {'pacientes': pacientes})
 
@@ -240,3 +244,16 @@ def informe_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
     informes = Informe.objects.filter(paciente=paciente)
     return render(request, 'informe_paciente.html', {'paciente': paciente, 'informes': informes})
+
+def crear_informe(request, pk):
+    paciente = get_object_or_404(Paciente, pk=pk)
+    if request.method == 'POST':
+        form = InformeForm(request.POST, request.FILES)
+        if form.is_valid():
+            informe = form.save(commit=False)
+            informe.paciente = paciente  # Asigna el paciente al informe
+            informe.save()
+            return redirect('listar_pacientes')
+    else:
+        form = InformeForm()
+    return render(request, 'crear_informe.html', {'form': form, 'paciente': paciente})

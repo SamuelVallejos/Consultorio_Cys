@@ -110,3 +110,8 @@ class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
         fields = ['rut_paciente', 'nombres_paciente', 'primer_apellido_paciente', 'segundo_apellido_paciente', 'correo_paciente', 'telefono_paciente', 'fecha_nacimiento_paciente', 'direccion_paciente', 'genero_paciente', 'archivo']
+
+class InformeForm(forms.ModelForm):
+    class Meta:
+        model = Informe
+        fields = ['titulo_informe', 'descripcion_informe', 'notas_doctor', 'instrucciones_tratamiento', 'documentos_extra']
