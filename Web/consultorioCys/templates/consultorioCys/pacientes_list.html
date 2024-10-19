@@ -46,6 +46,7 @@
                 <div class="actions">
                     <a href="{% url 'editar_paciente' paciente.pk %}" class="btn">Editar</a>
                     <a href="{% url 'eliminar_paciente' paciente.pk %}" class="btn btn-danger">Eliminar</a>
+                    <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn">Ver Informe</a>
                     {% if paciente.archivo %}
                         <a href="{{ paciente.archivo.url }}" class="btn" target="_blank">Ver Archivo</a>
                     {% endif %}

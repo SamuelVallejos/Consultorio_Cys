@@ -14,7 +14,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm
 from django.http import JsonResponse
-from .models import Paciente
+from .models import Paciente, Informe
 from .forms import PacienteForm
 
 
@@ -234,3 +234,8 @@ def eliminar_paciente(request, pk):
         paciente.delete()
         return redirect('listar_pacientes')
     return render(request, 'confirmar_eliminar.html', {'paciente': paciente})
+
+def informe_paciente(request, pk):
+    paciente = get_object_or_404(Paciente, pk=pk)
+    informes = Informe.objects.filter(paciente=paciente)
+    return render(request, 'informe_paciente.html', {'paciente': paciente, 'informes': informes})

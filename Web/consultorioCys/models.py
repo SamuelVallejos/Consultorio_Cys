@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+
 class UsuarioManager(BaseUserManager):
     def create_user(self, rut, password=None, **extra_fields):
         if not rut:
@@ -62,7 +63,7 @@ class Paciente(models.Model):
     fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
     direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
     archivo = models.FileField(upload_to='archivos_pacientes/', blank=True, null=True)
-    
+
     GENDER_CHOICES = [
         ('M', 'Masculino'),
         ('F', 'Femenino'),
