@@ -37,9 +37,7 @@
                 <li>
                   <a class="dropdown-item" href="historial">Historial</a>
                 </li>
-                <li><a class="btn-listar-pacientes" href="{% url 'listar_pacientes' %}">
-                    Ver listado de pacientes
-                  </a></li>
+                <a href="{% url 'listar_pacientes' %}" class="btn">Ver Lista de Pacientes</a>
                 <li>
                   <a class="dropdown-item" href="{% url 'historial_personal' %}">3</a>
                 </li>

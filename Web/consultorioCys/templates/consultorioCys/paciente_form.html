@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formulario de Paciente</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+        }
+        form {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            background-color: #2c97de;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ form.instance.pk|yesno:"Editar Paciente,Agregar Paciente" }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Guardar</button>
+    </form>
+</body>
+</html>

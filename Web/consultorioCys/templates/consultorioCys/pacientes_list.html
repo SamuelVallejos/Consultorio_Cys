@@ -1,83 +1,58 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Pacientes</title>
+    <title>Listado de Pacientes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-        .patient-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            background-color: #f0f8ff;
         }
         .patient-card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            padding: 20px;
-            transition: transform 0.3s;
+            border: 1px solid #dcdcdc;
+            background-color: #e8f8f5;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
         }
         .patient-card:hover {
-            transform: translateY(-10px);
+            transform: scale(1.05);
         }
-        .patient-number {
-            font-size: 18px;
-            font-weight: bold;
-            color: #4a90e2;
+        .actions {
+            margin-top: 10px;
         }
-        .patient-details p {
-            margin: 10px 0;
-        }
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        .action-buttons a {
-            text-decoration: none;
-            padding: 10px 15px;
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            background-color: #2c97de;
             color: white;
-            border-radius: 5px;
             cursor: pointer;
+            border-radius: 5px;
+            margin-right: 5px;
         }
-        .btn-edit {
-            background-color: #4a90e2;
-        }
-        .btn-delete {
+        .btn-danger {
             background-color: #e74c3c;
-        }
-        .btn-edit:hover {
-            background-color: #357ABD;
-        }
-        .btn-delete:hover {
-            background-color: #c0392b;
         }
     </style>
 </head>
 <body>
     <h1>Listado de Pacientes</h1>
-    
-    <div class="patient-container">
+    <a href="{% url 'crear_paciente' %}" class="btn">Agregar Paciente</a>
+    <div>
         {% for paciente in pacientes %}
-        <div class="patient-card">
-            <div class="patient-number">Paciente #{{ forloop.counter }}</div>
-            <div class="patient-details">
-                <p><strong>Nombre:</strong> {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}</p>
-                <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
-                <p><strong>Correo:</strong> {{ paciente.correo_paciente }}</p>
-                <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
+            <div class="patient-card">
+                <strong>{{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</strong><br>
+                <em>{{ paciente.correo_paciente }}</em><br>
+                <div class="actions">
+                    <a href="{% url 'editar_paciente' paciente.pk %}" class="btn">Editar</a>
+                    <a href="{% url 'eliminar_paciente' paciente.pk %}" class="btn btn-danger">Eliminar</a>
+                    {% if paciente.archivo %}
+                        <a href="{{ paciente.archivo.url }}" class="btn" target="_blank">Ver Archivo</a>
+                    {% endif %}
+                </div>
             </div>
-            <div class="action-buttons">
-                <a class="btn-edit" href="{% url 'editar_paciente' paciente.rut_paciente %}">Editar</a>
-                <a class="btn-delete" href="{% url 'eliminar_paciente' paciente.rut_paciente %}">Eliminar</a>
-            </div>
-        </div>
+        {% empty %}
+            <p>No hay pacientes registrados.</p>
         {% endfor %}
     </div>
 </body>

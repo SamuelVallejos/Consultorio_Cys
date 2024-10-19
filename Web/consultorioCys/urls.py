@@ -15,6 +15,7 @@ urlpatterns = [
     path('buscar_paciente/', views.buscar_paciente, name='buscar_paciente'),
     path('historial_personal/', views.historial_personal, name='historial_personal'),
     path('pacientes/', views.listar_pacientes, name='listar_pacientes'),
-    path('paciente/editar/<str:rut_paciente>/', views.editar_paciente, name='editar_paciente'),
-    path('paciente/eliminar/<str:rut_paciente>/', views.eliminar_paciente, name='eliminar_paciente'),
+    path('pacientes/nuevo/', views.crear_paciente, name='crear_paciente'),
+  path('pacientes/<str:pk>/editar/', views.editar_paciente, name='editar_paciente'),
+    path('pacientes/<str:pk>/eliminar/', views.eliminar_paciente, name='eliminar_paciente'),
 ]

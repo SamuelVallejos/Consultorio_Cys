@@ -14,6 +14,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm
 from django.http import JsonResponse
+from .models import Paciente
+from .forms import PacienteForm
+
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -193,24 +196,41 @@ def login_doctor(request):
 
     return render(request, 'consultorioCys/login_doctor.html')
 
+#AQUI SE USAN PARA CREAR Y ELIMINAR PACIENTES
+
+
+# Listado de pacientes
 def listar_pacientes(request):
-    pacientes = Paciente.objects.all()  # Obtener todos los pacientes
-    return render(request, 'consultorioCys/pacientes_list.html', {'pacientes': pacientes})
+    pacientes = Paciente.objects.all()
+    return render(request, 'pacientes_list.html', {'pacientes': pacientes})
 
-# Vista para eliminar paciente
-def eliminar_paciente(request, rut_paciente):
-    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
-    
-    if request.method == 'POST':
+# Crear un nuevo paciente
+def crear_paciente(request):
+    if request.method == "POST":
+        form = PacienteForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_pacientes')
+    else:
+        form = PacienteForm()
+    return render(request, 'paciente_form.html', {'form': form})
+
+# Editar un paciente existente
+def editar_paciente(request, pk):
+    paciente = get_object_or_404(Paciente, pk=pk)
+    if request.method == "POST":
+        form = PacienteForm(request.POST, request.FILES, instance=paciente)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_pacientes')
+    else:
+        form = PacienteForm(instance=paciente)
+    return render(request, 'paciente_form.html', {'form': form})
+
+# Eliminar un paciente
+def eliminar_paciente(request, pk):
+    paciente = get_object_or_404(Paciente, pk=pk)
+    if request.method == "POST":
         paciente.delete()
-        messages.success(request, 'Paciente eliminado correctamente.')
         return redirect('listar_pacientes')
-
-    return render(request, 'consultorioCys/confirmar_borrar.html', {'paciente': paciente})
-
-# Vista para editar paciente (redirección simulada)
-def editar_paciente(request, rut_paciente):
-    # Simulación de redirección a una página de edición de paciente
-    # Solo redirige a una página con mensaje (para completar según necesidad)
-    messages.info(request, f"Redirigido para editar paciente con RUT: {rut_paciente}")
-    return redirect('listar_pacientes')
+    return render(request, 'confirmar_eliminar.html', {'paciente': paciente})

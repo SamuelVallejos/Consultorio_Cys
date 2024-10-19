@@ -103,3 +103,10 @@ class AddInformeForm(forms.ModelForm):
             'instrucciones_tratamiento', 
             'documentos_extra'
         ]
+
+#Formulario para el paciente ,crear y editar, ademas de visualizarlo.
+
+class PacienteForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = ['rut_paciente', 'nombres_paciente', 'primer_apellido_paciente', 'segundo_apellido_paciente', 'correo_paciente', 'telefono_paciente', 'fecha_nacimiento_paciente', 'direccion_paciente', 'genero_paciente', 'archivo']
