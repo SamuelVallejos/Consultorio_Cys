@@ -1,30 +1,41 @@
+/* Estilo General */
 body {
     background-color: rgb(255, 255, 255);
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     text-align: center;
     margin: auto;
-}
-
-.parchivo{
-    margin-top: 15px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    min-height: 100vh; /* Sticky Footer */
 }
 
-.center {
-    align-content: center;
+/* Contenido Principal */
+main {
+    flex: 1; /* El contenido principal se expande */
+}
+
+/* Footer */
+.footer {
+    background-color: #0d6efd;
+    color: white;
     text-align: center;
-    position: relative;
-    align-items: center;
-    top: 50%;
+    padding: 1.5rem 0;
 }
 
-.margen {
-    margin-top: 10px;
-    margin-bottom: 10px;
+/* Estilo del Logo */
+.logo-img {
+    width: 120px;
+    height: auto;
+    object-fit: contain; /* Evita distorsiones */
 }
 
+@media (max-width: 576px) {
+    .logo-img {
+        width: 100px; /* Ajuste en pantallas pequeñas */
+    }
+}
+
+/* Estilo de Navegación */
 .nav-link {
     transition: transform 0.5s ease, color 0.5s ease;
 }
@@ -34,42 +45,28 @@ body {
     color: #4A148C;
 }
 
-.navbar-brand {
-    display: flex;
-    align-items: center;
-}
-
-.navbar-brand img {
-    height: 40px;
-    /* Ajusta esto según tus necesidades */
-    margin-right: 10px;
-}
-
+/* Estilo del Usuario */
 .user-welcome {
     margin-right: 30px;
     font-size: 16px;
     color: #333;
 }
-
-.navbar-collapse {
-    opacity: 0;
-    transform: translateY(-50px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
+.navbar {
+    position: relative;
+    z-index: 1030;
 }
 
-.navbar-collapse.show {
-    opacity: 1;
-    transform: translateY(0);
+.dropdown-menu {
+    z-index: 1050;
 }
-
-/* Personaliza el tamaño del carrusel */
+/* Estilo de Carrusel */
 .carousel-item img {
     width: 100%;
     height: 500px;
-    /* Ajusta la altura según lo que necesites */
     object-fit: cover;
 }
 
+/* Barras e Íconos */
 .bar {
     background-color: lightblue;
     border-radius: 35px;
@@ -80,6 +77,7 @@ body {
     height: 40px;
 }
 
+/* Botones Personalizados */
 .button {
     border: none;
     color: white;
@@ -103,4 +101,27 @@ body {
     text-decoration: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+/* Párrafo Archivo */
+.parchivo {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Clases de Margen */
+.margen {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Clase para Centrados */
+.center {
+    align-content: center;
+    text-align: center;
+    position: relative;
+    align-items: center;
+    top: 50%;
 }

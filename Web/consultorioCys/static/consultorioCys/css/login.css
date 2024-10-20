@@ -1,7 +1,39 @@
-.center {
-    align-content: center;
-    text-align: center;
-    position: relative;
-    align-items: center;
-    top: 50%;
-}
+/* General styling */
+body {
+    background-color: #f0f8ff;
+  }
+  
+  .text-primary {
+    color: #007bff !important;
+  }
+  
+  .consultorio-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
+  
+  /* Input field styling */
+  .custom-input {
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  .custom-input:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  /* Button styling */
+  button {
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
