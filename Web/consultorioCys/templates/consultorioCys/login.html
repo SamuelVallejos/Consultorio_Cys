@@ -21,12 +21,12 @@
 
     <!-- Botones para seleccionar el rol -->
     <div class="role-selection d-flex justify-content-around mb-4">
-      <button id="btnPaciente" class="btn btn-light text-primary w-45">Paciente</button>
+      <button id="btnPaciente" class="btn btn-light text-primary w-45 active">Paciente</button>
       <button id="btnDoctor" class="btn btn-light text-primary w-45">Doctor</button>
     </div>
 
-    <!-- Formulario de inicio de sesión para Paciente -->
-    <div id="pacienteForm" class="form-container">
+    <!-- Formulario de inicio de sesión para Paciente (Visible por defecto) -->
+    <div id="pacienteForm" class="form-container" style="display: block;">
       <form method="POST" action="{% url 'login' %}">
         {% csrf_token %}
         <input type="hidden" name="rol" value="paciente" />
