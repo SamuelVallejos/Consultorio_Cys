@@ -17,8 +17,6 @@
   <div class="container py-5">
     <div class="logo-section text-center mb-4">
       <h1 class="text-primary consultorio-title">Consultorio Cys</h1>
-      <div class="heart-icon">&#10084;</div>
-      <p class="tagline text-primary">Consulting Care for Every Need</p>
     </div>
 
     <!-- Botones de selección de rol -->
@@ -38,7 +36,7 @@
       {% csrf_token %}
 
       <div id="formPaciente" class="form-content" style="display: none;">
-        <h3 class="text-primary">Inicio de sesión - Paciente</h3>
+        <h3 class="text-primary">Inicio de sesión</h3>
         <div class="form-group mb-3">
           <label for="rut-paciente" class="form-label text-primary">RUT:</label>
           <input type="text" class="form-control custom-input" id="rut-paciente" name="rut" placeholder="Ingrese su RUT" />
@@ -51,7 +49,7 @@
       </div>
 
       <div id="formDoctor" class="form-content" style="display: none;">
-        <h3 class="text-primary">Inicio de sesión - Doctor</h3>
+        <h3 class="text-primary">Inicio de sesión</h3>
         <div class="form-group mb-3">
           <label for="rut-doctor" class="form-label text-primary">RUT:</label>
           <input type="text" class="form-control custom-input" id="rut-doctor" name="rut" placeholder="Ingrese su RUT" />

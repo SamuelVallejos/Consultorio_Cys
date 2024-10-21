@@ -1,168 +1,234 @@
+{% extends 'consultorioCys/base_generic.html' %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe del Paciente</title>
-    <style>
+  <head>
+    {% block head %}
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Informe del Paciente</title>
+      <style>
         /* Estilo para la animación de carga */
         .loader {
-            border: 16px solid #f3f3f3;
-            border-top: 16px solid #3498db;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            margin: 100px auto;
-            display: none;
+          border: 16px solid #f3f3f3;
+          border-top: 16px solid #3498db;
+          border-radius: 50%;
+          width: 120px;
+          height: 120px;
+          animation: spin 2s linear infinite;
+          margin: 100px auto;
+          display: none;
         }
+        
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
-
-        /* Estilo general de la página */
+        
+        /* Estilo general */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
+          font-family: Arial, sans-serif;
+          background-color: #f9f9f9;
+          margin: 0;
         }
-
-        h1, h2 {
-            color: #333;
+        
+        h1,
+        h2 {
+          color: #333;
         }
-
-        /* Estilo de la tabla */
+        
+        .table-container {
+          overflow-x: auto;
+          margin-top: 20px;
+        }
+        
         table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 600px;
         }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-            transition: background-color 0.3s ease;
+        
+        th,
+        td {
+          padding: 15px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+          transition: background-color 0.3s ease;
+          word-wrap: break-word;
         }
-
-        /* Estilo hover para cambiar el color de fondo cuando el ratón pasa por encima */
+        
         td:hover {
-            background-color: #e0e0e0;
+          background-color: #e0e0e0;
         }
-
-        /* Estilo para el menú */
-        .menu {
-            background-color: #3498db;
-            padding: 15px;
-            color: white;
-            text-align: right;
-        }
-
-        .menu a {
-            color: white;
-            margin-left: 15px;
-            text-decoration: none;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
-
-        /* Estilo para el contenido de los informes */
-        .informes {
+        
+        /* Media query para dispositivos pequeños */
+        @media (max-width: 768px) {
+          table,
+          thead,
+          tbody,
+          th,
+          td,
+          tr {
+            display: block;
+          }
+        
+          th {
             display: none;
+          }
+        
+          td {
+            position: relative;
+            padding-left: 50%;
+            border-bottom: 1px solid #ddd;
+          }
+        
+          td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 15px;
+            font-weight: bold;
+            color: #3498db;
+          }
+        
+          /* Mostrar separadores solo en móviles */
+          .separator {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+          }
+        
+          .separator::before,
+          .separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            margin: 0 10px;
+          }
+        
+          .separator-icon {
+            font-size: 18px;
+            color: #3498db;
+          }
         }
-
-        /* Botones de volver y descarga */
+        
+        /* Menú de navegación */
+        .menu {
+          background-color: #3498db;
+          padding: 15px;
+          color: white;
+          text-align: right;
+        }
+        
+        .menu a {
+          color: white;
+          margin-left: 15px;
+          text-decoration: none;
+        }
+        
+        .menu a:hover {
+          text-decoration: underline;
+        }
+        
         .actions {
-            margin-top: 20px;
-            text-align: center;
+          margin-top: 20px;
+          text-align: center;
         }
-
+        
         .btn {
-            padding: 10px 15px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+          padding: 10px 15px;
+          background-color: #3498db;
+          color: white;
+          text-decoration: none;
+          border-radius: 5px;
+          transition: background-color 0.3s ease;
         }
-
+        
         .btn:hover {
-            background-color: #217dbb;
+          background-color: #217dbb;
         }
-    </style>
-    <script>
-        // Mostrar el loader y luego los datos
-        window.onload = function() {
-            document.querySelector('.loader').style.display = 'block';
-            setTimeout(function() {
-                document.querySelector('.loader').style.display = 'none';
-                document.querySelector('.informes').style.display = 'block';
-            }, 2000);  // Simula una espera de 2 segundos
-        };
-    </script>
-</head>
-<body>
+        
+        .informes {
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.5s ease-in-out;
+        }
+      </style>
+      <script>
+        window.onload = function () {
+          const loader = document.querySelector('.loader')
+          const informes = document.querySelector('.informes')
+        
+          loader.style.display = 'block'
+          setTimeout(() => {
+            loader.style.display = 'none'
+            informes.style.opacity = '1'
+            informes.style.visibility = 'visible'
+          }, 2000)
+        }
+      </script>
+    {% endblock %}
+  </head>
+  <body>
+    {% block content %}
+      <h1>Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h1>
 
-    <!-- Menú de navegación -->
-    <div class="menu">
-        <span>Usuario: {{ user.username }}</span>
-        <a href="{% url 'inicio' %}">Inicio</a>
-        <a href="{% url 'listar_pacientes' %}">Pacientes</a>
-        <a href="{% url 'logout' %}">Cerrar Sesión</a>
-    </div>
+      <div class="loader"></div>
 
-    <h1>Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h1>
-
-    <!-- Animación de cargando -->
-    <div class="loader"></div>
-
-    <!-- Contenido de informes, inicialmente oculto -->
-    <div class="informes">
+      <div class="informes">
         {% if informes %}
-            <h2>Informes Relacionados:</h2>
+          <h2>Informes Relacionados:</h2>
+          <div class="table-container">
             <table>
+              <thead>
                 <tr>
-                    <th>Título</th>
-                    <th>Descripción</th>
-                    <th>Notas del Doctor</th>
-                    <th>Instrucciones de Tratamiento</th>
-                    <th>Fecha del Informe</th>
-                    <th>Documento Adjunto</th>
+                  <th>|</th>
+                  <th>Título</th>
+                  <th>Descripción</th>
+                  <th>Notas del Doctor</th>
+                  <th>Instrucciones de Tratamiento</th>
+                  <th>Fecha del Informe</th>
+                  <th>Documento Adjunto</th>
+                  <th>|</th>
                 </tr>
+              </thead>
+              <tbody>
                 {% for informe in informes %}
-                <tr>
-                    <td>{{ informe.titulo_informe }}</td>
-                    <td>{{ informe.descripcion_informe }}</td>
-                    <td>{{ informe.notas_doctor }}</td>
-                    <td>{{ informe.instrucciones_tratamiento }}</td>
-                    <td>{{ informe.fecha_informe }}</td>
-                    <td>
-                        {% if informe.documentos_extra %}
-                            <a href="{{ informe.documentos_extra.url }}" target="_blank">Ver Documento</a>
-                        {% else %}
-                            No disponible
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
+                  <div>
                     <tr>
-                        <td colspan="6">No hay informes disponibles para este paciente.</td>
+                      <td data-label="|"></td>
+                      <td data-label="Título">{{ informe.titulo_informe }}</td>
+                      <td data-label="Descripción">{{ informe.descripcion_informe }}</td>
+                      <td data-label="Notas del Doctor">{{ informe.notas_doctor }}</td>
+                      <td data-label="Instrucciones de Tratamiento">{{ informe.instrucciones_tratamiento }}</td>
+                      <td data-label="Fecha del Informe">{{ informe.fecha_informe }}</td>
+                      <td data-label="Documento Adjunto">
+                        {% if informe.documentos_extra %}
+                          <a href="{{ informe.documentos_extra.url }}" target="_blank">Ver Documento</a>
+                        {% else %}
+                          No disponible
+                        {% endif %}
+                      </td>
                     </tr>
+                  </div>
+                {% empty %}
+                  <tr>
+                    <td colspan="6">No hay informes disponibles para este paciente.</td>
+                  </tr>
                 {% endfor %}
+              </tbody>
             </table>
+          </div>
         {% else %}
-            <p>No hay informes disponibles para este paciente.</p>
+          <p>No hay informes disponibles para este paciente.</p>
         {% endif %}
-    </div>
+      </div>
 
-    <!-- Botón de acciones -->
-    <div class="actions">
+      <div class="actions">
         <a href="{% url 'listar_pacientes' %}" class="btn">Volver al Listado de Pacientes</a>
-    </div>
-
-</body>
+      </div>
+    {% endblock %}
+  </body>
 </html>

@@ -1,6 +1,8 @@
+{% extends 'consultorioCys/base_generic.html' %}
 <!DOCTYPE html>
 <html>
 <head>
+    {% block head %}
     <title>Formulario de Paciente</title>
     <style>
         body {
@@ -23,13 +25,16 @@
             border-radius: 5px;
         }
     </style>
+    {% endblock %}
 </head>
 <body>
+    {% block content %}
     <h1>{{ form.instance.pk|yesno:"Editar Paciente,Agregar Paciente" }}</h1>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn">Guardar</button>
     </form>
+    {% endblock %}
 </body>
 </html>

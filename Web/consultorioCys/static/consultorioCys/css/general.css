@@ -3,6 +3,7 @@ body {
     background-color: rgb(255, 255, 255);
     font-family: 'Roboto', sans-serif;
     text-align: center;
+    height: 100%;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -12,14 +13,18 @@ body {
 /* Contenido Principal */
 main {
     flex: 1; /* El contenido principal se expande */
+    padding: 20px;
+    background-color: #f4f4f4;
 }
 
 /* Footer */
-.footer {
-    background-color: #0d6efd;
+footer {
+    background-color: #333;
     color: white;
     text-align: center;
-    padding: 1.5rem 0;
+    padding: 10px;
+    margin-top: auto; /* Empuja el footer hacia abajo */
+    position: relative; /* Sin necesidad de posición absoluta */
 }
 
 /* Estilo del Logo */
@@ -51,6 +56,7 @@ main {
     font-size: 16px;
     color: #333;
 }
+
 .navbar {
     position: relative;
     z-index: 1030;
@@ -59,6 +65,7 @@ main {
 .dropdown-menu {
     z-index: 1050;
 }
+
 /* Estilo de Carrusel */
 .carousel-item img {
     width: 100%;

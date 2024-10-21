@@ -2,165 +2,128 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Listado de Pacientes</title>
 
-    <!-- CSS Bootstrap -->
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'consultorioCys/css/general.css' %}" />
-    <link rel="shortcut icon" href="{% static 'consultorioCys/img/hearth-back.png' %}" type="image/x-icon" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listado de Pacientes</title>
 
-    {% block head %}
-    <style>
-      /* Estilos personalizados */
-      body {
-        background-color: #f0f2f5;
-      }
-      
-      .navbar-brand img {
-        width: 3rem;
-        height: 3rem;
-      }
-      
-      .patient-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        margin: 20px;
-        padding: 10px;
-      }
-      
-      .patient-card {
-        background-color: #e8f8f5;
-        border: 1px solid #dcdcdc;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: transform 0.3s ease;
-        height: 300px;
-      }
-      
-      .patient-card:hover {
-        transform: scale(1.05);
-      }
-      
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: auto;
-      }
-      
-      .btn {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        color: white;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      
-      .btn-primary {
-        background-color: #007bff;
-      }
-      .btn-danger {
-        background-color: #dc3545;
-      }
-      .btn-info {
-        background-color: #17a2b8;
-      }
-      .btn-warning {
-        background-color: #ffc107;
-      }
-      .btn-secondary {
-        background-color: #6c757d;
-      }
-      .btn:hover {
-        background-color: #1b6ca8;
-      }
-      
-      .no-patients {
-        text-align: center;
-        font-weight: bold;
-        color: #999;
-        margin-top: 20px;
-      }
-    </style>{% endblock %}
-  </head>
+  {% block head %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'consultorioCys/css/general.css' %}" />
+  <link rel="shortcut icon" href="{% static 'consultorioCys/img/hearth-back.png' %}" type="image/x-icon" />
 
-  <body class="d-flex flex-column min-vh-100">
-    {% block content %}
-    
-    
+  <style>
+    /* Estilos generales */
+    body {
+      background-color: #f8f9fa;
+    }
 
-    <script>
-        window.addEventListener('load', function () {
-          const navbarContent = document.getElementById('navbarSupportedContent')
-        
-          if (window.innerWidth >= 992) {
-            // Pantallas grandes: lg y mayores (Bootstrap considera "lg" a partir de 992px)
-            navbarContent.classList.add('show')
-          } else {
-            navbarContent.classList.remove('show')
-          }
-        })
-        
-        window.addEventListener('resize', function () {
-          const navbarContent = document.getElementById('navbarSupportedContent')
-        
-          if (window.innerWidth >= 992) {
-            navbarContent.classList.add('show')
-          } else {
-            navbarContent.classList.remove('show')
-          }
-        })
-      </script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-  
-      <!-- Contenido Principal -->
-      <div class="container mt-4">
-        <h1 class="mb-4">Listado de Pacientes</h1>
-        <a href="{% url 'crear_paciente' %}" class="btn btn-primary mb-3">Agregar Paciente</a>
-  
-        <div class="patient-grid">
-          {% for paciente in pacientes %}
-            <div class="patient-card">
-              <div class="patient-info">
-                <h3>{{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h3>
-                <p class="email">{{ paciente.correo_paciente }}</p>
-              </div>
-              <div class="actions">
-                <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn btn-primary">Editar</a>
-                <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-danger">Eliminar</a>
-  
-                {% if paciente.informe_set.all %}
-                  <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-info">Ver Informe</a>
-                {% else %}
-                  <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-warning">Crear Informe</a>
-                {% endif %}
-  
-                {% if paciente.archivo %}
-                  <a href="{{ paciente.archivo.url }}" class="btn btn-secondary" target="_blank">Ver Archivo</a>
-                {% endif %}
-              </div>
-            </div>
-          {% empty %}
-            <p class="no-patients">No hay pacientes registrados.</p>
-          {% endfor %}
+    .navbar-brand img {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      color: #007bff;
+      text-align: center;
+    }
+
+    .patient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+      padding: 10px;
+    }
+
+    .patient-card {
+      background-color: #e8f8f5;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s;
+      height: 320px;
+    }
+
+    .patient-card:hover {
+      transform: scale(1.05);
+    }
+
+    .actions {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Estilo unificado para todos los botones */
+    .btn {
+      background-color: #007bff;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .no-patients {
+      text-align: center;
+      font-weight: bold;
+      color: #6c757d;
+      margin-top: 20px;
+    }
+  </style>
+  {% endblock %}
+</head>
+
+<body>
+  {% block content %}
+  <div class="container mt-5">
+    <h1 class="mb-4">Listado de Pacientes</h1>
+    <a href="{% url 'crear_paciente' %}" class="btn btn-primary mb-4 w-100">Agregar Paciente</a>
+
+    <div class="patient-grid">
+      {% for paciente in pacientes %}
+      <div class="patient-card">
+        <div class="patient-info mb-3">
+          <h3>{{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h3>
+          <p class="email text-muted">{{ paciente.correo_paciente }}</p>
+        </div>
+        <div class="actions">
+          <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn">Editar</a>
+          <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn">Eliminar</a>
+
+          {% if paciente.informe_set.all %}
+          <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn">Ver Informe</a>
+          {% else %}
+          <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn">Crear Informe</a>
+          {% endif %}
+
+          {% if paciente.archivo %}
+          <a href="{{ paciente.archivo.url }}" class="btn" target="_blank">Ver Archivo</a>
+          {% endif %}
         </div>
       </div>
-    {% endblock %}
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+4I5q5MvoARtAd+gpm0yD7z9+8M3K" crossorigin="anonymous"></script>
+      {% empty %}
+      <p class="no-patients">No hay pacientes registrados.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endblock %}
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
+
 </html>
