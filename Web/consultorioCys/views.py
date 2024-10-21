@@ -49,31 +49,54 @@ def historial_personal(request):
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib import messages
+from .models import Usuario, Paciente, Doctor
+
 def login_view(request):
     if request.method == 'POST':
-        rut = request.POST.get('rut')
-        password = request.POST.get('contrasena')
-        rol = request.POST.get('rol')  # Paciente o doctor
+        # Obtener datos del formulario
+        rut = request.POST.get('rut', '').strip()  # Elimina espacios extra
+        password = request.POST.get('contrasena', '')
+        rol = request.POST.get('rol', '').lower()  # Asegura que el rol esté en minúsculas
+
+        # Imprimir todos los datos recibidos para depuración
+        print("===== Datos del Formulario de Login =====")
+        print(f"RUT: {rut}")
+        print(f"Contraseña: {password}")
+        print(f"Rol: {rol}")
+        print(f"POST Data: {request.POST}")  # Imprime todos los datos enviados
 
         try:
             # Busca el usuario por RUT
             usuario = Usuario.objects.get(rut=rut)
-            
+
             # Verifica la contraseña
             if usuario.check_password(password):
-                # Verifica el rol seleccionado
-                if rol == 'paciente' and hasattr(usuario, 'paciente'):
-                    login(request, usuario)  # Inicia sesión como paciente
-                    return redirect('inicio')  # Redirige al inicio del paciente
+                if rol == 'paciente':
+                    # Verificar si el usuario tiene un paciente relacionado
+                    if Paciente.objects.filter(usuario=usuario).exists():
+                        login(request, usuario)  # Inicia sesión como paciente
+                        return redirect('inicio')  # Redirige al inicio del paciente
+                    else:
+                        messages.error(request, 'No estás registrado como paciente.')
+                        return redirect('login')
 
-                elif rol == 'doctor' and hasattr(usuario, 'doctor'):
-                    login(request, usuario)  # Inicia sesión como doctor
-                    return redirect('doctor_dashboard')  # Redirige al dashboard del doctor
-                
+                elif rol == 'doctor':
+                    # Verificar si el usuario tiene un doctor relacionado
+                    if Doctor.objects.filter(usuario=usuario).exists():
+                        login(request, usuario)  # Inicia sesión como doctor
+                        return redirect('doctor_dashboard')  # Redirige al dashboard del doctor
+                    else:
+                        messages.error(request, 'No estás registrado como doctor.')
+                        return redirect('login')
+
                 else:
-                    # Si el rol no coincide con el usuario
-                    messages.error(request, f'No estás registrado como {rol}.')
+                    # Rol no válido o no coincide
+                    messages.error(request, 'Rol inválido. Por favor, selecciona un rol válido.')
                     return redirect('login')
+
             else:
                 # Si la contraseña es incorrecta
                 messages.error(request, 'Contraseña incorrecta.')
@@ -81,12 +104,11 @@ def login_view(request):
 
         except Usuario.DoesNotExist:
             # Si el RUT no existe en la base de datos
-            messages.error(request, 'RUT o contraseña no se encuentran registrados.')
+            messages.error(request, 'RUT no se encuentra registrado.')
             return redirect('login')
 
     # Renderiza el formulario de login
     return render(request, 'consultorioCys/login.html')
-
 
 @login_required
 def perfil_view(request):
@@ -181,27 +203,6 @@ def buscar_paciente(request):
         # Si se encuentra el paciente, mostrar sus datos en una plantilla
         return render(request, 'detalle_paciente.html', {'paciente': paciente})
     return render(request, 'inicio.html')
-
-def login_doctor(request):
-    if request.method == 'POST':
-        rut = request.POST.get('rut')  # Obtener el RUT del formulario
-        password = request.POST.get('contrasena_doctor')  # Obtener la contraseña
-
-        # Verificar la existencia del doctor
-        doctor = get_object_or_404(Doctor, rut_doctor=rut)
-        
-        # Verificar la contraseña
-        if doctor.check_password(password):
-            # Iniciar sesión
-            auth_login(request, doctor)
-            return redirect('doctor_dashboard')
-        else:
-            messages.error(request, 'Contraseña incorrecta.')
-
-    return render(request, 'consultorioCys/login_doctor.html')
-
-#AQUI SE USAN PARA CREAR Y ELIMINAR PACIENTES
-
 
 # Listado de pacientes
 def listar_pacientes(request):
