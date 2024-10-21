@@ -36,11 +36,17 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
+            {% if user.doctor %}
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard/doctor/">
+                <img src="{% static 'consultorioCys/img/hearth.png' %}" alt="Doctor Icon" class="img-fluid me-2" style="width: 3rem; height: 3rem;">
+                <strong>Consultorio Cys</strong>
+            </a>
+            {% else %}
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="{% static 'consultorioCys/img/hearth.png' %}" alt="Doctor Icon" class="img-fluid me-2" style="width: 3rem; height: 3rem;">
                 <strong>Consultorio Cys</strong>
             </a>
-    
+            {% endif %}
             <!-- Botón para el menú en pantallas pequeñas -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +56,11 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
+                        {% if user.doctor %}
+                        <a class="nav-link active" aria-current="page" href="/dashboard/doctor/">Inicio</a>
+                        {% else %}
                         <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+                        {% endif %}
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="documentosDropdown" role="button" 
@@ -80,7 +90,7 @@
                 {% if user.is_authenticated %}
                     <div class="btn-group" role="group">
                         <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{% static 'consultorioCys/img/usuario.png' %}" class="img-fluid" alt="Usuario" style="width: 2rem;">
+                            <img src="{% static 'consultorioCys/img/usuario.png' %}" class="img-fluid" alt="Usuario" style="width: 2rem;color:white;">
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi Perfil</a></li>
@@ -107,7 +117,11 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-4 d-flex justify-content-center justify-content-md-start align-items-center mb-4 mb-md-0">
+                    {% if user.doctor %}
+                    <a href="/dashboard/doctor/" class="navbar-brand">
+                    {% else %}
                     <a href="/" class="navbar-brand">
+                        {% endif %}
                         <img src="{% static 'consultorioCys/img/logo-azul.png' %}" alt="Logo Consultorio Cys" class="logo-img">
                     </a>
                 </div>

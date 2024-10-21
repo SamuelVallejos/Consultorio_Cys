@@ -1,3 +1,5 @@
+{% extends 'consultorioCys/base_generic.html' %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 
@@ -10,25 +12,45 @@
 </head>
 
 <body>
-    <a href="{% url 'inicio' %}" class="btn boton">
-        <img src="/static/consultorioCys/img/volver.png" class="icon" style="height: 50px; width: 50px;">
-    </a>
-    <h1>Perfil de {{ usuario.nombre }} {{ usuario.apellido }}</h1>
-    <p>RUT: {{ usuario.rut }}</p>
-    <p>Email: {{ usuario.email }}</p>
+    {% block content %}
+<!-- Perfil de usuario -->
+<div class="container p-5 my-5 bg-white rounded shadow-lg" style="max-width: 800px;">
+    <h1 class="text-center mb-4 display-5">Perfil de {{ usuario.nombre }} {{ usuario.apellido }}</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <p class="mb-2"><strong>RUT:</strong> {{ usuario.rut }}</p>
+            <p class="mb-2"><strong>Email:</strong> {{ usuario.email }}</p>
+        </div>
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <img src="{% static 'consultorioCys/img/user-icon.png' %} alt="Perfil" 
+                 class="rounded-circle shadow" style="width: 120px; height: 120px; object-fit: cover;">
+        </div> 
+    </div>
 
     {% if doctor %}
-    <h2>Datos del Doctor</h2>
-    <p>Especialidad: {{ doctor.especialidad_doctor }}</p>
-    <p>Teléfono: {{ doctor.telefono_doctor }}</p>
-    <p>Fecha de Nacimiento: {{ doctor.fecha_nacimiento_doctor }}</p>
+    <!-- Datos del Doctor -->
+    <h2 class="text-center mt-4 mb-3 text-primary">Datos del Doctor</h2>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Especialidad:</strong> {{ doctor.especialidad_doctor }}</li>
+        <li class="list-group-item"><strong>Teléfono:</strong> {{ doctor.telefono_doctor }}</li>
+        <li class="list-group-item"><strong>Fecha de Nacimiento:</strong> {{ doctor.fecha_nacimiento_doctor }}</li>
+    </ul>
     {% elif paciente %}
-    <h2>Datos del Paciente</h2>
-    <p>Teléfono: {{ paciente.telefono_paciente }}</p>
-    <p>Fecha de Nacimiento: {{ paciente.fecha_nacimiento_paciente }}</p>
-    <p>Dirección: {{ paciente.direccion_paciente }}</p>
-    <p>Género: {{ paciente.genero_paciente }}</p>
+    <!-- Datos del Paciente -->
+    <h2 class="text-center mt-4 mb-3 text-success">Datos del Paciente</h2>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</li>
+        <li class="list-group-item"><strong>Fecha de Nacimiento:</strong> {{ paciente.fecha_nacimiento_paciente }}</li>
+        <li class="list-group-item"><strong>Dirección:</strong> {{ paciente.direccion_paciente }}</li>
+        <li class="list-group-item"><strong>Género:</strong> {{ paciente.genero_paciente }}</li>
+    </ul>
     {% endif %}
+</div>
+
+
+
+    {% endblock %}
 </body>
 
 </html>
