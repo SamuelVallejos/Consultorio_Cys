@@ -148,3 +148,14 @@ class PacienteInforme(models.Model):
 
     def __str__(self):
         return f"Informe de {self.paciente} - ID: {self.informe.id_informe}"
+    
+    
+class Cita(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, null=True, blank=True) # Nueva relación con el Doctor
+    fecha_cita = models.DateField()
+    tratamiento = models.CharField(max_length=100)
+    confirmado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Cita para {self.paciente.nombres_paciente} con el doctor {self.doctor.nombres_doctor} el {self.fecha_cita}"

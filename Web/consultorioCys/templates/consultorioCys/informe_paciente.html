@@ -18,73 +18,62 @@
           margin: 100px auto;
           display: none;
         }
-        
+
         @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
-        
+
         /* Estilo general */
         body {
           font-family: Arial, sans-serif;
           background-color: #f9f9f9;
           margin: 0;
         }
-        
-        h1,
-        h2 {
+
+        h1, h2 {
           color: #333;
         }
-        
+
         .table-container {
           overflow-x: auto;
           margin-top: 20px;
         }
-        
+
         table {
           width: 100%;
           border-collapse: collapse;
           min-width: 600px;
         }
-        
-        th,
-        td {
+
+        th, td {
           padding: 15px;
           text-align: left;
           border-bottom: 1px solid #ddd;
           transition: background-color 0.3s ease;
           word-wrap: break-word;
         }
-        
+
         td:hover {
           background-color: #e0e0e0;
         }
-        
+
         /* Media query para dispositivos pequeños */
         @media (max-width: 768px) {
-          table,
-          thead,
-          tbody,
-          th,
-          td,
-          tr {
+          table, thead, tbody, th, td, tr {
             display: block;
           }
-        
+
           th {
             display: none;
           }
-        
+
           td {
             position: relative;
             padding-left: 50%;
             border-bottom: 1px solid #ddd;
           }
-        
+
           td::before {
             content: attr(data-label);
             position: absolute;
@@ -92,28 +81,26 @@
             font-weight: bold;
             color: #3498db;
           }
-        
-          /* Mostrar separadores solo en móviles */
+
           .separator {
             display: flex;
             align-items: center;
             margin: 10px 0;
           }
-        
-          .separator::before,
-          .separator::after {
+
+          .separator::before, .separator::after {
             content: '';
             flex: 1;
             border-bottom: 1px solid #ddd;
             margin: 0 10px;
           }
-        
+
           .separator-icon {
             font-size: 18px;
             color: #3498db;
           }
         }
-        
+
         /* Menú de navegación */
         .menu {
           background-color: #3498db;
@@ -121,22 +108,22 @@
           color: white;
           text-align: right;
         }
-        
+
         .menu a {
           color: white;
           margin-left: 15px;
           text-decoration: none;
         }
-        
+
         .menu a:hover {
           text-decoration: underline;
         }
-        
+
         .actions {
           margin-top: 20px;
           text-align: center;
         }
-        
+
         .btn {
           padding: 10px 15px;
           background-color: #3498db;
@@ -145,32 +132,48 @@
           border-radius: 5px;
           transition: background-color 0.3s ease;
         }
-        
+
         .btn:hover {
           background-color: #217dbb;
         }
-        
+
         .informes {
           opacity: 0;
           visibility: hidden;
           transition: opacity 0.5s ease-in-out;
         }
+
+        .edit-form {
+          display: none;
+          margin-top: 10px;
+        }
       </style>
+
       <script>
         window.onload = function () {
-          const loader = document.querySelector('.loader')
-          const informes = document.querySelector('.informes')
-        
-          loader.style.display = 'block'
+          const loader = document.querySelector('.loader');
+          const informes = document.querySelector('.informes');
+
+          loader.style.display = 'block';
           setTimeout(() => {
-            loader.style.display = 'none'
-            informes.style.opacity = '1'
-            informes.style.visibility = 'visible'
-          }, 2000)
+            loader.style.display = 'none';
+            informes.style.opacity = '1';
+            informes.style.visibility = 'visible';
+          }, 2000);
+        };
+
+        function toggleEditForm(informeId) {
+          var form = document.getElementById('edit-form-' + informeId);
+          if (form.style.display === 'none') {
+            form.style.display = 'block';
+          } else {
+            form.style.display = 'none';
+          }
         }
       </script>
     {% endblock %}
   </head>
+
   <body>
     {% block content %}
       <h1>Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h1>
@@ -191,31 +194,47 @@
                   <th>Instrucciones de Tratamiento</th>
                   <th>Fecha del Informe</th>
                   <th>Documento Adjunto</th>
+                  <th>Acciones</th>
                   <th>|</th>
                 </tr>
               </thead>
               <tbody>
                 {% for informe in informes %}
-                  <div>
-                    <tr>
-                      <td data-label="|"></td>
-                      <td data-label="Título">{{ informe.titulo_informe }}</td>
-                      <td data-label="Descripción">{{ informe.descripcion_informe }}</td>
-                      <td data-label="Notas del Doctor">{{ informe.notas_doctor }}</td>
-                      <td data-label="Instrucciones de Tratamiento">{{ informe.instrucciones_tratamiento }}</td>
-                      <td data-label="Fecha del Informe">{{ informe.fecha_informe }}</td>
-                      <td data-label="Documento Adjunto">
-                        {% if informe.documentos_extra %}
-                          <a href="{{ informe.documentos_extra.url }}" target="_blank">Ver Documento</a>
-                        {% else %}
-                          No disponible
-                        {% endif %}
-                      </td>
-                    </tr>
-                  </div>
+                  <tr>
+                    <td data-label="|"></td>
+                    <td data-label="Título">{{ informe.titulo_informe }}</td>
+                    <td data-label="Descripción">{{ informe.descripcion_informe }}</td>
+                    <td data-label="Notas del Doctor">{{ informe.notas_doctor }}</td>
+                    <td data-label="Instrucciones">{{ informe.instrucciones_tratamiento }}</td>
+                    <td data-label="Fecha del Informe">{{ informe.fecha_informe }}</td>
+                    <td data-label="Documento Adjunto">
+                      {% if informe.documentos_extra %}
+                        <a href="{{ informe.documentos_extra.url }}" target="_blank">Ver Documento</a>
+                      {% else %}
+                        No disponible
+                      {% endif %}
+                    </td>
+                    <td>
+                      <!-- Botón para mostrar/ocultar el formulario de edición -->
+                      <button class="btn" onclick="toggleEditForm('{{ informe.id }}')">Editar</button>
+                    </td>
+                  </tr>
+
+                  <!-- Formulario de edición, inicialmente oculto -->
+                  <tr id="edit-form-{{ informe.id }}" class="edit-form">
+                    <td colspan="9">
+                      <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <input type="hidden" name="edit_informe_id" value="{{ informe.id }}">
+                        <button type="submit" class="btn">Guardar Cambios</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleEditForm('{{ informe.id }}')">Cancelar</button>
+                      </form>
+                    </td>
+                  </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="6">No hay informes disponibles para este paciente.</td>
+                    <td colspan="9">No hay informes disponibles para este paciente.</td>
                   </tr>
                 {% endfor %}
               </tbody>

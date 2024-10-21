@@ -14,8 +14,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm
 from django.http import JsonResponse
-from .models import Paciente, Informe
-from .forms import PacienteForm
+from .models import Paciente, Informe, Cita
+from .forms import PacienteForm, CitaForm
 from .forms import InformeForm
 
 
@@ -36,8 +36,9 @@ def handle_form_submission(request, form_class, template_name, success_url, inst
     return render(request, template_name, {'form': form})
 
 def inicio(request):
+    message = request.GET.get('message')
     print(f"Usuario autenticado: {request.user.is_authenticated}")
-    return render(request, 'consultorioCys/inicio.html')
+    return render(request, 'consultorioCys/inicio.html', {'message': message}) 
 
 def ia(request):
     return render(request, 'consultorioCys/ia.html')
@@ -240,13 +241,29 @@ def eliminar_paciente(request, pk):
         return redirect('listar_pacientes')
     return render(request, 'confirmar_eliminar.html', {'paciente': paciente})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Paciente, Informe
+from .forms import InformeForm
+
 def informe_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
-    informes = Informe.objects.filter(paciente=paciente)
-    return render(request, 'informe_paciente.html', {'paciente': paciente, 'informes': informes})
+    informes = Informe.objects.filter(paciente=paciente)  # Trae todos los informes del paciente
+    edit_informe_id = request.POST.get('edit_informe_id')  # Identificador del informe que se va a editar
+
+    if request.method == 'POST' and edit_informe_id:  # Si se está enviando el formulario de edición
+        informe = get_object_or_404(Informe, id=edit_informe_id)
+        form = InformeForm(request.POST, request.FILES, instance=informe)
+        if form.is_valid():
+            form.save()
+            return redirect('informe_paciente', pk=paciente.pk)  # Refresca la página
+    else:
+        form = InformeForm()  # Formulario vacío si no estamos editando
+    
+    return render(request, 'informe_paciente.html', {'paciente': paciente, 'informes': informes, 'form': form})
 
 def crear_informe(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
+    
     if request.method == 'POST':
         form = InformeForm(request.POST, request.FILES)
         if form.is_valid():
@@ -256,4 +273,34 @@ def crear_informe(request, pk):
             return redirect('listar_pacientes')
     else:
         form = InformeForm()
+
     return render(request, 'crear_informe.html', {'form': form, 'paciente': paciente})
+
+
+#formulario agendar cita y calendario en doctor 
+
+@login_required
+def agendar_cita(request, pk):
+    paciente = get_object_or_404(Paciente, pk=pk)
+
+    if request.method == 'POST':
+        form = CitaForm(request.POST)
+        if form.is_valid():
+            cita = form.save(commit=False)
+            cita.paciente = paciente
+            cita.save()
+            # Usar el framework de mensajes para mostrar confirmación
+            messages.success(request, 'Cita agendada con éxito')
+            return redirect('inicio')  # Redirigir al inicio después de agendar la cita
+    else:
+        form = CitaForm()
+
+    return render(request, 'agendar_cita.html', {'form': form, 'paciente': paciente})
+
+def calendario_citas(request):
+    # Filtrar citas por el doctor autenticado
+    citas = Cita.objects.filter(doctor=request.user.doctor)
+    return render(request, 'calendario_citas.html', {'citas': citas})
+
+
+#ACA TERMINA EL CALENDARIO 

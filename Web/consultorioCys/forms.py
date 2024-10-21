@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Group
-from .models import Doctor, Paciente, Informe
+from .models import Doctor, Paciente, Informe, Cita
 
 class RUTAuthenticationForm(forms.Form):
     rut = forms.CharField(label="RUT", max_length=10)
@@ -112,6 +112,20 @@ class PacienteForm(forms.ModelForm):
         fields = ['rut_paciente', 'nombres_paciente', 'primer_apellido_paciente', 'segundo_apellido_paciente', 'correo_paciente', 'telefono_paciente', 'fecha_nacimiento_paciente', 'direccion_paciente', 'genero_paciente', 'archivo']
 
 class InformeForm(forms.ModelForm):
+    doctor = forms.ModelChoiceField(queryset=Doctor.objects.all(), label="Doctor Responsable")  # Permite elegir un doctor
+
     class Meta:
         model = Informe
-        fields = ['titulo_informe', 'descripcion_informe', 'notas_doctor', 'instrucciones_tratamiento', 'documentos_extra']
+        fields = ['doctor', 'titulo_informe', 'descripcion_informe', 'notas_doctor', 'instrucciones_tratamiento', 'documentos_extra']
+
+#Formulario de cita
+
+class CitaForm(forms.ModelForm):
+    class Meta:
+        model = Cita
+        fields = ['fecha_cita', 'tratamiento']
+
+        widgets = {
+            'fecha_cita': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'tratamiento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especifica el tratamiento'}),
+        }
