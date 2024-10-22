@@ -16,9 +16,10 @@ urlpatterns = [
     path('historial_personal/', views.historial_personal, name='historial_personal'),
     path('pacientes/', views.listar_pacientes, name='listar_pacientes'),
     path('pacientes/nuevo/', views.crear_paciente, name='crear_paciente'),
-  path('pacientes/<str:pk>/editar/', views.editar_paciente, name='editar_paciente'),
+    path('pacientes/<str:pk>/editar/', views.editar_paciente, name='editar_paciente'),
     path('pacientes/<str:pk>/eliminar/', views.eliminar_paciente, name='eliminar_paciente'),
     path('pacientes/<str:pk>/informe/', views.informe_paciente, name='informe_paciente'),
-     path('pacientes/<str:pk>/crear_informe/', views.crear_informe, name='crear_informe'),  # Nueva ruta para crear informe
-     path('pacientes/<str:pk>/agendar_cita/', views.agendar_cita, name='agendar_cita'),
+    path('pacientes/<str:pk>/crear_informe/', views.crear_informe, name='crear_informe'),  # Nueva ruta para crear informe
+    path('pacientes/<str:pk>/agendar_cita/', views.agendar_cita, name='agendar_cita'),
+    path('paciente_info/<str:rut_paciente>/', views.paciente_info, name='paciente_info'),
 ]

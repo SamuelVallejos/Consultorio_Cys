@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
 from .models import Doctor, Paciente, Informe, Usuario
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from .forms import RUTAuthenticationForm
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import render, redirect
@@ -17,9 +17,6 @@ from django.http import JsonResponse
 from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm
 from .forms import InformeForm
-
-
-
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -48,11 +45,6 @@ def historial_personal(request):
 
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from django.contrib import messages
-from .models import Usuario, Paciente, Doctor
 
 def login_view(request):
     if request.method == 'POST':
@@ -188,22 +180,40 @@ def informe_doctores(request):
     # Pasar los datos de los doctores a la plantilla 'informe_doctores.html'
     return render(request, 'informe_doctores.html', {'doctores': doctores})
 
+def paciente_info(request, rut_paciente):
+    # Buscar el paciente usando `rut_paciente`
+    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
+
+    # Obtener los informes relacionados usando `informe_set`
+    informes = paciente.informe_set.all().order_by('-fecha_informe')
+
+    return render(request, 'consultorioCys/paciente_info.html', {
+        'paciente': paciente,
+        'informes': informes,
+    })
+
 def buscar_paciente(request):
     if request.method == 'POST':
-        # Obtener el RUT ingresado en el formulario
-        rut = request.POST.get('rut')
+        rut = request.POST.get('rut')  # RUT del usuario
+        clave = request.POST.get('clave')  # Clave del usuario
 
-        # Buscar el paciente en la base de datos por su RUT
         try:
-            paciente = Paciente.objects.get(rut_paciente=rut)
-        except Paciente.DoesNotExist:
-            # Si el paciente no existe, mostrar un mensaje de error
-            return render(request, 'paciente_no_encontrado.html', {'rut': rut})
+            # Buscar al usuario por su RUT (campo primary_key)
+            usuario = Usuario.objects.get(rut=rut)
 
-        # Si se encuentra el paciente, mostrar sus datos en una plantilla
-        return render(request, 'informe_paciente.html', {'paciente': paciente})
-    return render(request, 'inicio.html')
+            # Verificar si la clave proporcionada es correcta
+            if usuario.check_password(clave):
+                # Obtener el paciente relacionado con el usuario
+                paciente = get_object_or_404(Paciente, usuario=usuario)
 
+                # Redirigir a la página con la información del paciente
+                return redirect('paciente_info', rut_paciente=paciente.rut_paciente)
+            else:
+                messages.error(request, "Clave incorrecta. Inténtelo de nuevo.")
+        except Usuario.DoesNotExist:
+            messages.error(request, "Usuario no encontrado.")
+
+    return redirect('doctor_dashboard')
 # Listado de pacientes
 def listar_pacientes(request):
     pacientes = Paciente.objects.prefetch_related('informe_set')
@@ -241,10 +251,6 @@ def eliminar_paciente(request, pk):
         paciente.delete()
         return redirect('listar_pacientes')
     return render(request, 'confirmar_eliminar.html', {'paciente': paciente})
-
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Paciente, Informe
-from .forms import InformeForm
 
 def informe_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
