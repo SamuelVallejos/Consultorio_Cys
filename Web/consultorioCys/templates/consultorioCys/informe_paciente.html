@@ -191,80 +191,110 @@
 
 <body>
   {% block content %}
-  <h1>Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h1>
+  <div class="container mt-5">
+    <h1 class="mb-4 text-center text-primary">
+        Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
+    </h1>
 
-  <div class="loader"></div>
+    <!-- Loader (solo visible mientras se carga el contenido) -->
+    <div class="loader my-4"></div>
 
-  <div class="informes">
-    {% if informes %}
-    <h2>Informes Relacionados:</h2>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>|</th>
-            <th>Título</th>
-            <th>Descripción</th>
-            <th>Notas del Doctor</th>
-            <th>Instrucciones de Tratamiento</th>
-            <th>Fecha del Informe</th>
-            <th>Documento Adjunto</th>
-            <th>Acciones</th>
-            <th>|</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for informe in informes %}
-          <tr>
-            <td data-label="|"></td>
-            <td data-label="Título">{{ informe.titulo_informe }}</td>
-            <td data-label="Descripción">{{ informe.descripcion_informe }}</td>
-            <td data-label="Notas del Doctor">{{ informe.notas_doctor }}</td>
-            <td data-label="Instrucciones">{{ informe.instrucciones_tratamiento }}</td>
-            <td data-label="Fecha del Informe">{{ informe.fecha_informe }}</td>
-            <td data-label="Documento Adjunto">
-              {% if informe.documentos_extra %}
-              <a href="{{ informe.documentos_extra.url }}" target="_blank">Ver Documento</a>
-              {% else %}
-              No disponible
-              {% endif %}
-            </td>
-            <td>
-              <!-- Botón para mostrar/ocultar el formulario de edición -->
-              <button class="btn" onclick="toggleEditForm('{{ informe.id }}')">Editar</button>
-            </td>
-          </tr>
+    <div class="informes">
+        {% if informes %}
+        <h2 class="mb-4 text-secondary">Informes Relacionados:</h2>
 
-          <!-- Formulario de edición, inicialmente oculto -->
-          <tr id="edit-form-{{ informe.id }}" class="edit-form">
-            <td colspan="9">
-              <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="hidden" name="edit_informe_id" value="{{ informe.id }}">
-                <button type="submit" class="btn">Guardar Cambios</button>
-                <button type="button" class="btn btn-danger"
-                  onclick="toggleEditForm('{{ informe.id }}')">Cancelar</button>
-              </form>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="9">No hay informes disponibles para este paciente.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        <!-- Contenedor de tabla con scroll horizontal en dispositivos pequeños -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>#</th>
+                        <th>Título</th>
+                        <th>Descripción</th>
+                        <th>Notas del Doctor</th>
+                        <th>Instrucciones de Tratamiento</th>
+                        <th>Fecha del Informe</th>
+                        <th>Documento Adjunto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for informe in informes %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ informe.titulo_informe }}</td>
+                        <td>{{ informe.descripcion_informe }}</td>
+                        <td>{{ informe.notas_doctor }}</td>
+                        <td>{{ informe.instrucciones_tratamiento }}</td>
+                        <td>{{ informe.fecha_informe }}</td>
+                        <td>
+                            {% if informe.documentos_extra %}
+                            <a href="{{ informe.documentos_extra.url }}" target="_blank" class="btn btn-link">Ver Documento</a>
+                            {% else %}
+                            <span class="text-muted">No disponible</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm" onclick="toggleEditForm('{{ informe.id }}')">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Formulario de edición oculto -->
+                    <tr id="edit-form-{{ informe.id }}" class="d-none">
+                        <td colspan="8">
+                            <form method="POST" enctype="multipart/form-data" class="p-3">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <input type="hidden" name="edit_informe_id" value="{{ informe.id }}">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle"></i> Guardar Cambios
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="toggleEditForm('{{ informe.id }}')">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No hay informes disponibles para este paciente.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No hay informes disponibles para este paciente.</p>
+        {% endif %}
     </div>
-    {% else %}
-    <p>No hay informes disponibles para este paciente.</p>
-    {% endif %}
-  </div>
 
-  <div class="actions">
-    <a href="{% url 'listar_pacientes' %}" class="btn">Volver al Listado de Pacientes</a>
-  </div>
-  {% endblock %}
+    <!-- Botón para volver al listado -->
+    <div class="text-center mt-4">
+        <a href="{% url 'listar_pacientes' %}" class="btn btn-outline-secondary"style="margin: 3px;">
+            <i class="bi bi-arrow-left-circle" ></i> Volver al Listado de Pacientes
+        </a>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+<!-- JavaScript para mostrar/ocultar formularios de edición -->
+<script>
+    function toggleEditForm(id) {
+        const form = document.getElementById(`edit-form-${id}`);
+        form.classList.toggle('d-none');
+    }
+</script>
+{% endblock %}
 </body>
 
 </html>

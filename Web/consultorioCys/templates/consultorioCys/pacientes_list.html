@@ -91,39 +91,64 @@
 <body>
   {% block content %}
   <div class="container mt-5">
-    <h1 class="mb-4">Listado de Pacientes</h1>
-    <a href="{% url 'crear_paciente' %}" class="btn btn-primary mb-4 w-100">Agregar Paciente</a>
+    <h1 class="mb-4 text-primary text-center">
+        <i class="bi bi-people-fill me-2"></i>Listado de Pacientes
+    </h1>
 
+    <!-- Botón Agregar Paciente -->
+    <a href="{% url 'crear_paciente' %}" class="btn btn-primary mb-4 w-100">
+        <i class="bi bi-person-plus me-2"></i> Agregar Paciente
+    </a>
+
+    <!-- Grid de Pacientes -->
     <div class="patient-grid">
-      {% for paciente in pacientes %}
-      <div class="patient-card">
-        <div class="patient-info mb-3">
-          <h3>{{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h3>
-          <p class="email text-muted">{{ paciente.correo_paciente }}</p>
-        </div>
-        <div class="actions">
-          <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn">Editar</a>
-          <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn">Eliminar</a>
+        {% for paciente in pacientes %}
+        <div class="patient-card">
+            <!-- Información del Paciente -->
+            <div class="patient-info mb-3">
+                <h3 class="text-primary">
+                    <i class="bi bi-person-circle me-2"></i>
+                    {{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
+                </h3>
+                <p class="email text-muted">{{ paciente.correo_paciente }}</p>
+            </div>
 
-          {% if paciente.informe_set.all %}
-          <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn">Ver Informe</a>
-          {% else %}
-          <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn">Crear Informe</a>
-          {% endif %}
+            <!-- Acciones -->
+            <div class="actions">
+                <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i> Editar
+                </a>
+                <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                </a>
 
-          {% if paciente.archivo %}
-          <a href="{{ paciente.archivo.url }}" class="btn" target="_blank">Ver Archivo</a>
-          {% endif %}
+                {% if paciente.informe_set.all %}
+                <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-outline-success">
+                    <i class="bi bi-file-earmark-text me-1"></i> Ver Informe
+                </a>
+                {% else %}
+                <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-warning">
+                    <i class="bi bi-file-earmark-plus me-1"></i> Crear Informe
+                </a>
+                {% endif %}
+
+                {% if paciente.archivo %}
+                <a href="{{ paciente.archivo.url }}" class="btn btn-outline-secondary" target="_blank">
+                    <i class="bi bi-folder2-open me-1"></i> Ver Archivo
+                </a>
+                {% endif %}
+            </div>
         </div>
-      </div>
-      {% empty %}
-      <p class="no-patients">No hay pacientes registrados.</p>
-      {% endfor %}
+        {% empty %}
+        <p class="no-patients">No hay pacientes registrados.</p>
+        {% endfor %}
     </div>
-  </div>
-  {% endblock %}
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<!-- Bootstrap Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+
+{% endblock %}
 </body>
 
 </html>

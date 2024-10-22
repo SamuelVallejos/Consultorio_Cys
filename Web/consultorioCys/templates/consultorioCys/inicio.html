@@ -36,7 +36,7 @@
                 {% else %}
                   <a href="{% url 'login' %}" class="btn btn-warning btn-lg me-2">Iniciar sesión</a>
                 {% endif %}
-                <a href="#" class="btn btn-outline-light btn-lg">Más Información</a>
+                <a href="/acercade" class="btn btn-outline-light btn-lg">Más Información</a>
               </div>
             </div>
             <div class="col-lg-6 d-flex justify-content-center">
@@ -76,12 +76,7 @@
 
       <!-- footer -->
 
-      <!-- Pedir archivo -->
-      {% if user.is_authenticated %}
-        {% if user.paciente %}
-          <h1 class="center">Bienvenido, paciente {{ user.paciente.nombres_paciente }} {{ user.paciente.primer_apellido_paciente }} {{ user.paciente.segundo_apellido_paciente }}!</h1>
-        {% endif %}
-      {% endif %}
+   
 
       <!-- animacion menu -->
       <script>

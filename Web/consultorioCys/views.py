@@ -39,10 +39,30 @@ def inicio(request):
 
 def ia(request):
     return render(request, 'consultorioCys/ia.html')
+def acercade(request):
+    return render(request, 'consultorioCys/acercade.html')
 
 def historial_personal(request):
-    return render(request, 'consultorioCys/historial_personal.html')
+    # Obtener el usuario logueado
+    usuario = request.user
 
+    # Obtener el paciente asociado al usuario
+    paciente = Paciente.objects.filter(usuario=usuario).first()
+
+    # Obtener el doctor del informe más reciente (puedes personalizar esta lógica)
+    informe = Informe.objects.filter(paciente=paciente).first()
+
+    doctor = informe.doctor if informe else None
+
+    context = {
+        'paciente': paciente,
+        'doctor': doctor,
+        'informe': informe,
+    }
+
+    return render(request, 'consultorioCys/historial_personal.html', context)
+
+    
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 

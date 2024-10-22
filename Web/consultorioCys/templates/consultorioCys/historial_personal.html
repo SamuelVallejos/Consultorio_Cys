@@ -1,111 +1,157 @@
+{% extends 'consultorioCys/base_generic.html' %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Historiales | Consultorio Cys</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="/static/consultorioCys/css/historial.css">
-</head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="{% static 'consultorioCys/css/historial.css' %}" />
+    <style>
+      .header-bar {
+        background-color: #00bfff;
+        padding: 10px 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-<body>
-    <div class="wrapper">
-        <!-- Barra superior con el logotipo -->
-        <header class="header-bar">
-            <div class="logo">
-                <img src="https://img.icons8.com/ios-filled/50/00bfff/like.png" alt="Consultorio Cys">
-                <h2>Consultorio Cys.</h2>
-            </div>
-        </header>
+      .content-container {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+      }
 
-        <!-- Contenedor principal con fondo y bordes redondeados -->
-        <div class="content-container">
-            <div class="header mb-4">
-                <h2>Historial Médico</h2>
-            </div>
+      .table th {
+        background-color: #00bfff;
+        color: white;
+      }
 
-            <table class="table table-bordered shadow-sm">
-                <tbody>
-                    <!-- Información del Doctor -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Información del Doctor/a</th>
-                    </tr>
-                    <tr>
-                        <td>Nombre del Doctor/a</td>
-                        <td>Número de licencia médica</td>
-                    </tr>
-                    <tr>
-                        <td>Dirección</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Número de teléfono</td>
-                        <td>Correo electrónico</td>
-                    </tr>
+      .table-bordered {
+        border-radius: 10px;
+        overflow: hidden;
+      }
 
-                    <!-- Información del Paciente -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Información del Paciente</th>
-                    </tr>
-                    <tr>
-                        <td>Nombre</td>
-                        <td>Fecha de Nacimiento</td>
-                    </tr>
-                    <tr>
-                        <td>Dirección</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Número de teléfono</td>
-                        <td>Correo electrónico</td>
-                    </tr>
-                    <tr>
-                        <td>Información del Seguro</td>
-                        <td></td>
-                    </tr>
+      .btn-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px; /* Espaciado entre botones */
+        margin-top: 10px;
+      }
+    </style>
+  </head>
 
-                    <!-- Información de la Receta -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Receta</th>
-                    </tr>
-                    <tr>
-                        <td>Medicación/es</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Posología/dosis</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Frecuencia y duración</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Instrucciones</td>
-                        <td></td>
-                    </tr>
-
-                    <!-- Notas adicionales -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Notas adicionales</th>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="height: 100px;"></td>
-                    </tr>
-
-                    <!-- Firma del Doctor -->
-                    <tr>
-                        <td>Nombre y Firma del Doctor/a</td>
-                        <td>Fecha</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        crossorigin="anonymous"></script>
-</body>
-
+  <body>
+    {% block content %}
+    <div class="container mt-4">
+  
+      <!-- Contenedor principal -->
+      <div class="content-container shadow-lg p-4 mt-4 bg-white rounded">
+          <div class="text-center mb-4">
+              <h2 class="fw-bold">Historial Médico</h2>
+          </div>
+  
+          <!-- Tabla con la información -->
+          <table class="table table-bordered shadow-sm table-hover">
+              <tbody>
+                  <tr class="table-primary">
+                      <th colspan="2" class="text-center">Información del Doctor/a</th>
+                  </tr>
+                  <tr>
+                      <td>Nombre del Doctor/a</td>
+                      <td>{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }} {{ doctor.segundo_apellido_doctor }}</td>
+                  </tr>
+                  <tr>
+                      <td>Número de licencia médica</td>
+                      <td>{{ doctor.rut_doctor }}</td>
+                  </tr>
+                  <tr>
+                      <td>Número de teléfono</td>
+                      <td>{{ doctor.telefono_doctor }}</td>
+                  </tr>
+                  <tr>
+                      <td>Correo electrónico</td>
+                      <td>{{ doctor.correo_doctor }}</td>
+                  </tr>
+  
+                  <tr class="table-primary">
+                      <th colspan="2" class="text-center">Información del Paciente</th>
+                  </tr>
+                  <tr>
+                      <td>Nombre</td>
+                      <td>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}</td>
+                  </tr>
+                  <tr>
+                      <td>Fecha de Nacimiento</td>
+                      <td>{{ paciente.fecha_nacimiento_paciente }}</td>
+                  </tr>
+                  <tr>
+                      <td>Dirección</td>
+                      <td>{{ paciente.direccion_paciente }}</td>
+                  </tr>
+                  <tr>
+                      <td>Número de teléfono</td>
+                      <td>{{ paciente.telefono_paciente }}</td>
+                  </tr>
+                  <tr>
+                      <td>Correo electrónico</td>
+                      <td>{{ paciente.correo_paciente }}</td>
+                  </tr>
+  
+                  <tr class="table-primary">
+                      <th colspan="2" class="text-center">Receta</th>
+                  </tr>
+                  <tr>
+                      <td>Medicación/es</td>
+                      <td>{{ informe.titulo_informe }}</td>
+                  </tr>
+                  <tr>
+                      <td>Posología/dosis</td>
+                      <td>{{ informe.notas_doctor }}</td>
+                  </tr>
+                  <tr>
+                      <td>Instrucciones</td>
+                      <td>{{ informe.instrucciones_tratamiento }}</td>
+                  </tr>
+  
+                  <tr class="table-primary">
+                      <th colspan="2" class="text-center">Notas adicionales</th>
+                  </tr>
+                  <tr>
+                      <td colspan="2" style="height: 100px; background-color: #f8f9fa;"></td>
+                  </tr>
+  
+                  <tr>
+                      <td>Nombre y Firma del Doctor/a</td>
+                      <td>{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</td>
+                  </tr>
+                  <tr>
+                      <td>Fecha</td>
+                      <td>{{ informe.fecha_informe }}</td>
+                  </tr>
+              </tbody>
+          </table>
+  
+          <!-- Botones de acción -->
+          <div class="d-flex justify-content-end mt-4">
+              <a href="#" class="btn btn-outline-primary me-2">
+                  <i class="bi bi-arrow-left-circle"></i> Volver
+              </a>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Bootstrap Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+  
+    {% endblock %}
+  </body>
 </html>
