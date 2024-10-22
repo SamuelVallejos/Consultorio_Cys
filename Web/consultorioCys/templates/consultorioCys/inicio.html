@@ -32,7 +32,7 @@
               <p class="lead text-uppercase mt-3 mb-4">Salud conectada, datos seguros para tu bienestar.</p>
               <div>
                 {% if user.is_authenticated %}
-                  <a href="#" class="btn btn-warning btn-lg me-2">Historiales</a>
+                  <a href="{% url 'historial_personal' %}" class="btn btn-warning btn-lg me-2">Historiales</a>
                 {% else %}
                   <a href="{% url 'login' %}" class="btn btn-warning btn-lg me-2">Iniciar sesión</a>
                 {% endif %}

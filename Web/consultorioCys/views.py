@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
-from .models import Doctor, Paciente, Informe, Usuario
+from .models import Doctor, Paciente, Informe, Usuario, Clinica, SedeClinica
 from django.contrib.auth.models import Group, User
 from .forms import RUTAuthenticationForm
 from django.contrib.auth.hashers import check_password
@@ -16,7 +16,7 @@ from .forms import LoginForm
 from django.http import JsonResponse
 from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm
-from .forms import InformeForm
+from .forms import InformeForm # Asegúrate de tener estos modelos
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -43,26 +43,36 @@ def acercade(request):
     return render(request, 'consultorioCys/acercade.html')
 
 def historial_personal(request):
-    # Obtener el usuario logueado
     usuario = request.user
 
     # Obtener el paciente asociado al usuario
     paciente = Paciente.objects.filter(usuario=usuario).first()
 
-    # Obtener el doctor del informe más reciente (puedes personalizar esta lógica)
-    informe = Informe.objects.filter(paciente=paciente).first()
+    # Obtener el informe más reciente del paciente
+    informe = Informe.objects.filter(paciente=paciente).select_related('doctor', 'clinica', 'sede').first()
 
+    # Verificar que informe, doctor, clínica, y sede estén disponibles
     doctor = informe.doctor if informe else None
+    clinica = informe.clinica if informe else None
+    sede = informe.sede if informe else None
+
+    # Depuración: imprimir para asegurarnos de que todo esté bien
+    print(f"Paciente: {paciente}")
+    print(f"Informe: {informe}")
+    print(f"Doctor: {doctor}")
+    print(f"Clínica: {clinica}")
+    print(f"Sede: {sede}")
 
     context = {
         'paciente': paciente,
-        'doctor': doctor,
         'informe': informe,
+        'doctor': doctor,
+        'clinica': clinica,
+        'sede': sede,
     }
 
     return render(request, 'consultorioCys/historial_personal.html', context)
 
-    
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
@@ -259,6 +269,7 @@ def crear_paciente(request):
     else:
         form = PacienteForm()
     return render(request, 'paciente_form.html', {'form': form})
+
 # Editar un paciente existente
 def editar_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
@@ -310,9 +321,7 @@ def crear_informe(request, pk):
 
     return render(request, 'crear_informe.html', {'form': form, 'paciente': paciente})
 
-
 #formulario agendar cita y calendario en doctor 
-
 @login_required
 def agendar_cita(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)

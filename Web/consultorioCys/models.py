@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-
 class UsuarioManager(BaseUserManager):
     def create_user(self, rut, password=None, **extra_fields):
         if not rut:
@@ -78,24 +77,6 @@ class Paciente(models.Model):
     def __str__(self):
         return f"{self.nombres_paciente} {self.primer_apellido_paciente}"
 
-class Informe(models.Model):
-    id_informe = models.AutoField(primary_key=True)  # ID Informe
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)  # ID Doctor
-    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)  # ID Paciente
-    titulo_informe = models.CharField(max_length=200)  # Título del Informe
-    descripcion_informe = models.TextField(default='Descripción por defecto.')  # Descripción del Informe
-    notas_doctor = models.TextField(blank=True)  # Notas o comentarios del doctor
-    instrucciones_tratamiento = models.TextField(blank=True)  # Instrucciones (medicamentos o tratamientos)
-    fecha_informe = models.DateTimeField(auto_now_add=True)  # Fecha del Informe (subido)
-    documentos_extra = models.FileField(upload_to='documentos_extra/', blank=True)  # Documentos extras
-
-    class Meta:
-        verbose_name = "Informe"
-        verbose_name_plural = "Informes"
-
-    def __str__(self):
-        return f"Informe: {self.titulo_informe} - Paciente: {self.paciente}"
-
 class Clinica(models.Model):
     id_clinica = models.AutoField(primary_key=True)  # ID Clínica
     nombre_clinica = models.CharField(max_length=100)  # Nombre Clínica
@@ -135,6 +116,27 @@ class DoctorClinica(models.Model):
 
     def __str__(self):
         return f"{self.doctor} - {self.clinica}"
+    
+class Informe(models.Model):
+    id_informe = models.AutoField(primary_key=True)  # ID Informe
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)  # ID Doctor
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)  # ID Paciente
+    clinica = models.ForeignKey(Clinica, on_delete=models.SET_NULL, null=True, blank=True)
+    sede = models.ForeignKey(SedeClinica, on_delete=models.SET_NULL, null=True, blank=True)
+    titulo_informe = models.CharField(max_length=200)  # Título del Informe
+    descripcion_informe = models.TextField(default='Descripción por defecto.')  # Descripción del Informe
+    notas_doctor = models.TextField(blank=True)  # Notas o comentarios del doctor
+    instrucciones_tratamiento = models.TextField(blank=True)  # Instrucciones (medicamentos o tratamientos)
+    fecha_informe = models.DateTimeField(auto_now_add=True)  # Fecha del Informe (subido)
+    documentos_extra = models.FileField(upload_to='documentos_extra/', blank=True)  # Documentos extras
+
+    class Meta:
+        verbose_name = "Informe"
+        verbose_name_plural = "Informes"
+
+    def __str__(self):
+        return f"Informe: {self.titulo_informe} - Paciente: {self.paciente}"
+
 
 class PacienteInforme(models.Model):
     id_paciente_informe = models.AutoField(primary_key=True)  # ID autoincrementable
