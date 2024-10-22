@@ -2,40 +2,43 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="card shadow-lg" style="background-color: #e3f2fd;">
-        <div class="card-header text-white" style="background-color: #0277bd;">
-            <h2 class="text-center">Información del Paciente</h2>
-        </div>
-        <div class="card-body">
-            <p><strong>Nombre Completo:</strong>
-                {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}
-            </p>
-
-            <h3 class="mt-5" style="color: #0277bd;">Informes del Paciente</h3>
-            {% if informes %}
-            <ul class="list-group mt-3">
-                {% for informe in informes %}
-                <li class="list-group-item">
-                    <strong>Fecha:</strong> {{ informe.fecha_informe }} <br>
-                    <strong>Título:</strong> {{ informe.titulo_informe }} <br>
-                    <strong>Descripción:</strong> {{ informe.descripcion_informe }}
-                    {% if informe.archivo %}
-                    <div class="mt-2">
-                        <a href="{{ informe.archivo.url }}" class="btn btn-primary" download>
-                            Descargar Informe
-                        </a>
-                    </div>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p class="text-warning mt-3">No se encontraron informes para este paciente.</p>
-            {% endif %}
-        </div>
-        <div class="card-footer text-center">
-            <a href="{% url 'doctor_dashboard' %}" class="btn btn-secondary">Volver al Dashboard</a>
-        </div>
+  <div class="card shadow-lg" style="background-color: #e3f2fd;">
+    <div class="card-header text-white" style="background-color: #0277bd;">
+      <h2 class="text-center">Información del Paciente</h2>
     </div>
+    <div class="card-body">
+      <p><strong>Nombre Completo:</strong> 
+         {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}
+      </p>
+      <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
+      <p><strong>Email:</strong> {{ paciente.correo_paciente }}</p>
+      <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
+
+      <h3 class="mt-5" style="color: #0277bd;">Informes del Paciente</h3>
+      {% if informes %}
+        <ul class="list-group mt-3">
+          {% for informe in informes %}
+            <li class="list-group-item">
+              <strong>Fecha:</strong> {{ informe.fecha_informe }} <br>
+              <strong>Título:</strong> {{ informe.titulo_informe }} <br>
+              <strong>Descripción:</strong> {{ informe.descripcion_informe }}
+              {% if informe.archivo %}
+                <div class="mt-2">
+                  <a href="{{ informe.archivo.url }}" class="btn btn-primary" download>
+                    Descargar Informe
+                  </a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-warning mt-3">No se encontraron informes para este paciente.</p>
+      {% endif %}
+    </div>
+    <div class="card-footer text-center">
+      <a href="{% url 'doctor_dashboard' %}" class="btn btn-secondary">Volver al Dashboard</a>
+    </div>
+  </div>
 </div>
 {% endblock %}

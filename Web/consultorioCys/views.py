@@ -198,22 +198,29 @@ def buscar_paciente(request):
         clave = request.POST.get('clave')  # Clave del usuario
 
         try:
-            # Buscar al usuario por su RUT (campo primary_key)
+            # Buscar al usuario por su RUT
             usuario = Usuario.objects.get(rut=rut)
 
             # Verificar si la clave proporcionada es correcta
             if usuario.check_password(clave):
-                # Obtener el paciente relacionado con el usuario
-                paciente = get_object_or_404(Paciente, usuario=usuario)
+                try:
+                    # Obtener el paciente relacionado
+                    paciente = usuario.paciente
 
-                # Redirigir a la página con la información del paciente
-                return redirect('paciente_info', rut_paciente=paciente.rut_paciente)
+                    # Redirigir usando reverse() para asegurar la ruta
+                    from django.urls import reverse
+                    url = reverse('paciente_info', kwargs={'rut_paciente': paciente.rut_paciente})
+                    return redirect(url)
+                except Paciente.DoesNotExist:
+                    messages.error(request, "Este RUT no corresponde a un paciente. Inténtelo de nuevo.")
             else:
                 messages.error(request, "Clave incorrecta. Inténtelo de nuevo.")
         except Usuario.DoesNotExist:
-            messages.error(request, "Usuario no encontrado.")
+            messages.error(request, "Usuario no encontrado. Verifique el RUT e intente nuevamente.")
 
-    return redirect('doctor_dashboard')
+    # Si hay errores, volver al dashboard
+    return render(request, 'consultorioCys/doctor_dashboard.html')
+
 # Listado de pacientes
 def listar_pacientes(request):
     pacientes = Paciente.objects.prefetch_related('informe_set')
