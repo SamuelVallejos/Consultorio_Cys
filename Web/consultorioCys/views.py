@@ -201,7 +201,7 @@ def buscar_paciente(request):
             return render(request, 'paciente_no_encontrado.html', {'rut': rut})
 
         # Si se encuentra el paciente, mostrar sus datos en una plantilla
-        return render(request, 'detalle_paciente.html', {'paciente': paciente})
+        return render(request, 'informe_paciente.html', {'paciente': paciente})
     return render(request, 'inicio.html')
 
 # Listado de pacientes
