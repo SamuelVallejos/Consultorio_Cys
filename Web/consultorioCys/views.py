@@ -39,6 +39,7 @@ def inicio(request):
 
 def ia(request):
     return render(request, 'consultorioCys/ia.html')
+
 def acercade(request):
     return render(request, 'consultorioCys/acercade.html')
 
@@ -75,6 +76,9 @@ def historial_personal(request):
 
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
+
+def form_cita(request):
+    return render(request, 'consultorioCys/form_cita.html')
 
 def login_view(request):
     if request.method == 'POST':

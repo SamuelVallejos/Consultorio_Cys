@@ -12,6 +12,7 @@ urlpatterns = [
     path('dashboard/paciente/', views.paciente_dashboard, name="paciente_dashboard"),
     path('doctor/add/', views.add_doctor_view, name="add_doctor"),
     path('ia/', views.ia, name="ia"), 
+    path('form_cita/', views.form_cita, name="form_cita"), 
     path('informe_doctores/', views.informe_doctores, name='informe_doctores'),
     path('buscar_paciente/', views.buscar_paciente, name='buscar_paciente'),
     path('historial_personal/', views.historial_personal, name='historial_personal'),
