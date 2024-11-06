@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, rut, password=None, **extra_fields):
@@ -155,9 +156,10 @@ class PacienteInforme(models.Model):
 class Cita(models.Model):
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, null=True, blank=True) # Nueva relación con el Doctor
-    fecha_cita = models.DateField()
+    fecha_cita = models.DateField(null=True, blank=True)
     tratamiento = models.CharField(max_length=100)
     confirmado = models.BooleanField(default=False)
+    hora = models.TimeField(default=timezone.now().time)
 
     def __str__(self):
         return f"Cita para {self.paciente.nombres_paciente} con el doctor {self.doctor.nombres_doctor} el {self.fecha_cita}"

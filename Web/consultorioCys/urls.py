@@ -22,6 +22,7 @@ urlpatterns = [
     path('pacientes/<str:pk>/eliminar/', views.eliminar_paciente, name='eliminar_paciente'),
     path('pacientes/<str:pk>/informe/', views.informe_paciente, name='informe_paciente'),
     path('pacientes/<str:pk>/crear_informe/', views.crear_informe, name='crear_informe'),  # Nueva ruta para crear informe
-    path('pacientes/<str:pk>/agendar_cita/', views.agendar_cita, name='agendar_cita'),
     path('paciente_info/<str:rut_paciente>/', views.paciente_info, name='paciente_info'),
+    path('ver_calendario/', views.ver_calendario, name='ver_calendario'),
+    path('obtener_citas_json/', views.obtener_citas_json, name='obtener_citas_json'),
 ]

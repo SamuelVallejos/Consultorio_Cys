@@ -124,8 +124,13 @@ class CitaForm(forms.ModelForm):
     class Meta:
         model = Cita
         fields = ['fecha_cita', 'tratamiento']
-
         widgets = {
             'fecha_cita': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'tratamiento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especifica el tratamiento'}),
+            'tratamiento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Describe el tratamiento'}),
         }
+
+    hora = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        required=True,
+        label="Hora de la cita"
+    )

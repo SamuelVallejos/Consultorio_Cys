@@ -16,7 +16,6 @@ from .forms import LoginForm
 from django.http import JsonResponse
 from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm
-from .forms import InformeForm # Asegúrate de tener estos modelos
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -326,28 +325,63 @@ def crear_informe(request, pk):
     return render(request, 'crear_informe.html', {'form': form, 'paciente': paciente})
 
 #formulario agendar cita y calendario en doctor 
-@login_required
-def agendar_cita(request, pk):
-    paciente = get_object_or_404(Paciente, pk=pk)
+def form_cita(request):
+    # Verificar que el usuario autenticado es un paciente
+    try:
+        paciente = Paciente.objects.get(usuario=request.user)
+    except Paciente.DoesNotExist:
+        messages.error(request, 'Solo los pacientes pueden solicitar citas.')
+        return redirect('inicio')  # Redirige a la página de inicio si no es paciente
 
     if request.method == 'POST':
         form = CitaForm(request.POST)
         if form.is_valid():
+            # Crear una nueva cita
             cita = form.save(commit=False)
-            cita.paciente = paciente
+            cita.paciente = paciente  # Asigna el paciente actual a la cita
+
+            # Si el paciente ya tiene un doctor asignado, lo agregamos a la cita
+            if Doctor.objects.filter(usuario=request.user).exists():
+                cita.doctor = Doctor.objects.get(usuario=request.user)
+            
+            # Guardar la cita y confirmar
             cita.save()
-            # Usar el framework de mensajes para mostrar confirmación
-            messages.success(request, 'Cita agendada con éxito')
-            return redirect('inicio')  # Redirigir al inicio después de agendar la cita
+            messages.success(request, 'Su cita ha sido solicitada con éxito.')
+            return redirect('inicio')
     else:
         form = CitaForm()
 
-    return render(request, 'agendar_cita.html', {'form': form, 'paciente': paciente})
+    return render(request, 'consultorioCys/form_cita.html', {'form': form})
 
-def calendario_citas(request):
-    # Filtrar citas por el doctor autenticado
-    citas = Cita.objects.filter(doctor=request.user.doctor)
-    return render(request, 'calendario_citas.html', {'citas': citas})
 
+@login_required
+def ver_calendario(request):
+    if request.user.is_authenticated and hasattr(request.user, 'doctor'):
+        # Obtiene las citas relacionadas al doctor autenticado
+        doctor = request.user.doctor
+        return render(request, 'consultorioCys/ver_calendario.html', {'doctor': doctor})
+    else:
+        # Redirige si el usuario no es un doctor autenticado
+        return redirect('inicio')
+
+@login_required
+def obtener_citas_json(request):
+    if request.user.is_authenticated and hasattr(request.user, 'doctor'):
+        doctor = request.user.doctor
+        citas = Cita.objects.filter(doctor=doctor)
+        citas_json = [
+            {
+                "title": f"{cita.paciente.nombres_paciente} {cita.paciente.primer_apellido_paciente}",
+                "start": f"{cita.fecha_cita}T{cita.hora}",
+                "end": f"{cita.fecha_cita}T{cita.hora}",
+                "extendedProps": {
+                    "tratamiento": cita.tratamiento
+                }
+            }
+            for cita in citas
+        ]
+        return JsonResponse(citas_json, safe=False)
+    else:
+        return JsonResponse([], safe=False)
 
 #ACA TERMINA EL CALENDARIO 
