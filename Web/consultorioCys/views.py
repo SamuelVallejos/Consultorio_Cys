@@ -77,14 +77,13 @@ def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
 def pedir_hora(request):
-    # Obtener todas las especialidades únicas de los doctores
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
-    
-    # Filtrar las sedes en función de la especialidad seleccionada
-    especialidad_seleccionada = request.GET.get('especialidad')
     sedes = []
     
+    especialidad_seleccionada = request.GET.get('especialidad')
+    
     if especialidad_seleccionada:
+        # Filtra las sedes por la especialidad seleccionada
         sedes = SedeClinica.objects.filter(
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()

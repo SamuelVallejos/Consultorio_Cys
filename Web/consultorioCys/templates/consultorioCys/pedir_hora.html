@@ -7,8 +7,8 @@
     <h2 class="text-center mb-4">Seleccionar Especialidad y Ubicación</h2>
     <form method="get" action="{% url 'pedir_hora' %}">
         {% csrf_token %}
-        
-        <!-- Select para elegir la especialidad médica -->
+
+        <!-- Selección de especialidad -->
         <div class="form-group mb-3">
             <label for="especialidad">Especialidad Médica</label>
             <select id="especialidad" name="especialidad" class="form-control" onchange="this.form.submit()">
@@ -18,23 +18,23 @@
                 {% endfor %}
             </select>
         </div>
-
-        <!-- Select para elegir la sede (disponible solo después de seleccionar una especialidad) -->
+        <!-- Selección de sede (se muestra solo si hay sedes) -->
         {% if sedes %}
-            <div class="form-group mb-3">
-                <label for="sede">Región, Comuna o Centro de Preferencia</label>
-                <select id="sede" name="sede" class="form-control">
-                    <option value="">Selecciona una sede</option>
-                    {% for sede in sedes %}
-                        <option value="{{ sede.id }}">{{ sede.nombre_clinica }} - {{ sede.comuna_sede }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <div class="form-group mb-3">
+            <label for="sede">Región, Comuna o Centro de Preferencia</label>
+            <select id="sede" name="sede" class="form-control">
+                <option value="">Selecciona una sede</option>
+                {% for sede in sedes %}
+                <option value="{{ sede.id }}">{{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
+                {% endfor %}
+            </select>
+        </div>
         {% endif %}
+
+
 
         <button type="submit" class="btn btn-primary">Buscar Doctores</button>
     </form>
 </div>
-
 
 {% endblock %}

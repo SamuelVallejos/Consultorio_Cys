@@ -12,7 +12,7 @@ python manage.py runserver
 
 datos para llenar las tablas
 
-Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 213
+Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 217
 
 ------------------------------------------------------------------------------
 
@@ -37,9 +37,18 @@ usuario_doctor2 = Usuario(
 usuario_doctor2.set_password('contrasena123')
 usuario_doctor2.save()
 
+usuario_doctor3 = Usuario(
+    rut='54678912-3',
+    email='carlos.soto@usuario.com',
+    nombre='Carlos',
+    apellido='Soto'
+)
+usuario_doctor3.set_password('contrasena123')
+usuario_doctor3.save()
+
 # Crear doctores
 doctor1 = Doctor(
-    usuario=usuario_doctor1,  # Relacionar con usuario
+    usuario=usuario_doctor1,  
     rut_doctor='12345678-1',
     nombres_doctor='Juan',
     primer_apellido_doctor='Pérez',
@@ -52,7 +61,7 @@ doctor1 = Doctor(
 doctor1.save()
 
 doctor2 = Doctor(
-    usuario=usuario_doctor2,  # Relacionar con usuario
+    usuario=usuario_doctor2,  
     rut_doctor='87654321-2',
     nombres_doctor='Ana',
     primer_apellido_doctor='Gómez',
@@ -63,6 +72,19 @@ doctor2 = Doctor(
     especialidad_doctor='Pediatría'
 )
 doctor2.save()
+
+doctor3 = Doctor(
+    usuario=usuario_doctor3,
+    rut_doctor='54678912-3',
+    nombres_doctor='Carlos',
+    primer_apellido_doctor='Soto',
+    segundo_apellido_doctor='Fernández',
+    correo_doctor='carlos.soto@doctor.com',
+    telefono_doctor='123456789',
+    fecha_nacimiento_doctor='1985-03-10',
+    especialidad_doctor='Medicina General'
+)
+doctor3.save()
 
 # Crear pacientes
 usuario_paciente1 = Usuario(
@@ -75,7 +97,7 @@ usuario_paciente1.set_password('contrasena123')
 usuario_paciente1.save()
 
 paciente1 = Paciente(
-    usuario=usuario_paciente1,  # Relacionar con usuario
+    usuario=usuario_paciente1,  
     rut_paciente='98765432-3',
     nombres_paciente='María',
     primer_apellido_paciente='López',
@@ -98,7 +120,7 @@ usuario_paciente2.set_password('contrasena123')
 usuario_paciente2.save()
 
 paciente2 = Paciente(
-    usuario=usuario_paciente2,  # Relacionar con usuario
+    usuario=usuario_paciente2,  
     rut_paciente='12345679-4',
     nombres_paciente='Carlos',
     primer_apellido_paciente='Sánchez',
@@ -111,34 +133,20 @@ paciente2 = Paciente(
 )
 paciente2.save()
 
-# Crear informes
-doctor_obj1 = Doctor.objects.get(rut_doctor='12345678-1')
-paciente_obj1 = Paciente.objects.get(rut_paciente='98765432-3')
-
-doctor_obj2 = Doctor.objects.get(rut_doctor='87654321-2')
-paciente_obj2 = Paciente.objects.get(rut_paciente='12345679-4')
-
-informe1 = Informe(
-    doctor=doctor_obj1,
-    paciente=paciente_obj1,
-    titulo_informe='Consulta Cardiológica',
-    descripcion_informe='Informe de consulta cardiológica realizado.',
-    notas_doctor='El paciente muestra síntomas de fatiga.',
-    instrucciones_tratamiento='Recomendaciones de descanso y revisión.',
-    documentos_extra=None
+# Crear pacientes para el usuario compartido
+paciente_compartido = Paciente(
+    usuario=usuario_doctor3,  
+    rut_paciente='54678912-3',
+    nombres_paciente='Carlos',
+    primer_apellido_paciente='Soto',
+    segundo_apellido_paciente='Fernández',
+    correo_paciente='carlos.soto@paciente.com',
+    telefono_paciente='987654321',
+    fecha_nacimiento_paciente='1985-03-10',
+    direccion_paciente='Av. Independencia 456',
+    genero_paciente='M'
 )
-informe1.save()
-
-informe2 = Informe(
-    doctor=doctor_obj2,
-    paciente=paciente_obj2,
-    titulo_informe='Consulta Pediátrica',
-    descripcion_informe='Informe de consulta pediátrica realizado.',
-    notas_doctor='El paciente está sano y activo.',
-    instrucciones_tratamiento='Mantener una dieta equilibrada.',
-    documentos_extra=None
-)
-informe2.save()
+paciente_compartido.save()
 
 # Crear clínicas
 clinica1 = Clinica(
@@ -174,40 +182,36 @@ nueva_sede2 = SedeClinica(
 )
 nueva_sede2.save()
 
-usuario_compartido = Usuario(
-    rut='54678912-3',
-    email='doctor.paciente@example.com',
-    nombre='Carlos',
-    apellido='Soto'
+# Crear informes
+informe1 = Informe(
+    doctor=doctor1,
+    paciente=paciente1,
+    titulo_informe='Consulta Cardiológica',
+    descripcion_informe='Informe de consulta cardiológica realizado.',
+    notas_doctor='El paciente muestra síntomas de fatiga.',
+    instrucciones_tratamiento='Recomendaciones de descanso y revisión.',
+    documentos_extra=None
 )
-usuario_compartido.set_password('contrasena123')
-usuario_compartido.save() 
+informe1.save()
 
-doctor_compartido = Doctor(
-    usuario=usuario_compartido,  # Asociar con el usuario creado
-    rut_doctor='54678912-3',
-    nombres_doctor='Carlos',
-    primer_apellido_doctor='Soto',
-    segundo_apellido_doctor='Fernández',
-    correo_doctor='carlos.soto@doctor.com',
-    telefono_doctor='123456789',
-    fecha_nacimiento_doctor='1985-03-10',
-    especialidad_doctor='Medicina General'
+informe2 = Informe(
+    doctor=doctor2,
+    paciente=paciente2,
+    titulo_informe='Consulta Pediátrica',
+    descripcion_informe='Informe de consulta pediátrica realizado.',
+    notas_doctor='El paciente está sano y activo.',
+    instrucciones_tratamiento='Mantener una dieta equilibrada.',
+    documentos_extra=None
 )
-doctor_compartido.save()
+informe2.save()
 
-paciente_compartido = Paciente(
-    usuario=usuario_compartido,  # Asociar con el usuario creado
-    rut_paciente='54678912-3',
-    nombres_paciente='Carlos',
-    primer_apellido_paciente='Soto',
-    segundo_apellido_paciente='Fernández',
-    correo_paciente='carlos.soto@paciente.com',
-    telefono_paciente='987654321',
-    fecha_nacimiento_paciente='1985-03-10',
-    direccion_paciente='Av. Independencia 456',
-    genero_paciente='M'
-)
-paciente_compartido.save()
+# Crear relaciones entre doctores y sedes en DoctorClinica
+from consultorioCys.models import DoctorClinica
+
+DoctorClinica.objects.create(doctor=doctor1, sede=nueva_sede1)
+DoctorClinica.objects.create(doctor=doctor2, sede=nueva_sede2)
+DoctorClinica.objects.create(doctor=doctor3, sede=nueva_sede1)
+
+print("Datos cargados exitosamente.")
 
 exit()
