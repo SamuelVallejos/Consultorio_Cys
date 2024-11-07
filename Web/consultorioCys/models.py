@@ -155,11 +155,11 @@ class PacienteInforme(models.Model):
     
 class Cita(models.Model):
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, null=True, blank=True) # Nueva relación con el Doctor
-    fecha_cita = models.DateField(null=True, blank=True)
-    tratamiento = models.CharField(max_length=100)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    fecha_cita = models.DateField()
+    hora_cita = models.TimeField()
+    motivo_consulta = models.CharField(max_length=255, blank=True, null=True)
     confirmado = models.BooleanField(default=False)
-    hora = models.TimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Cita para {self.paciente.nombres_paciente} con el doctor {self.doctor.nombres_doctor} el {self.fecha_cita}"
+        return f"Cita para {self.paciente.nombres_paciente} con {self.doctor.nombres_doctor} el {self.fecha_cita}"

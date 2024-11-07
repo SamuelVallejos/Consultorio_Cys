@@ -16,6 +16,7 @@ from .forms import LoginForm
 from django.http import JsonResponse
 from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm
+from django.urls import reverse
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -76,23 +77,50 @@ def historial_personal(request):
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
+def seleccionar_doctor(request):
+    especialidad = request.GET.get('especialidad')
+    sede_id = request.GET.get('sede')
+    
+    doctores = Doctor.objects.filter(especialidad_doctor=especialidad, doctorclinica__sede_id=sede_id)
+
+    return render(request, 'seleccionar_doctor.html', {
+        'doctores': doctores,
+        'especialidad': especialidad,
+    })
+
+def horarios_doctor(request, doctor_id):
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    
+    # Aquí puedes definir los horarios disponibles, por ejemplo, en intervalos de 15 minutos de 7:00 a 10:00
+    horarios_disponibles = [
+        "07:00", "07:15", "07:30", "07:45", "08:00",
+        "08:15", "08:30", "08:45", "09:00", "09:15", "09:30"
+    ]
+    
+    return render(request, 'horarios_doctor.html', {
+        'doctor': doctor,
+        'horarios': horarios_disponibles,
+    })
+
+@login_required
 def pedir_hora(request):
-    especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
-    sedes = []
-    
     especialidad_seleccionada = request.GET.get('especialidad')
-    
+    sedes = []
+
+    # Si hay una especialidad seleccionada, filtramos las sedes
     if especialidad_seleccionada:
-        # Filtra las sedes por la especialidad seleccionada
         sedes = SedeClinica.objects.filter(
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()
-    
+
+    especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
+
     return render(request, 'pedir_hora.html', {
         'especialidades': especialidades,
         'sedes': sedes,
+        'especialidad_seleccionada': especialidad_seleccionada,
     })
-
+    
 def sedes_por_especialidad(request, especialidad):
     # Filtrar las sedes que tienen doctores con la especialidad seleccionada
     sedes = SedeClinica.objects.filter(

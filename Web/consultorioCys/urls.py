@@ -27,4 +27,7 @@ urlpatterns = [
     path('obtener_citas_json/', views.obtener_citas_json, name='obtener_citas_json'),
     path('buscar_doctores/', views.pedir_hora, name='buscar_doctores'),
     path('pedir_hora/', views.pedir_hora, name='pedir_hora'),
+    path('seleccionar_doctor/', views.seleccionar_doctor, name='seleccionar_doctor'),
+    path('horarios_doctor/<int:doctor_id>/', views.horarios_doctor, name='horarios_doctor'),
+
 ]

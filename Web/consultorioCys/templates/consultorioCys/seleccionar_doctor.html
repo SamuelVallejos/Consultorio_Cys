@@ -1,0 +1,17 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Seleccione un Doctor para {{ especialidad }}</h2>
+    
+    {% for doctor in doctores %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</h5>
+            <p class="card-text">{{ doctor.especialidad_doctor }}</p>
+            <a href="{% url 'doctor_horarios' doctor.id %}" class="btn btn-primary">Ver Horarios Disponibles</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

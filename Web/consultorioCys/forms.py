@@ -123,14 +123,8 @@ class InformeForm(forms.ModelForm):
 class CitaForm(forms.ModelForm):
     class Meta:
         model = Cita
-        fields = ['fecha_cita', 'tratamiento']
+        fields = ['paciente', 'doctor', 'fecha_cita', 'hora_cita', 'motivo_consulta']
         widgets = {
-            'fecha_cita': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'tratamiento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Describe el tratamiento'}),
+            'fecha_cita': forms.DateInput(attrs={'type': 'date'}),
+            'hora_cita': forms.TimeInput(attrs={'type': 'time'}),
         }
-
-    hora = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
-        required=True,
-        label="Hora de la cita"
-    )
