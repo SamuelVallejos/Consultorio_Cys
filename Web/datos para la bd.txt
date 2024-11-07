@@ -12,7 +12,7 @@ python manage.py runserver
 
 datos para llenar las tablas
 
-Ejeturar en cmd "python manage.py shell" y pega lo siguiente
+Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 213
 
 ------------------------------------------------------------------------------
 
@@ -173,12 +173,6 @@ nueva_sede2 = SedeClinica(
     telefono_sede='654321987'
 )
 nueva_sede2.save()
-
-exit()
-
--------------------------------------------------------------------------------------------
-
-from consultorioCys.models import Doctor, Paciente, Usuario
 
 usuario_compartido = Usuario(
     rut='54678912-3',

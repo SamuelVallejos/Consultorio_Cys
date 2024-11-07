@@ -159,7 +159,7 @@ class Cita(models.Model):
     fecha_cita = models.DateField(null=True, blank=True)
     tratamiento = models.CharField(max_length=100)
     confirmado = models.BooleanField(default=False)
-    hora = models.TimeField(default=timezone.now().time)
+    hora = models.TimeField(default=timezone.now)
 
     def __str__(self):
         return f"Cita para {self.paciente.nombres_paciente} con el doctor {self.doctor.nombres_doctor} el {self.fecha_cita}"

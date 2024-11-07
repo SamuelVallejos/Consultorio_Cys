@@ -94,6 +94,20 @@ def pedir_hora(request):
         'sedes': sedes,
     })
 
+def sedes_por_especialidad(request, especialidad):
+    # Filtrar las sedes que tienen doctores con la especialidad seleccionada
+    sedes = SedeClinica.objects.filter(
+        doctorclinica__doctor__especialidad_doctor=especialidad
+    ).distinct()
+
+    sedes_data = [
+        {'id': sede.id, 'nombre': sede.nombre_clinica, 'comuna': sede.comuna_sede}
+        for sede in sedes
+    ]
+    
+    return JsonResponse({'sedes': sedes_data})
+
+
 def login_view(request):
     if request.method == 'POST':
         # Obtener datos del formulario
