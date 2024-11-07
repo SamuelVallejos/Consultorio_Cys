@@ -108,15 +108,15 @@ class SedeClinica(models.Model):
 
 class DoctorClinica(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)  # ID Doctor
-    clinica = models.ForeignKey(Clinica, on_delete=models.CASCADE)  # ID Clínica
+    sede = models.ForeignKey(SedeClinica, on_delete=models.CASCADE)  # Relación con SedeClinica en lugar de Clinica
 
     class Meta:
-        unique_together = (('doctor', 'clinica'),)
-        verbose_name = "Doctor en Clínica"
-        verbose_name_plural = "Doctores en Clínicas"
+        unique_together = (('doctor', 'sede'),)
+        verbose_name = "Doctor en Sede"
+        verbose_name_plural = "Doctores en Sedes"
 
     def __str__(self):
-        return f"{self.doctor} - {self.clinica}"
+        return f"{self.doctor} - {self.sede}"
     
 class Informe(models.Model):
     id_informe = models.AutoField(primary_key=True)  # ID Informe

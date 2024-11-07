@@ -76,8 +76,23 @@ def historial_personal(request):
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
-def form_cita(request):
-    return render(request, 'consultorioCys/form_cita.html')
+def pedir_hora(request):
+    # Obtener todas las especialidades únicas de los doctores
+    especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
+    
+    # Filtrar las sedes en función de la especialidad seleccionada
+    especialidad_seleccionada = request.GET.get('especialidad')
+    sedes = []
+    
+    if especialidad_seleccionada:
+        sedes = SedeClinica.objects.filter(
+            doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
+        ).distinct()
+    
+    return render(request, 'pedir_hora.html', {
+        'especialidades': especialidades,
+        'sedes': sedes,
+    })
 
 def login_view(request):
     if request.method == 'POST':

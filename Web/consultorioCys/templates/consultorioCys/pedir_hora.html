@@ -1,0 +1,40 @@
+{% extends 'consultorioCys/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Seleccionar Especialidad y Ubicación</h2>
+    <form method="get" action="{% url 'pedir_hora' %}">
+        {% csrf_token %}
+        
+        <!-- Select para elegir la especialidad médica -->
+        <div class="form-group mb-3">
+            <label for="especialidad">Especialidad Médica</label>
+            <select id="especialidad" name="especialidad" class="form-control" onchange="this.form.submit()">
+                <option value="">Selecciona una especialidad</option>
+                {% for especialidad in especialidades %}
+                    <option value="{{ especialidad }}" {% if especialidad == request.GET.especialidad %}selected{% endif %}>{{ especialidad }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Select para elegir la sede (disponible solo después de seleccionar una especialidad) -->
+        {% if sedes %}
+            <div class="form-group mb-3">
+                <label for="sede">Región, Comuna o Centro de Preferencia</label>
+                <select id="sede" name="sede" class="form-control">
+                    <option value="">Selecciona una sede</option>
+                    {% for sede in sedes %}
+                        <option value="{{ sede.id }}">{{ sede.nombre_clinica }} - {{ sede.comuna_sede }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Buscar Doctores</button>
+    </form>
+</div>
+
+
+{% endblock %}
