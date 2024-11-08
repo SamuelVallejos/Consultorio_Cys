@@ -104,14 +104,30 @@ def horarios_doctor(request, doctor_id):
 
 @login_required
 def pedir_hora(request):
-    especialidad_seleccionada = request.GET.get('especialidad')
+    especialidad_seleccionada = request.GET.get('especialidad') or request.POST.get('especialidad')
     sedes = []
+    error_message = None
 
-    # Si hay una especialidad seleccionada, filtramos las sedes
+    # Cargar las sedes si se selecciona una especialidad
     if especialidad_seleccionada:
         sedes = SedeClinica.objects.filter(
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()
+
+    # Validar ambos campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
+    if request.method == 'POST':
+        especialidad = request.POST.get('especialidad')
+        sede_id = request.POST.get('sede')
+
+        # Debug: imprimir valores en consola para verificar
+        print("Especialidad:", especialidad)
+        print("Sede ID:", sede_id)
+
+        if especialidad and sede_id:
+            # Redirigir a la página de selección de doctores con los parámetros en la URL
+            return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}")
+        else:
+            error_message = "Por favor, seleccione tanto la especialidad como la sede antes de continuar."
 
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
@@ -119,6 +135,7 @@ def pedir_hora(request):
         'especialidades': especialidades,
         'sedes': sedes,
         'especialidad_seleccionada': especialidad_seleccionada,
+        'error_message': error_message,
     })
     
 def sedes_por_especialidad(request, especialidad):

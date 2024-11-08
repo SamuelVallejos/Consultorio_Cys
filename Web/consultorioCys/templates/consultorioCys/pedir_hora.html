@@ -4,49 +4,61 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Seleccionar Especialidad y Ubicación</h2>
 
+    <!-- Mostrar mensaje de error si existe -->
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+
+    <!-- Formulario GET para recargar la página con la especialidad seleccionada -->
     <form method="get" action="{% url 'pedir_hora' %}">
-        {% csrf_token %}
-        
-        <!-- Selección de especialidad -->
         <div class="form-group mb-3">
             <label for="especialidad">Especialidad Médica</label>
             <select id="especialidad" name="especialidad" class="form-control" onchange="this.form.submit()">
                 <option value="">Selecciona una especialidad</option>
                 {% for especialidad in especialidades %}
-                    <option value="{{ especialidad }}" {% if especialidad == especialidad_seleccionada %}selected{% endif %}>{{ especialidad }}</option>
+                    <option value="{{ especialidad }}" {% if especialidad == especialidad_seleccionada %}selected{% endif %}>
+                        {{ especialidad }}
+                    </option>
                 {% endfor %}
             </select>
         </div>
+    </form>
 
-        <!-- Selección de sede (solo se muestra si se ha seleccionado una especialidad) -->
-        {% if especialidad_seleccionada %}
+    <!-- Formulario POST para seleccionar sede y buscar doctores -->
+    {% if especialidad_seleccionada %}
+    <form method="post" action="{% url 'pedir_hora' %}">
+        {% csrf_token %}
+        <input type="hidden" name="especialidad" value="{{ especialidad_seleccionada }}">
+
         <div class="form-group mb-3">
             <label for="sede">Región, Comuna o Centro de Preferencia</label>
-            <select id="sede" name="sede" class="form-control">
+            <select id="sede" name="sede" class="form-control" onchange="toggleButton()">
                 <option value="">Selecciona una sede</option>
                 {% for sede in sedes %}
                     <option value="{{ sede.id }}">{{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
                 {% endfor %}
             </select>
         </div>
-        {% endif %}
 
-        <button type="submit" class="btn btn-primary" onclick="return validarFormulario()">Buscar Doctores</button>
+        <button type="submit" class="btn btn-primary" id="buscarButton" disabled>Buscar Doctores</button>
     </form>
+    {% endif %}
 </div>
 
 <script>
-// Función para validar que ambos campos estén completos antes de enviar
-function validarFormulario() {
-    const especialidad = document.getElementById('especialidad').value;
-    const sede = document.getElementById('sede') ? document.getElementById('sede').value : null;
+    function toggleButton() {
+        // Obtener el valor seleccionado del campo de sede
+        const sede = document.getElementById("sede").value;
+        const buscarButton = document.getElementById("buscarButton");
 
-    if (especialidad && sede) {
-        return true;  // Permitir el envío del formulario
-    } else {
-        alert('Por favor, seleccione tanto la especialidad como la sede antes de continuar.');
-        return false;  // Prevenir el envío del formulario
+        // Verificar si hay un valor seleccionado y habilitar el botón
+        if (sede) {
+            buscarButton.disabled = false;
+        } else {
+            buscarButton.disabled = true;
+        }
     }
-}
 </script>
 {% endblock %}

@@ -2,16 +2,21 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Seleccione un Doctor para {{ especialidad }}</h2>
+    <h2 class="text-center mb-4">Doctores en {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</h2>
+    <h3 class="text-center mb-4">Especialidad: {{ especialidad }}</h3>
     
-    {% for doctor in doctores %}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</h5>
-            <p class="card-text">{{ doctor.especialidad_doctor }}</p>
-            <a href="{% url 'doctor_horarios' doctor.id %}" class="btn btn-primary">Ver Horarios Disponibles</a>
+    {% if doctores %}
+        <div class="list-group">
+            {% for doctor in doctores %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</h5>
+                    <p class="mb-1">Especialidad: {{ doctor.especialidad_doctor }}</p>
+                    <small>Contacto: {{ doctor.correo_doctor }} | Tel: {{ doctor.telefono_doctor }}</small>
+                </a>
+            {% endfor %}
         </div>
-    </div>
-    {% endfor %}
+    {% else %}
+        <p class="text-center">No se encontraron doctores para esta especialidad y sede.</p>
+    {% endif %}
 </div>
 {% endblock %}
