@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm
 from django.urls import reverse
+from django.utils import timezone
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -42,37 +43,48 @@ def ia(request):
 
 def acercade(request):
     return render(request, 'consultorioCys/acercade.html')
-
+#HISTORIA CLINICO 
 def historial_personal(request):
     usuario = request.user
 
-    # Obtener el paciente asociado al usuario
-    paciente = Paciente.objects.filter(usuario=usuario).first()
+    # Obtener el paciente asociado al usuario autenticado
+    paciente = get_object_or_404(Paciente, usuario=usuario)
 
-    # Obtener el informe más reciente del paciente
-    informe = Informe.objects.filter(paciente=paciente).select_related('doctor', 'clinica', 'sede').first()
+    # Obtener todos los informes del paciente
+    informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
-    # Verificar que informe, doctor, clínica, y sede estén disponibles
-    doctor = informe.doctor if informe else None
-    clinica = informe.clinica if informe else None
-    sede = informe.sede if informe else None
+    # Obtener el informe más reciente (opcional, si se necesita para destacar)
+    informe_reciente = informes.first() if informes.exists() else None
 
-    # Depuración: imprimir para asegurarnos de que todo esté bien
-    print(f"Paciente: {paciente}")
-    print(f"Informe: {informe}")
-    print(f"Doctor: {doctor}")
-    print(f"Clínica: {clinica}")
-    print(f"Sede: {sede}")
+    # Obtener las citas futuras del paciente
+    citas = Cita.objects.filter(
+        paciente=paciente,
+        fecha_cita__gte=timezone.now().date()
+    ).order_by('fecha_cita', 'hora_cita')
+
+    # Obtener el doctor, clínica y sede del informe más reciente
+    doctor = informe_reciente.doctor if informe_reciente else None
+    clinica = informe_reciente.clinica if informe_reciente else None
+    sede = informe_reciente.sede if informe_reciente else None
 
     context = {
         'paciente': paciente,
-        'informe': informe,
+        'informes': informes,  # Todos los informes del paciente
+        'informe_reciente': informe_reciente,  # Informe más reciente
         'doctor': doctor,
         'clinica': clinica,
         'sede': sede,
+        'citas': citas,
     }
-
     return render(request, 'consultorioCys/historial_personal.html', context)
+
+def detalle_informe(request, pk):
+    # Obtener el informe por su ID
+    informe = get_object_or_404(Informe, pk=pk)
+
+    return render(request, 'consultorioCys/detalle_informe.html', {'informe': informe})
+
+#AQUI TERMINA EL historial_personal
 
 def historial(request):
     return render(request, 'consultorioCys/historial.html')

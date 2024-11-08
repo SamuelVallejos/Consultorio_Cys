@@ -1,23 +1,19 @@
 {% extends 'consultorioCys/base_generic.html' %}
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Historiales | Consultorio Cys</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
-    <link rel="stylesheet" href="{% static 'consultorioCys/css/historial.css' %}" />
+    <title>Historial Médico | Consultorio Cys</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .header-bar {
             background-color: #00bfff;
             padding: 10px 20px;
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
 
         .content-container {
@@ -38,10 +34,6 @@
         }
 
         .btn-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            /* Espaciado entre botones */
             margin-top: 10px;
         }
     </style>
@@ -50,81 +42,18 @@
 <body>
     {% block content %}
     <div class="container mt-4">
-        <!-- Contenedor principal -->
-        <div class="content-container shadow-lg p-4 mt-4 bg-white rounded">
-            <div class="text-center mb-4">
-                <h2 class="fw-bold">Historial Médico</h2>
-            </div>
-
-            <!-- Tabla con la información -->
+        <div class="content-container shadow-lg p-4 bg-white rounded">
+            <h2 class="fw-bold text-center">Historial Médico</h2>
+            
+            <!-- Información del Paciente -->
             <table class="table table-bordered shadow-sm table-hover">
                 <tbody>
-                    <!-- Información del Doctor/a -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Información del Doctor/a</th>
-                    </tr>
-                    <tr>
-                        <td>Nombre del Doctor/a</td>
-                        <td>{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }} {{ doctor.segundo_apellido_doctor }}</td>
-                    </tr>
-                    <tr>
-                        <td>Número de licencia médica</td>
-                        <td>{{ doctor.rut_doctor }}</td>
-                    </tr>
-                    <tr>
-                        <td>Teléfono</td>
-                        <td>{{ doctor.telefono_doctor }}</td>
-                    </tr>
-                    <tr>
-                        <td>Correo</td>
-                        <td>{{ doctor.correo_doctor }}</td>
-                    </tr>
-
-                    <!-- Información de la Clínica 
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Clínica</th>
-                    </tr>
-                    <tr>
-                        <td>Nombre de la Clínica</td>
-                        <td>{{ clinica.nombre_clinica }}</td>
-                    </tr>
-                    <tr>
-                        <td>Teléfono</td>
-                        <td>{{ clinica.telefono_clinica }}</td>
-                    </tr>
-                    <tr>
-                        <td>Correo</td>
-                        <td>{{ clinica.correo_clinica }}</td>
-                    </tr>
-                    
-                    Información de la Sede 
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Sede</th>
-                    </tr>
-                    <tr>
-                        <td>Región</td>
-                        <td>{{ sede.region_sede }}</td>
-                    </tr>
-                    <tr>
-                        <td>Comuna</td>
-                        <td>{{ sede.comuna_sede }}</td>
-                    </tr>
-                    <tr>
-                        <td>Dirección</td>
-                        <td>{{ sede.direccion_sede }}</td>
-                    </tr>
-                    <tr>
-                        <td>Teléfono</td>
-                        <td>{{ sede.telefono_sede }}</td>
-                    </tr>
-                    -->
-                    <!-- Información del Paciente -->
                     <tr class="table-primary">
                         <th colspan="2" class="text-center">Información del Paciente</th>
                     </tr>
                     <tr>
                         <td>Nombre</td>
-                        <td>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{  paciente.segundo_apellido_paciente }}</td>
+                        <td>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</td>
                     </tr>
                     <tr>
                         <td>Fecha de Nacimiento</td>
@@ -142,54 +71,49 @@
                         <td>Correo</td>
                         <td>{{ paciente.correo_paciente }}</td>
                     </tr>
-
-                    <!-- Receta -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Receta</th>
-                    </tr>
-                    <tr>
-                        <td>Medicación/es</td>
-                        <td>{{ informe.titulo_informe }}</td>
-                    </tr>
-                    <tr>
-                        <td>Posología/dosis</td>
-                        <td>{{ informe.notas_doctor }}</td>
-                    </tr>
-                    <tr>
-                        <td>Instrucciones</td>
-                        <td>{{ informe.instrucciones_tratamiento }}</td>
-                    </tr>
-
-                    <!-- Notas adicionales -->
-                    <tr class="table-primary">
-                        <th colspan="2" class="text-center">Notas adicionales</th>
-                    </tr>
-                    <tr>
-                        <td>Nombre y Firma del Doctor/a</td>
-                        <td>{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</td>
-                    </tr>
-                    <tr>
-                        <td>Fecha</td>
-                        <td>{{ informe.fecha_informe }}</td>
-                    </tr>
                 </tbody>
             </table>
 
-            <!-- Botones de acción -->
-            <div class="d-flex justify-content-end mt-4">
-                <a href="{% url 'inicio' %}" class="btn btn-outline-primary me-2">
-                    <i class="bi bi-arrow-left-circle"></i> Volver
-                </a>
-            </div>
+            <!-- Informes Médicos -->
+            <table class="table table-bordered shadow-sm table-hover mt-4">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Doctor</th>
+                        <th>Título</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for informe in informes %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ informe.fecha_informe|date:"d M Y, H:i" }}</td>
+                        <td>Dr. {{ informe.doctor.nombres_doctor }} {{ informe.doctor.primer_apellido_doctor }}</td>
+                        <td>{{ informe.titulo_informe }}</td>
+                        <td>
+                            <a href="{% url 'detalle_informe' informe.id_informe %}" class="btn btn-primary btn-sm">
+                                Ver Informe
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No hay informes disponibles.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botón de regreso -->
+        <div class="text-center mt-4">
+            <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Volver
+            </a>
         </div>
     </div>
-
-
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
-        rel="stylesheet">
-
     {% endblock %}
 </body>
 

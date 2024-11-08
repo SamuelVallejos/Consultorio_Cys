@@ -29,5 +29,5 @@ urlpatterns = [
     path('pedir_hora/', views.pedir_hora, name='pedir_hora'),
     path('seleccionar_doctor/', views.seleccionar_doctor, name='seleccionar_doctor'),
     path('horarios_doctor/<int:doctor_id>/', views.horarios_doctor, name='horarios_doctor'),
-
+    path('informe/<int:pk>/', views.detalle_informe, name='detalle_informe'),
 ]
