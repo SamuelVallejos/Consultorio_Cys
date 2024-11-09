@@ -15,7 +15,7 @@ from django.contrib.auth import authenticate, login, logout
 from .forms import LoginForm
 from django.http import JsonResponse
 from .models import Paciente, Informe, Cita
-from .forms import PacienteForm, CitaForm
+from .forms import PacienteForm, CitaForm, InformeForm
 from django.urls import reverse
 from django.utils import timezone
 
