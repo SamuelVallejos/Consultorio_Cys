@@ -37,28 +37,14 @@
             <select id="sede" name="sede" class="form-control" onchange="toggleButton()">
                 <option value="">Selecciona una sede</option>
                 {% for sede in sedes %}
-                    <option value="{{ sede.id }}">{{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
+                    <option value="{{ sede.id_sede  }}"> {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
                 {% endfor %}
-            </select>
+            </select>            
         </div>
 
-        <button type="submit" class="btn btn-primary" id="buscarButton" disabled>Buscar Doctores</button>
+        <button type="submit" class="btn btn-primary" id="buscarButton">Buscar Doctores</button>
     </form>
     {% endif %}
 </div>
 
-<script>
-    function toggleButton() {
-        // Obtener el valor seleccionado del campo de sede
-        const sede = document.getElementById("sede").value;
-        const buscarButton = document.getElementById("buscarButton");
-
-        // Verificar si hay un valor seleccionado y habilitar el botón
-        if (sede) {
-            buscarButton.disabled = false;
-        } else {
-            buscarButton.disabled = true;
-        }
-    }
-</script>
 {% endblock %}

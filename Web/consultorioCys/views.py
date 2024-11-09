@@ -114,6 +114,8 @@ def horarios_doctor(request, doctor_id):
         'horarios': horarios_disponibles,
     })
 
+# views.py
+
 @login_required
 def pedir_hora(request):
     especialidad_seleccionada = request.GET.get('especialidad') or request.POST.get('especialidad')
@@ -135,11 +137,13 @@ def pedir_hora(request):
         print("Especialidad:", especialidad)
         print("Sede ID:", sede_id)
 
+        # Solo redirigir si ambos campos tienen valores
         if especialidad and sede_id:
             # Redirigir a la página de selección de doctores con los parámetros en la URL
             return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}")
-        else:
-            error_message = "Por favor, seleccione tanto la especialidad como la sede antes de continuar."
+        
+        # Mostrar mensaje de error si falta algún campo
+        error_message = "Por favor, seleccione tanto la especialidad como la sede antes de continuar."
 
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
@@ -149,6 +153,7 @@ def pedir_hora(request):
         'especialidad_seleccionada': especialidad_seleccionada,
         'error_message': error_message,
     })
+
     
 def sedes_por_especialidad(request, especialidad):
     # Filtrar las sedes que tienen doctores con la especialidad seleccionada

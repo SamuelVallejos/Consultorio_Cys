@@ -4,15 +4,43 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Doctores en {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</h2>
     <h3 class="text-center mb-4">Especialidad: {{ especialidad }}</h3>
-    
+
     {% if doctores %}
-        <div class="list-group">
+        <div class="doctor-list">
             {% for doctor in doctores %}
-                <a href="#" class="list-group-item list-group-item-action">
-                    <h5 class="mb-1">{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</h5>
-                    <p class="mb-1">Especialidad: {{ doctor.especialidad_doctor }}</p>
-                    <small>Contacto: {{ doctor.correo_doctor }} | Tel: {{ doctor.telefono_doctor }}</small>
-                </a>
+            <div class="doctor-card">
+                <div class="doctor-header">
+                    <div class="clinic-info">
+                        <h4>{{ sede.clinica.nombre_clinica }}</h4>
+                        <p>{{ sede.comuna_sede }} - {{ sede.region_sede }}</p>
+                    </div>
+                </div>
+                <div class="doctor-body">
+                    <div class="doctor-info">
+                        <div class="doctor-details">
+                            <h5>{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}</h5>
+                            <p>{{ doctor.especialidad_doctor }} (Atiende a mayores de 15 años)</p>
+                            <small>Contacto: {{ doctor.correo_doctor }} | Tel: {{ doctor.telefono_doctor }}</small>
+                            
+                            {% if doctor.rut_doctor %}
+                                <a href="{% url 'horarios_doctor' doctor.rut_doctor %}" class="more-hours-link">
+                                    Más horas del profesional &gt;
+                                </a>
+                            {% else %}
+                                <span class="no-hours-available">No hay horarios disponibles</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="appointment-type">
+                        <span>Presencial</span>
+                    </div>
+                    <div class="appointment-times">
+                        {% for hora in doctor.horarios_disponibles %}
+                            <button class="time-slot">{{ hora }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
             {% endfor %}
         </div>
     {% else %}
