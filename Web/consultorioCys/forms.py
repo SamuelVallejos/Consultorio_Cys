@@ -123,8 +123,9 @@ class InformeForm(forms.ModelForm):
 class CitaForm(forms.ModelForm):
     class Meta:
         model = Cita
-        fields = ['paciente', 'doctor', 'fecha_cita', 'hora_cita', 'motivo_consulta']
+        fields = ['fecha_cita', 'hora_cita', 'motivo_consulta']
         widgets = {
             'fecha_cita': forms.DateInput(attrs={'type': 'date'}),
             'hora_cita': forms.TimeInput(attrs={'type': 'time'}),
+            'motivo_consulta': forms.TextInput(attrs={'placeholder': 'Motivo de la consulta'}),
         }

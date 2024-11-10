@@ -89,15 +89,25 @@ def detalle_informe(request, pk):
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
+@login_required
+def confirmacion_cita(request):
+    return render(request, 'confirmacion_cita.html')
+
+@login_required
 def seleccionar_doctor(request):
     especialidad = request.GET.get('especialidad')
     sede_id = request.GET.get('sede')
-    
-    doctores = Doctor.objects.filter(especialidad_doctor=especialidad, doctorclinica__sede_id=sede_id)
+    sede = get_object_or_404(SedeClinica, id_sede=sede_id)
+    doctores = Doctor.objects.filter(especialidad_doctor=especialidad, doctorclinica__sede=sede)
+
+    # Añadir horarios de ejemplo para cada doctor
+    for doctor in doctores:
+        doctor.horarios_disponibles = ['08:30', '08:45', '09:00', '09:15', '09:30', '09:45', '10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30']
 
     return render(request, 'seleccionar_doctor.html', {
         'doctores': doctores,
         'especialidad': especialidad,
+        'sede': sede,
     })
 
 def horarios_doctor(request, doctor_id):
