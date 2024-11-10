@@ -44,7 +44,7 @@ def ia(request):
 
 def acercade(request):
     return render(request, 'consultorioCys/acercade.html')
-#HISTORIA CLINICO 
+
 def historial_personal(request):
     usuario = request.user
 
@@ -138,20 +138,7 @@ def confirmacion_cita(request):
         
         # Obtener al paciente desde el usuario autenticado
         paciente = get_object_or_404(Paciente, usuario=request.user)
-
-        # Verificar si el paciente ya tiene una cita para la misma fecha y doctor
-        cita_existente = Cita.objects.filter(paciente=paciente, doctor=doctor, confirmado=True).first()
-        if cita_existente:
-            # Si ya existe una cita, redirigir al resumen de la cita existente
-            context = {
-                'doctor': cita_existente.doctor,
-                'fecha': cita_existente.fecha_cita,
-                'hora': cita_existente.hora_cita.strftime("%H:%M"),
-                'especialidad': cita_existente.doctor.especialidad_doctor,
-                'ubicacion': "Ubicación no disponible"  # Ajusta si tienes la información de la ubicación
-            }
-            return render(request, 'confirmacion_cita.html', context)
-
+        
         # Convertir la hora al formato HH:MM
         try:
             hora_obj = datetime.datetime.strptime(hora, "%H:%M").time()
@@ -171,9 +158,16 @@ def confirmacion_cita(request):
         cita.save()  # Guarda la cita en la base de datos
 
         # Obtener la sede asociada al doctor
-        sede = doctor.doctorclinica_set.first().sede if doctor.doctorclinica_set.exists() else None
+        sede_relacion = doctor.doctorclinica_set.first()
+        sede = sede_relacion.sede if sede_relacion else None
+
+        # Depuración: Imprimir la sede obtenida
+        if sede:
+            print("Sede obtenida:", sede.clinica.nombre_clinica, sede.comuna_sede, sede.region_sede)
+        else:
+            print("No se encontró sede para el doctor.")
         
-        # Preparar contexto con la información de la cita
+        # Preparar contexto con la información de la cita, incluyendo la ubicación
         context = {
             'doctor': doctor,
             'fecha': fecha,
