@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
-from .models import Doctor, Paciente, Informe, Usuario, Clinica, SedeClinica
+from .models import Doctor, Paciente, Informe, Usuario, Clinica, SedeClinica, DoctorClinica
 from django.contrib.auth.models import Group, User
 from .forms import RUTAuthenticationForm
 from django.contrib.auth.hashers import check_password
@@ -94,21 +94,82 @@ def confirmacion_cita(request):
     return render(request, 'confirmacion_cita.html')
 
 @login_required
+def resumen_cita(request, cita_id):
+    cita = get_object_or_404(Cita, id=cita_id)
+    return render(request, "consultorioCys/resumen_cita.html", {"cita": cita})
+
+@login_required
+def agendar_cita(request):
+    if request.method == "POST":
+        doctor_id = request.POST.get("doctor_id")
+        hora_cita = request.POST.get("hora_cita")
+        fecha_cita = request.POST.get("fecha_cita")
+        paciente = request.user.paciente  # Asegúrate de que el usuario tenga un perfil de paciente
+
+        doctor = get_object_or_404(Doctor, id=doctor_id)
+
+        # Crea la cita con la información recibida
+        nueva_cita = Cita.objects.create(
+            paciente=paciente,
+            doctor=doctor,
+            fecha_cita=fecha_cita,
+            hora_cita=hora_cita,
+            motivo_consulta=request.POST.get("motivo_consulta", ""),
+            confirmado=True
+        )
+
+        # Redirige a la página de resumen con el ID de la cita
+        return redirect("resumen_cita", cita_id=nueva_cita.id)
+    else:
+        return redirect("pedir_hora")
+    
+@login_required
+def confirmar_cita(request):
+    if request.method == 'POST':
+        doctor_id = request.POST.get('doctor_id')
+        fecha = request.POST.get('fecha')
+
+        # Validación básica
+        if not doctor_id or not fecha:
+            return redirect('seleccionar_doctor')  # Redirigir si faltan datos
+
+        # Obtener el doctor y procesar la cita
+        doctor = Doctor.objects.get(id=doctor_id)
+        # Aquí podrías agregar la lógica para guardar la cita en la base de datos
+
+        # Redirigir a la página de confirmación con los datos necesarios
+        return render(request, 'confirmacion_cita.html', {'doctor': doctor, 'fecha': fecha})
+    
+@login_required
 def seleccionar_doctor(request):
     especialidad = request.GET.get('especialidad')
     sede_id = request.GET.get('sede')
-    sede = get_object_or_404(SedeClinica, id_sede=sede_id)
-    doctores = Doctor.objects.filter(especialidad_doctor=especialidad, doctorclinica__sede=sede)
+    fecha = request.GET.get('fecha')
+    error_message = None
 
-    # Añadir horarios de ejemplo para cada doctor
-    for doctor in doctores:
-        doctor.horarios_disponibles = ['08:30', '08:45', '09:00', '09:15', '09:30', '09:45', '10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30']
+    # Verificar que todos los parámetros necesarios estén presentes
+    if not especialidad or not sede_id or not fecha:
+        error_message = "Faltan algunos parámetros. Por favor, vuelva al paso anterior y seleccione una especialidad, sede y fecha."
+        return render(request, 'seleccionar_doctor.html', {'error_message': error_message})
 
-    return render(request, 'seleccionar_doctor.html', {
+    # Obtener instancias de DoctorClinica filtrando por especialidad y sede
+    doctor_clinica_entries = DoctorClinica.objects.filter(
+        doctor__especialidad_doctor=especialidad,
+        sede_id=sede_id  # Usar el campo correcto para referenciar la sede
+    ).distinct()
+
+    # Obtener los doctores únicos de los resultados filtrados
+    doctores = [entry.doctor for entry in doctor_clinica_entries]
+
+    # Contexto para el template
+    context = {
         'doctores': doctores,
         'especialidad': especialidad,
-        'sede': sede,
-    })
+        'sede_id': sede_id,
+        'fecha': fecha,
+        'error_message': error_message,
+    }
+    return render(request, 'seleccionar_doctor.html', context)
 
 def horarios_doctor(request, doctor_id):
     doctor = get_object_or_404(Doctor, id=doctor_id)
@@ -124,11 +185,10 @@ def horarios_doctor(request, doctor_id):
         'horarios': horarios_disponibles,
     })
 
-# views.py
-
 @login_required
 def pedir_hora(request):
     especialidad_seleccionada = request.GET.get('especialidad') or request.POST.get('especialidad')
+    fecha_seleccionada = request.GET.get('fecha') or request.POST.get('fecha')
     sedes = []
     error_message = None
 
@@ -138,29 +198,33 @@ def pedir_hora(request):
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()
 
-    # Validar ambos campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
+    # Validar los campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
     if request.method == 'POST':
         especialidad = request.POST.get('especialidad')
         sede_id = request.POST.get('sede')
+        fecha = request.POST.get('fecha')
 
         # Debug: imprimir valores en consola para verificar
         print("Especialidad:", especialidad)
         print("Sede ID:", sede_id)
+        print("Fecha:", fecha)
 
-        # Solo redirigir si ambos campos tienen valores
-        if especialidad and sede_id:
+        # Solo redirigir si todos los campos tienen valores
+        if especialidad and sede_id and fecha:
             # Redirigir a la página de selección de doctores con los parámetros en la URL
-            return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}")
+            return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}&fecha={fecha}")
         
         # Mostrar mensaje de error si falta algún campo
-        error_message = "Por favor, seleccione tanto la especialidad como la sede antes de continuar."
+        error_message = "Por favor, seleccione la especialidad, la sede y la fecha antes de continuar."
 
+    # Obtener lista de especialidades
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
     return render(request, 'pedir_hora.html', {
         'especialidades': especialidades,
         'sedes': sedes,
         'especialidad_seleccionada': especialidad_seleccionada,
+        'fecha_seleccionada': fecha_seleccionada,
         'error_message': error_message,
     })
 

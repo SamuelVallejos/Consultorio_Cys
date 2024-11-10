@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Seleccionar Especialidad y Ubicación</h2>
+    <h2 class="text-center mb-4">Seleccionar Especialidad, Ubicación y Fecha</h2>
 
     <!-- Mostrar mensaje de error si existe -->
     {% if error_message %}
@@ -26,7 +26,7 @@
         </div>
     </form>
 
-    <!-- Formulario POST para seleccionar sede y buscar doctores -->
+    <!-- Formulario POST para seleccionar sede, fecha y buscar doctores -->
     {% if especialidad_seleccionada %}
     <form method="post" action="{% url 'pedir_hora' %}">
         {% csrf_token %}
@@ -34,15 +34,20 @@
 
         <div class="form-group mb-3">
             <label for="sede">Región, Comuna o Centro de Preferencia</label>
-            <select id="sede" name="sede" class="form-control" onchange="toggleButton()">
+            <select id="sede" name="sede" class="form-control" required>
                 <option value="">Selecciona una sede</option>
                 {% for sede in sedes %}
-                    <option value="{{ sede.id_sede  }}"> {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
+                    <option value="{{ sede.id_sede }}"> {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
                 {% endfor %}
             </select>            
         </div>
 
-        <button type="submit" class="btn btn-primary" id="buscarButton">Buscar Doctores</button>
+        <div class="form-group mb-3">
+            <label for="fecha">Fecha de Preferencia</label>
+            <input type="date" id="fecha" name="fecha" class="form-control" value="{{ fecha_seleccionada }}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Buscar Doctores</button>
     </form>
     {% endif %}
 </div>
