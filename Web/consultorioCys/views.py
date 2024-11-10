@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AddDoctorForm
 from django.contrib.auth import login
-from .models import Doctor, Paciente, Informe, Usuario, Clinica, SedeClinica, DoctorClinica
+from .models import Doctor, Paciente, Informe, Usuario, Clinica, SedeClinica, DoctorClinica, DisponibilidadDoctor
 from django.contrib.auth.models import Group, User
 from .forms import RUTAuthenticationForm
 from django.contrib.auth.hashers import check_password
@@ -128,17 +128,24 @@ def confirmar_cita(request):
     if request.method == 'POST':
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
+        hora = request.POST.get('hora')
 
-        # Validación básica
-        if not doctor_id or not fecha:
-            return redirect('seleccionar_doctor')  # Redirigir si faltan datos
+        # Obtener el doctor y su información
+        doctor = get_object_or_404(Doctor, id=doctor_id)
+        
+        # Obtener la sede asociada al doctor
+        sede = doctor.doctorclinica_set.first().sede  # Esto asume que el doctor tiene una sede asociada
+        
+        # Preparar contexto con la información de la cita
+        context = {
+            'doctor': doctor,
+            'fecha': fecha,
+            'hora': hora,
+            'especialidad': doctor.especialidad_doctor,
+            'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}"
+        }
 
-        # Obtener el doctor y procesar la cita
-        doctor = Doctor.objects.get(id=doctor_id)
-        # Aquí podrías agregar la lógica para guardar la cita en la base de datos
-
-        # Redirigir a la página de confirmación con los datos necesarios
-        return render(request, 'confirmacion_cita.html', {'doctor': doctor, 'fecha': fecha})
+        return render(request, 'confirmacion_cita.html', context)
     
 @login_required
 def seleccionar_doctor(request):
@@ -155,11 +162,18 @@ def seleccionar_doctor(request):
     # Obtener instancias de DoctorClinica filtrando por especialidad y sede
     doctor_clinica_entries = DoctorClinica.objects.filter(
         doctor__especialidad_doctor=especialidad,
-        sede_id=sede_id  # Usar el campo correcto para referenciar la sede
-    ).distinct()
+        sede_id=sede_id
+    ).select_related('doctor', 'sede').distinct()
 
-    # Obtener los doctores únicos de los resultados filtrados
-    doctores = [entry.doctor for entry in doctor_clinica_entries]
+    # Obtener los doctores únicos de los resultados filtrados, junto con sus sedes y horarios
+    doctores = []
+    for entry in doctor_clinica_entries:
+        horas_disponibles = DisponibilidadDoctor.objects.filter(
+            doctor=entry.doctor,
+            fecha=fecha,
+            disponible=True
+        ).values_list('hora', flat=True)
+        doctores.append({'doctor': entry.doctor, 'sede': entry.sede, 'horas_disponibles': horas_disponibles})
 
     # Contexto para el template
     context = {

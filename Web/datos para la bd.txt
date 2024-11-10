@@ -16,8 +16,9 @@ Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 217
 
 ------------------------------------------------------------------------------
 
-from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica
+from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica, DisponibilidadDoctor
 from django.utils import timezone
+import datetime
 
 # Crear usuarios (doctores)
 usuario_doctor1 = Usuario(
@@ -421,6 +422,22 @@ DoctorClinica.objects.create(doctor=doctor5, sede=sede4)
 DoctorClinica.objects.create(doctor=doctor6, sede=sede3)
 
 print("Datos cargados exitosamente.")
+
+doctor = Doctor.objects.get(rut_doctor="12345678-1")  # Reemplaza con el RUT de un doctor existente
+
+fecha = datetime.date(2024, 11, 10)
+horas = ["09:00", "10:00", "11:00", "14:00", "15:00"]
+
+for hora in horas:
+    hora_disponible = datetime.datetime.strptime(hora, "%H:%M").time()
+    DisponibilidadDoctor.objects.get_or_create(
+        doctor=doctor,
+        fecha=fecha,
+        hora=hora_disponible,
+        defaults={'disponible': True}
+    )
+
+print("Horas disponibles agregadas.")
 
 exit()
 

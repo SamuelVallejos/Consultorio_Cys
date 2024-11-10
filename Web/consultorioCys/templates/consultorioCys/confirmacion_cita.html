@@ -3,9 +3,9 @@
 {% block content %}
 <div class="container mt-5 text-center">
     <h2 class="mb-4">Cita Confirmada</h2>
-    <p>Su cita con el Dr. {{ doctor.nombre }} {{ doctor.apellido }} ha sido confirmada para el <strong>{{ fecha }}</strong>.</p>
-    <p>Especialidad: {{ doctor.especialidad_doctor }}</p>
-    <p>Ubicación: {{ doctor.doctorclinica_set.first.sedeclinica.clinica.nombre_clinica }} - {{ doctor.doctorclinica_set.first.sedeclinica.comuna_sede }}, {{ doctor.doctorclinica_set.first.sedeclinica.region_sede }}</p>
+    <p>Su cita con el Dr. {{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }} ha sido confirmada para el <strong>{{ fecha }}</strong> a las <strong>{{ hora }}</strong>.</p>
+    <p>Especialidad: {{ especialidad }}</p>
+    <p>Ubicación: {{ ubicacion }}</p>
     <a href="{% url 'inicio' %}" class="btn btn-primary mt-3">Volver al Inicio</a>
 </div>
 {% endblock %}

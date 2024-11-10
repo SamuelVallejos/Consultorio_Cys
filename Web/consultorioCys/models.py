@@ -163,3 +163,17 @@ class Cita(models.Model):
 
     def __str__(self):
         return f"Cita para {self.paciente.nombres_paciente} con {self.doctor.nombres_doctor} el {self.fecha_cita}"
+    
+class DisponibilidadDoctor(models.Model):
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    fecha = models.DateField() 
+    hora = models.TimeField()
+    disponible = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Disponibilidad del Doctor"
+        verbose_name_plural = "Disponibilidades de Doctores"
+        unique_together = ('doctor', 'fecha', 'hora')
+
+    def __str__(self):
+        return f"{self.doctor} - {self.fecha} {self.hora} ({'Disponible' if self.disponible else 'No disponible'})"

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Doctor, Paciente, Informe, Clinica, SedeClinica, DoctorClinica, PacienteInforme
+from .models import Doctor, Paciente, Informe, Clinica, SedeClinica, DoctorClinica, PacienteInforme, DisponibilidadDoctor
 
 
 from django.contrib.auth.models import Group

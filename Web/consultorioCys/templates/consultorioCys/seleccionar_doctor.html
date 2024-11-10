@@ -14,17 +14,27 @@
         
         <!-- Lista de doctores disponibles -->
         <div class="list-group">
-            {% for doctor in doctores %}
+            {% for entry in doctores %}
                 <div class="list-group-item">
-                    <h5>{{ doctor.nombre }} {{ doctor.apellido }}</h5>
-                    <p>Especialidad: {{ doctor.especialidad_doctor }}</p>
-                    <p>Ubicación: {{ doctor.doctorclinica_set.first.sedeclinica.clinica.nombre_clinica }} - {{ doctor.doctorclinica_set.first.sedeclinica.comuna_sede }}, {{ doctor.doctorclinica_set.first.sedeclinica.region_sede }}</p>
+                    <h5>Dr. {{ entry.doctor.nombres_doctor }} {{ entry.doctor.primer_apellido_doctor }} {{ entry.doctor.segundo_apellido_doctor }}</h5>
+                    <p>Especialidad: {{ entry.doctor.especialidad_doctor }}</p>
+                    <p>Ubicación: {{ entry.sede.clinica.nombre_clinica }} - {{ entry.sede.comuna_sede }}, {{ entry.sede.region_sede }}</p>
                     
-                    <!-- Botón para seleccionar este doctor -->
+                    <!-- Selección de hora -->
                     <form method="post" action="{% url 'confirmacion_cita' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                        <input type="hidden" name="doctor_id" value="{{ entry.doctor.id }}">
                         <input type="hidden" name="fecha" value="{{ fecha }}">
+                        <div class="form-group">
+                            <label for="hora_{{ entry.doctor.id }}">Seleccione una hora:</label>
+                            <select id="hora_{{ entry.doctor.id }}" name="hora" class="form-control" required>
+                                {% for hora in entry.horas_disponibles %}
+                                    <option value="{{ hora }}">{{ hora|time:"H:i" }}</option>
+                                {% empty %}
+                                    <option disabled>No hay horas disponibles</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <button type="submit" class="btn btn-primary mt-2">Seleccionar este Doctor</button>
                     </form>
                 </div>
