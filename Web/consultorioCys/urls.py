@@ -33,4 +33,5 @@ urlpatterns = [
     path("confirmacion_cita/", views.confirmacion_cita, name="confirmacion_cita"),
     path("agendar_cita/", views.agendar_cita, name="agendar_cita"),
     path("resumen_cita/<int:cita_id>/", views.resumen_cita, name="resumen_cita"),
+    path('finalizar_cita/<int:cita_id>/', views.finalizar_cita, name='finalizar_cita'),
 ]

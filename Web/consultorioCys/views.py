@@ -34,10 +34,28 @@ def handle_form_submission(request, form_class, template_name, success_url, inst
         form = form_class(instance=instance)
     return render(request, template_name, {'form': form})
 
+def horarios_doctor(request, doctor_id):
+    # Aquí puedes implementar la lógica para mostrar los horarios del doctor.
+    doctor = Doctor.objects.get(id=doctor_id)
+    horarios = doctor.horarios_set.all()  # Ajusta esto según el modelo de horarios que tengas
+    return render(request, 'horarios_doctor.html', {'doctor': doctor, 'horarios': horarios})
+
+@login_required
 def inicio(request):
     message = request.GET.get('message')
     print(f"Usuario autenticado: {request.user.is_authenticated}")
-    return render(request, 'consultorioCys/inicio.html', {'message': message}) 
+
+    # Obtener el paciente asociado al usuario autenticado
+    paciente = get_object_or_404(Paciente, usuario=request.user)
+
+    # Verificar si el usuario ya tiene una cita confirmada
+    cita_existente = Cita.objects.filter(paciente=paciente, confirmado=True).first()
+
+    # Pasar la cita existente al contexto si existe
+    return render(request, 'consultorioCys/inicio.html', {
+        'message': message,
+        'cita_existente': cita_existente
+    })
 
 def ia(request):
     return render(request, 'consultorioCys/ia.html')
@@ -120,6 +138,7 @@ def agendar_cita(request):
     else:
         return redirect("pedir_hora")
     
+
 @login_required
 def confirmacion_cita(request):
     if request.method == 'POST':
@@ -155,18 +174,12 @@ def confirmacion_cita(request):
             hora_cita=hora_obj,
             confirmado=True
         )
-        cita.save()  # Guarda la cita en la base de datos
+        cita.save()
 
         # Obtener la sede asociada al doctor
-        sede_relacion = doctor.doctorclinica_set.first()
-        sede = sede_relacion.sede if sede_relacion else None
+        doctor_clinica = DoctorClinica.objects.filter(doctor=doctor).first()
+        sede = doctor_clinica.sede if doctor_clinica else None
 
-        # Depuración: Imprimir la sede obtenida
-        if sede:
-            print("Sede obtenida:", sede.clinica.nombre_clinica, sede.comuna_sede, sede.region_sede)
-        else:
-            print("No se encontró sede para el doctor.")
-        
         # Preparar contexto con la información de la cita, incluyendo la ubicación
         context = {
             'doctor': doctor,
@@ -177,6 +190,29 @@ def confirmacion_cita(request):
         }
 
         return render(request, 'confirmacion_cita.html', context)
+    
+    elif request.method == 'GET':
+        # Verificar si se está solicitando ver una cita existente
+        cita_id = request.GET.get('cita_id')
+        if cita_id:
+            # Obtener la cita existente
+            cita = get_object_or_404(Cita, id=cita_id, paciente__usuario=request.user)
+            doctor = cita.doctor
+            sede = DoctorClinica.objects.filter(doctor=doctor).first().sede
+
+            context = {
+                'doctor': doctor,
+                'fecha': cita.fecha_cita,
+                'hora': cita.hora_cita.strftime("%H:%M"),
+                'especialidad': doctor.especialidad_doctor,
+                'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible"
+            }
+            return render(request, 'confirmacion_cita.html', context)
+        else:
+            return render(request, 'confirmacion_cita.html', {
+                'error': 'No se ha especificado ninguna cita para mostrar.'
+            })
+    
     else:
         return render(request, 'confirmacion_cita.html', {
             'error': 'Método de solicitud no válido.'
@@ -200,68 +236,50 @@ def finalizar_cita(request, cita_id):
     ).update(disponible=True)
 
     return render(request, 'cita_finalizada.html', {'cita': cita})
-
     
 @login_required
 def seleccionar_doctor(request):
-    especialidad = request.GET.get('especialidad')
-    sede_id = request.GET.get('sede')
+    especialidad_seleccionada = request.GET.get('especialidad')
     fecha = request.GET.get('fecha')
-    error_message = None
 
-    # Verificar que todos los parámetros necesarios estén presentes
-    if not especialidad or not sede_id or not fecha:
-        error_message = "Faltan algunos parámetros. Por favor, vuelva al paso anterior y seleccione una especialidad, sede y fecha."
-        return render(request, 'seleccionar_doctor.html', {'error_message': error_message})
-
-    # Obtener los doctores disponibles en la sede y especialidad especificadas
-    doctor_clinica_entries = DoctorClinica.objects.filter(
-        doctor__especialidad_doctor=especialidad,
-        sede_id=sede_id
-    ).select_related('doctor', 'sede').distinct()
-
-    # Crear una lista de doctores con sus horas disponibles para pasar al contexto
-    doctores = []
-    for entry in doctor_clinica_entries:
+    # Obtener la lista de doctores de la especialidad seleccionada
+    doctores = Doctor.objects.filter(especialidad_doctor=especialidad_seleccionada)
+    
+    # Crear una lista para almacenar doctores junto con sus horas disponibles
+    doctores_con_horarios = []
+    for doctor in doctores:
+        # Filtrar horas disponibles del doctor en la fecha seleccionada
         horas_disponibles = DisponibilidadDoctor.objects.filter(
-            doctor=entry.doctor,
+            doctor=doctor,
             fecha=fecha,
-            disponible=True
+            disponible=True  # Asegúrate de que sea una hora disponible
         ).values_list('hora', flat=True)
-        doctores.append({
-            'doctor': entry.doctor,
-            'sede': entry.sede,
+        
+        doctores_con_horarios.append({
+            'doctor': doctor,
             'horas_disponibles': horas_disponibles
         })
 
-    # Pasar todos los datos necesarios al contexto
-    context = {
-        'doctores': doctores,
-        'especialidad': especialidad,
+    return render(request, 'seleccionar_doctor.html', {
+        'doctores': doctores_con_horarios,
+        'especialidad': especialidad_seleccionada,
         'fecha': fecha,
-        'sede_id': sede_id,
-        'error_message': error_message
-    }
-    return render(request, 'seleccionar_doctor.html', context)
-
-def horarios_doctor(request, doctor_id):
-    doctor = get_object_or_404(Doctor, id=doctor_id)
-    
-    # Aquí puedes definir los horarios disponibles, por ejemplo, en intervalos de 15 minutos de 7:00 a 10:00
-    horarios_disponibles = [
-        "07:00", "07:15", "07:30", "07:45", "08:00",
-        "08:15", "08:30", "08:45", "09:00", "09:15", "09:30"
-    ]
-    
-    return render(request, 'horarios_doctor.html', {
-        'doctor': doctor,
-        'horarios': horarios_disponibles,
     })
 
 @login_required
 def pedir_hora(request):
+    # Obtener el paciente asociado al usuario autenticado
+    paciente = get_object_or_404(Paciente, usuario=request.user)
+
+    # Verificar si el usuario ya tiene una cita confirmada
+    cita_existente = Cita.objects.filter(paciente=paciente, confirmado=True).first()
+
+    # Si ya tiene una cita, redirigir a la página de confirmación de la cita existente
+    if cita_existente:
+        return redirect(f"{reverse('confirmacion_cita')}?cita_id={cita_existente.id}")
+
+    # Código para manejar el agendamiento de una nueva cita (si no existe cita)
     especialidad_seleccionada = request.GET.get('especialidad') or request.POST.get('especialidad')
-    fecha_seleccionada = request.GET.get('fecha') or request.POST.get('fecha')
     sedes = []
     error_message = None
 
@@ -271,36 +289,27 @@ def pedir_hora(request):
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()
 
-    # Validar los campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
+    # Validar ambos campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
     if request.method == 'POST':
         especialidad = request.POST.get('especialidad')
         sede_id = request.POST.get('sede')
-        fecha = request.POST.get('fecha')
 
-        # Debug: imprimir valores en consola para verificar
-        print("Especialidad:", especialidad)
-        print("Sede ID:", sede_id)
-        print("Fecha:", fecha)
-
-        # Solo redirigir si todos los campos tienen valores
-        if especialidad and sede_id and fecha:
+        # Solo redirigir si ambos campos tienen valores
+        if especialidad and sede_id:
             # Redirigir a la página de selección de doctores con los parámetros en la URL
-            return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}&fecha={fecha}")
+            return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}")
         
         # Mostrar mensaje de error si falta algún campo
-        error_message = "Por favor, seleccione la especialidad, la sede y la fecha antes de continuar."
+        error_message = "Por favor, seleccione tanto la especialidad como la sede antes de continuar."
 
-    # Obtener lista de especialidades
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
     return render(request, 'pedir_hora.html', {
         'especialidades': especialidades,
         'sedes': sedes,
         'especialidad_seleccionada': especialidad_seleccionada,
-        'fecha_seleccionada': fecha_seleccionada,
         'error_message': error_message,
     })
-
     
 def sedes_por_especialidad(request, especialidad):
     # Filtrar las sedes que tienen doctores con la especialidad seleccionada
