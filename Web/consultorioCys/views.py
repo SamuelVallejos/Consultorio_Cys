@@ -90,10 +90,6 @@ def historial(request):
     return render(request, 'consultorioCys/historial.html')
 
 @login_required
-def confirmacion_cita(request):
-    return render(request, 'confirmacion_cita.html')
-
-@login_required
 def resumen_cita(request, cita_id):
     cita = get_object_or_404(Cita, id=cita_id)
     return render(request, "consultorioCys/resumen_cita.html", {"cita": cita})
@@ -124,17 +120,23 @@ def agendar_cita(request):
         return redirect("pedir_hora")
     
 @login_required
-def confirmar_cita(request):
+def confirmacion_cita(request):
     if request.method == 'POST':
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
 
+        # Verificar que los datos requeridos existen
+        if not doctor_id or not fecha or not hora:
+            return render(request, 'confirmacion_cita.html', {
+                'error': 'Faltan datos necesarios para la confirmación de la cita.'
+            })
+
         # Obtener el doctor y su información
-        doctor = get_object_or_404(Doctor, id=doctor_id)
+        doctor = get_object_or_404(Doctor, rut_doctor=doctor_id)
         
         # Obtener la sede asociada al doctor
-        sede = doctor.doctorclinica_set.first().sede  # Esto asume que el doctor tiene una sede asociada
+        sede = doctor.doctorclinica_set.first().sede if doctor.doctorclinica_set.exists() else None
         
         # Preparar contexto con la información de la cita
         context = {
@@ -142,10 +144,14 @@ def confirmar_cita(request):
             'fecha': fecha,
             'hora': hora,
             'especialidad': doctor.especialidad_doctor,
-            'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}"
+            'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible"
         }
 
         return render(request, 'confirmacion_cita.html', context)
+    else:
+        return render(request, 'confirmacion_cita.html', {
+            'error': 'Método de solicitud no válido.'
+        })
     
 @login_required
 def seleccionar_doctor(request):
@@ -159,13 +165,13 @@ def seleccionar_doctor(request):
         error_message = "Faltan algunos parámetros. Por favor, vuelva al paso anterior y seleccione una especialidad, sede y fecha."
         return render(request, 'seleccionar_doctor.html', {'error_message': error_message})
 
-    # Obtener instancias de DoctorClinica filtrando por especialidad y sede
+    # Obtener los doctores disponibles en la sede y especialidad especificadas
     doctor_clinica_entries = DoctorClinica.objects.filter(
         doctor__especialidad_doctor=especialidad,
         sede_id=sede_id
     ).select_related('doctor', 'sede').distinct()
 
-    # Obtener los doctores únicos de los resultados filtrados, junto con sus sedes y horarios
+    # Crear una lista de doctores con sus horas disponibles para pasar al contexto
     doctores = []
     for entry in doctor_clinica_entries:
         horas_disponibles = DisponibilidadDoctor.objects.filter(
@@ -173,15 +179,19 @@ def seleccionar_doctor(request):
             fecha=fecha,
             disponible=True
         ).values_list('hora', flat=True)
-        doctores.append({'doctor': entry.doctor, 'sede': entry.sede, 'horas_disponibles': horas_disponibles})
+        doctores.append({
+            'doctor': entry.doctor,
+            'sede': entry.sede,
+            'horas_disponibles': horas_disponibles
+        })
 
-    # Contexto para el template
+    # Pasar todos los datos necesarios al contexto
     context = {
         'doctores': doctores,
         'especialidad': especialidad,
-        'sede_id': sede_id,
         'fecha': fecha,
-        'error_message': error_message,
+        'sede_id': sede_id,
+        'error_message': error_message
     }
     return render(request, 'seleccionar_doctor.html', context)
 

@@ -23,11 +23,11 @@
                     <!-- Selección de hora -->
                     <form method="post" action="{% url 'confirmacion_cita' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="doctor_id" value="{{ entry.doctor.id }}">
+                        <input type="hidden" name="doctor_id" value="{{ entry.doctor.rut_doctor }}">
                         <input type="hidden" name="fecha" value="{{ fecha }}">
                         <div class="form-group">
-                            <label for="hora_{{ entry.doctor.id }}">Seleccione una hora:</label>
-                            <select id="hora_{{ entry.doctor.id }}" name="hora" class="form-control" required>
+                            <label for="hora_{{ entry.doctor.rut_doctor }}">Seleccione una hora:</label>
+                            <select id="hora_{{ entry.doctor.rut_doctor }}" name="hora" class="form-control" required>
                                 {% for hora in entry.horas_disponibles %}
                                     <option value="{{ hora }}">{{ hora|time:"H:i" }}</option>
                                 {% empty %}
