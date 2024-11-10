@@ -16,7 +16,8 @@ Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 217
 
 ------------------------------------------------------------------------------
 
-from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario
+from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica
+from django.utils import timezone
 
 # Crear usuarios (doctores)
 usuario_doctor1 = Usuario(
@@ -205,13 +206,234 @@ informe2 = Informe(
 )
 informe2.save()
 
-# Crear relaciones entre doctores y sedes en DoctorClinica
-from consultorioCys.models import DoctorClinica
 
 DoctorClinica.objects.create(doctor=doctor1, sede=nueva_sede1)
 DoctorClinica.objects.create(doctor=doctor2, sede=nueva_sede2)
 DoctorClinica.objects.create(doctor=doctor3, sede=nueva_sede1)
 
+# Crear usuarios para doctores adicionales
+usuario_doctor4 = Usuario(
+    rut='22334455-6',
+    email='pedro.garcia@usuario.com',
+    nombre='Pedro',
+    apellido='García'
+)
+usuario_doctor4.set_password('contrasena123')
+usuario_doctor4.save()
+
+usuario_doctor5 = Usuario(
+    rut='33445566-7',
+    email='laura.sosa@usuario.com',
+    nombre='Laura',
+    apellido='Sosa'
+)
+usuario_doctor5.set_password('contrasena123')
+usuario_doctor5.save()
+
+usuario_doctor6 = Usuario(
+    rut='44556677-8',
+    email='miguel.rojas@usuario.com',
+    nombre='Miguel',
+    apellido='Rojas'
+)
+usuario_doctor6.set_password('contrasena123')
+usuario_doctor6.save()
+
+# Crear doctores adicionales
+doctor4 = Doctor(
+    usuario=usuario_doctor4,
+    rut_doctor='22334455-6',
+    nombres_doctor='Pedro',
+    primer_apellido_doctor='García',
+    segundo_apellido_doctor='Lopez',
+    correo_doctor='pedro.garcia@doctor.com',
+    telefono_doctor='123123123',
+    fecha_nacimiento_doctor='1980-10-20',
+    especialidad_doctor='Dermatología'
+)
+doctor4.save()
+
+doctor5 = Doctor(
+    usuario=usuario_doctor5,
+    rut_doctor='33445566-7',
+    nombres_doctor='Laura',
+    primer_apellido_doctor='Sosa',
+    segundo_apellido_doctor='Martinez',
+    correo_doctor='laura.sosa@doctor.com',
+    telefono_doctor='321321321',
+    fecha_nacimiento_doctor='1985-05-12',
+    especialidad_doctor='Neurología'
+)
+doctor5.save()
+
+doctor6 = Doctor(
+    usuario=usuario_doctor6,
+    rut_doctor='44556677-8',
+    nombres_doctor='Miguel',
+    primer_apellido_doctor='Rojas',
+    segundo_apellido_doctor='Ramirez',
+    correo_doctor='miguel.rojas@doctor.com',
+    telefono_doctor='456456456',
+    fecha_nacimiento_doctor='1990-08-17',
+    especialidad_doctor='Oftalmología'
+)
+doctor6.save()
+
+# Crear usuarios para pacientes adicionales
+usuario_paciente3 = Usuario(
+    rut='55667788-9',
+    email='jose.fernandez@example.com',
+    nombre='José',
+    apellido='Fernández'
+)
+usuario_paciente3.set_password('contrasena123')
+usuario_paciente3.save()
+
+usuario_paciente4 = Usuario(
+    rut='66778899-0',
+    email='marta.rodriguez@example.com',
+    nombre='Marta',
+    apellido='Rodríguez'
+)
+usuario_paciente4.set_password('contrasena123')
+usuario_paciente4.save()
+
+usuario_paciente5 = Usuario(
+    rut='77889900-1',
+    email='luis.gomez@example.com',
+    nombre='Luis',
+    apellido='Gómez'
+)
+usuario_paciente5.set_password('contrasena123')
+usuario_paciente5.save()
+
+# Crear pacientes adicionales
+paciente3 = Paciente(
+    usuario=usuario_paciente3,
+    rut_paciente='55667788-9',
+    nombres_paciente='José',
+    primer_apellido_paciente='Fernández',
+    segundo_apellido_paciente='López',
+    correo_paciente='jose.fernandez@paciente.com',
+    telefono_paciente='789789789',
+    fecha_nacimiento_paciente='1992-11-05',
+    direccion_paciente='Calle Luna 123',
+    genero_paciente='M'
+)
+paciente3.save()
+
+paciente4 = Paciente(
+    usuario=usuario_paciente4,
+    rut_paciente='66778899-0',
+    nombres_paciente='Marta',
+    primer_apellido_paciente='Rodríguez',
+    segundo_apellido_paciente='González',
+    correo_paciente='marta.rodriguez@paciente.com',
+    telefono_paciente='987987987',
+    fecha_nacimiento_paciente='1988-04-10',
+    direccion_paciente='Calle Sol 456',
+    genero_paciente='F'
+)
+paciente4.save()
+
+paciente5 = Paciente(
+    usuario=usuario_paciente5,
+    rut_paciente='77889900-1',
+    nombres_paciente='Luis',
+    primer_apellido_paciente='Gómez',
+    segundo_apellido_paciente='Pérez',
+    correo_paciente='luis.gomez@paciente.com',
+    telefono_paciente='654654654',
+    fecha_nacimiento_paciente='1995-06-20',
+    direccion_paciente='Avenida Estrella 789',
+    genero_paciente='M'
+)
+paciente5.save()
+
+clinica3 = Clinica(
+    nombre_clinica='Clínica Vida Sana',
+    correo_clinica='contacto@vidasana.cl',
+    telefono_clinica='321321321'
+)
+clinica3.save()
+
+clinica4 = Clinica(
+    nombre_clinica='Clínica Bienestar',
+    correo_clinica='info@bienestar.cl',
+    telefono_clinica='654654654'
+)
+clinica4.save()
+
+# Crear sedes adicionales
+sede3 = SedeClinica(
+    clinica=clinica3,
+    region_sede="Región de O'Higgins",
+    comuna_sede='Rancagua',
+    direccion_sede='Av. El Sol 123',
+    telefono_sede='123456123'
+)
+sede3.save()
+
+sede4 = SedeClinica(
+    clinica=clinica4,
+    region_sede='Región del Maule',
+    comuna_sede='Talca',
+    direccion_sede='Av. La Paz 456',
+    telefono_sede='654654987'
+)
+sede4.save()
+
+informe3 = Informe(
+    doctor=doctor4,
+    paciente=paciente3,
+    titulo_informe='Chequeo Dermatológico',
+    descripcion_informe='Informe de consulta dermatológica.',
+    notas_doctor='Recomendar crema hidratante.',
+    instrucciones_tratamiento='Aplicar crema diariamente.',
+    fecha_informe=timezone.now()
+)
+informe3.save()
+
+informe4 = Informe(
+    doctor=doctor5,
+    paciente=paciente4,
+    titulo_informe='Consulta Neurológica',
+    descripcion_informe='Informe de consulta neurológica.',
+    notas_doctor='Realizar seguimiento mensual.',
+    instrucciones_tratamiento='Ejercicios de memoria.',
+    fecha_informe=timezone.now()
+)
+informe4.save()
+
+informe5 = Informe(
+    doctor=doctor6,
+    paciente=paciente5,
+    titulo_informe='Examen de la Vista',
+    descripcion_informe='Informe de consulta oftalmológica.',
+    notas_doctor='Recetar lentes correctivos.',
+    instrucciones_tratamiento='Usar lentes diariamente.',
+    fecha_informe=timezone.now()
+)
+informe5.save()
+
+DoctorClinica.objects.create(doctor=doctor4, sede=sede3)
+DoctorClinica.objects.create(doctor=doctor5, sede=sede4)
+DoctorClinica.objects.create(doctor=doctor6, sede=sede3)
+
 print("Datos cargados exitosamente.")
 
 exit()
+
+-------------------------------------------------------------------------------------------------------
+
+por si hay que eliminar los datos de la db
+
+from consultorioCys.models import Usuario, Doctor, Paciente, Clinica, SedeClinica, Informe, DoctorClinica
+
+Usuario.objects.all().delete()
+Doctor.objects.all().delete()
+Paciente.objects.all().delete()
+Clinica.objects.all().delete()
+SedeClinica.objects.all().delete()
+Informe.objects.all().delete()
+DoctorClinica.objects.all().delete()
