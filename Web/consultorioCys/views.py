@@ -18,6 +18,7 @@ from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm, InformeForm
 from django.urls import reverse
 from django.utils import timezone
+import datetime
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -135,6 +136,40 @@ def confirmacion_cita(request):
         # Obtener el doctor y su información
         doctor = get_object_or_404(Doctor, rut_doctor=doctor_id)
         
+        # Obtener al paciente desde el usuario autenticado
+        paciente = get_object_or_404(Paciente, usuario=request.user)
+
+        # Verificar si el paciente ya tiene una cita para la misma fecha y doctor
+        cita_existente = Cita.objects.filter(paciente=paciente, doctor=doctor, confirmado=True).first()
+        if cita_existente:
+            # Si ya existe una cita, redirigir al resumen de la cita existente
+            context = {
+                'doctor': cita_existente.doctor,
+                'fecha': cita_existente.fecha_cita,
+                'hora': cita_existente.hora_cita.strftime("%H:%M"),
+                'especialidad': cita_existente.doctor.especialidad_doctor,
+                'ubicacion': "Ubicación no disponible"  # Ajusta si tienes la información de la ubicación
+            }
+            return render(request, 'confirmacion_cita.html', context)
+
+        # Convertir la hora al formato HH:MM
+        try:
+            hora_obj = datetime.datetime.strptime(hora, "%H:%M").time()
+        except ValueError:
+            return render(request, 'confirmacion_cita.html', {
+                'error': f'El formato de la hora recibido ({hora}) no es válido. Debe estar en el formato HH:MM.'
+            })
+
+        # Crear la cita y guardarla en la base de datos
+        cita = Cita(
+            paciente=paciente,
+            doctor=doctor,
+            fecha_cita=fecha,
+            hora_cita=hora_obj,
+            confirmado=True
+        )
+        cita.save()  # Guarda la cita en la base de datos
+
         # Obtener la sede asociada al doctor
         sede = doctor.doctorclinica_set.first().sede if doctor.doctorclinica_set.exists() else None
         
@@ -142,7 +177,7 @@ def confirmacion_cita(request):
         context = {
             'doctor': doctor,
             'fecha': fecha,
-            'hora': hora,
+            'hora': hora_obj.strftime("%H:%M"),
             'especialidad': doctor.especialidad_doctor,
             'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible"
         }
@@ -152,6 +187,26 @@ def confirmacion_cita(request):
         return render(request, 'confirmacion_cita.html', {
             'error': 'Método de solicitud no válido.'
         })
+    
+@login_required
+def finalizar_cita(request, cita_id):
+    cita = get_object_or_404(Cita, id=cita_id)
+
+    # Verifica que el usuario sea el doctor de la cita o tenga permisos especiales
+    if request.user != cita.doctor.usuario:
+        return render(request, 'error.html', {'error': 'No tienes permiso para finalizar esta cita.'})
+
+    # Marcar la cita como finalizada
+    cita.finalizada = True
+    cita.save()
+
+    # Reactivar la disponibilidad de la hora del doctor
+    DisponibilidadDoctor.objects.filter(
+        doctor=cita.doctor, fecha=cita.fecha_cita, hora=cita.hora_cita
+    ).update(disponible=True)
+
+    return render(request, 'cita_finalizada.html', {'cita': cita})
+
     
 @login_required
 def seleccionar_doctor(request):

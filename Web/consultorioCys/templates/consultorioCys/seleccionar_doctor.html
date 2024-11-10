@@ -29,7 +29,7 @@
                             <label for="hora_{{ entry.doctor.rut_doctor }}">Seleccione una hora:</label>
                             <select id="hora_{{ entry.doctor.rut_doctor }}" name="hora" class="form-control" required>
                                 {% for hora in entry.horas_disponibles %}
-                                    <option value="{{ hora }}">{{ hora|time:"H:i" }}</option>
+                                    <option value="{{ hora|time:"H:i" }}">{{ hora|time:"H:i" }}</option>
                                 {% empty %}
                                     <option disabled>No hay horas disponibles</option>
                                 {% endfor %}

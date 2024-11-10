@@ -27,7 +27,6 @@
     </form>
 
     <!-- Formulario POST para seleccionar sede, fecha y buscar doctores -->
-    {% if especialidad_seleccionada %}
     <form method="post" action="{% url 'pedir_hora' %}">
         {% csrf_token %}
         <input type="hidden" name="especialidad" value="{{ especialidad_seleccionada }}">
@@ -49,7 +48,6 @@
 
         <button type="submit" class="btn btn-primary">Buscar Doctores</button>
     </form>
-    {% endif %}
 </div>
 
 {% endblock %}

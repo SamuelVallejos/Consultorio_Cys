@@ -160,10 +160,11 @@ class Cita(models.Model):
     hora_cita = models.TimeField()
     motivo_consulta = models.CharField(max_length=255, blank=True, null=True)
     confirmado = models.BooleanField(default=False)
+    finalizada = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Cita para {self.paciente.nombres_paciente} con {self.doctor.nombres_doctor} el {self.fecha_cita}"
-    
+ 
 class DisponibilidadDoctor(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     fecha = models.DateField() 
