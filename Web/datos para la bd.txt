@@ -1,3 +1,8 @@
+mysql -u root -p
+CREATE USER 'javier'@'localhost' IDENTIFIED BY 'Zeus1998+';
+GRANT ALL PRIVILEGES ON consultoriocys.* TO 'javier'@'localhost';
+FLUSH PRIVILEGES;
+
 mysql -u javier -p
 Zeus1998+
 CREATE DATABASE consultoriocys;
