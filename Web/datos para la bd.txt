@@ -13,8 +13,6 @@ EXIT;
 python manage.py makemigrations consultorioCys
 python manage.py migrate
 
-python manage.py runserver
-
 datos para llenar las tablas
 
 Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 217

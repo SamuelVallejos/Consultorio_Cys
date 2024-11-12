@@ -349,7 +349,7 @@ def login_view(request):
                     # Verificar si el usuario tiene un paciente relacionado
                     if Paciente.objects.filter(usuario=usuario).exists():
                         login(request, usuario)  # Inicia sesión como paciente
-                        return redirect('inicio')  # Redirige al inicio del paciente
+                        return redirect('doctor_dashboard')  # Redirige al inicio del paciente
                     else:
                         messages.error(request, 'No estás registrado como paciente.')
                         return redirect('login')
