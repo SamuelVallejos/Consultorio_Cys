@@ -19,52 +19,20 @@
       <h1 class="text-primary consultorio-title">Consultorio Cys</h1>
     </div>
 
-    <!-- Botones para seleccionar el rol -->
-    <div class="role-selection d-flex justify-content-around mb-4">
-      <button id="btnPaciente" class="btn btn-light text-primary w-45 active"><img
-          src="https://img.icons8.com/ios-filled/50/007bff/user-male-circle.png" alt="Paciente" />Paciente</button>
-      <button id="btnDoctor" class="btn btn-light text-primary w-45"><img
-          src="https://img.icons8.com/ios-filled/50/007bff/doctor-male.png" alt="Doctor" />Doctor</button>
-    </div>
-
-    <!-- Formulario de inicio de sesión para Paciente (Visible por defecto) -->
-    <div id="pacienteForm" class="form-container" style="display: block;">
+    <!-- Formulario de inicio de sesión -->
+    <div class="form-container">
       <form method="POST" action="{% url 'login' %}">
         {% csrf_token %}
-        <input type="hidden" name="rol" value="paciente" />
-        <h3 class="text-primary">Inicio de sesión - Paciente</h3>
+        <h3 class="text-primary">Inicio de sesión</h3>
 
         <div class="form-group mb-3">
-          <label for="rut-paciente" class="form-label text-primary">RUT:</label>
-          <input type="text" class="form-control" id="rut-paciente" name="rut" placeholder="Ingrese su RUT" required />
+          <label for="rut" class="form-label text-primary">RUT:</label>
+          <input type="text" class="form-control" id="rut" name="rut" placeholder="Ingrese su RUT" required />
         </div>
 
         <div class="form-group mb-3">
-          <label for="contrasena-paciente" class="form-label text-primary">Contraseña:</label>
-          <input type="password" class="form-control" id="contrasena-paciente" name="contrasena"
-            placeholder="Ingrese su contraseña" required />
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
-      </form>
-    </div>
-
-
-    <!-- Formulario de inicio de sesión para Doctor -->
-    <div id="doctorForm" class="form-container">
-      <form method="POST" action="{% url 'login' %}">
-        {% csrf_token %}
-        <input type="hidden" name="rol" value="doctor" />
-        <h3 class="text-primary">Inicio de sesión - Doctor</h3>
-
-        <div class="form-group mb-3">
-          <label for="rut-doctor" class="form-label text-primary">RUT:</label>
-          <input type="text" class="form-control" id="rut-doctor" name="rut" placeholder="Ingrese su RUT" required />
-        </div>
-
-        <div class="form-group mb-3">
-          <label for="contrasena-doctor" class="form-label text-primary">Contraseña:</label>
-          <input type="password" class="form-control" id="contrasena-doctor" name="contrasena"
+          <label for="contrasena" class="form-label text-primary">Contraseña:</label>
+          <input type="password" class="form-control" id="contrasena" name="contrasena"
             placeholder="Ingrese su contraseña" required />
         </div>
 

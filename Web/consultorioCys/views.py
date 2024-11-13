@@ -324,20 +324,11 @@ def sedes_por_especialidad(request, especialidad):
     
     return JsonResponse({'sedes': sedes_data})
 
-
 def login_view(request):
     if request.method == 'POST':
         # Obtener datos del formulario
-        rut = request.POST.get('rut', '').strip()  # Elimina espacios extra
+        rut = request.POST.get('rut', '').strip()
         password = request.POST.get('contrasena', '')
-        rol = request.POST.get('rol', '').lower()  # Asegura que el rol esté en minúsculas
-
-        # Imprimir todos los datos recibidos para depuración
-        print("===== Datos del Formulario de Login =====")
-        print(f"RUT: {rut}")
-        print(f"Contraseña: {password}")
-        print(f"Rol: {rol}")
-        print(f"POST Data: {request.POST}")  # Imprime todos los datos enviados
 
         try:
             # Busca el usuario por RUT
@@ -345,29 +336,18 @@ def login_view(request):
 
             # Verifica la contraseña
             if usuario.check_password(password):
-                if rol == 'paciente':
-                    # Verificar si el usuario tiene un paciente relacionado
-                    if Paciente.objects.filter(usuario=usuario).exists():
-                        login(request, usuario)  # Inicia sesión como paciente
-                        return redirect('doctor_dashboard')  # Redirige al inicio del paciente
-                    else:
-                        messages.error(request, 'No estás registrado como paciente.')
-                        return redirect('login')
-
-                elif rol == 'doctor':
-                    # Verificar si el usuario tiene un doctor relacionado
-                    if Doctor.objects.filter(usuario=usuario).exists():
-                        login(request, usuario)  # Inicia sesión como doctor
-                        return redirect('doctor_dashboard')  # Redirige al dashboard del doctor
-                    else:
-                        messages.error(request, 'No estás registrado como doctor.')
-                        return redirect('login')
-
+                # Determina el rol automáticamente
+                if Paciente.objects.filter(usuario=usuario).exists():
+                    rol = 'paciente'
+                    login(request, usuario)
+                    return redirect('paciente_dashboard')
+                elif Doctor.objects.filter(usuario=usuario).exists():
+                    rol = 'doctor'
+                    login(request, usuario)
+                    return redirect('doctor_dashboard')
                 else:
-                    # Rol no válido o no coincide
-                    messages.error(request, 'Rol inválido. Por favor, selecciona un rol válido.')
+                    messages.error(request, 'No tienes un rol asignado en el sistema.')
                     return redirect('login')
-
             else:
                 # Si la contraseña es incorrecta
                 messages.error(request, 'Contraseña incorrecta.')
@@ -432,6 +412,7 @@ def doctor_dashboard(request):
 
 @login_required
 def paciente_dashboard(request):
+    print("Entrando al dashboard del paciente")
     return render(request, 'consultorioCys/paciente_dashboard.html')
 
 def is_usuario(user):
