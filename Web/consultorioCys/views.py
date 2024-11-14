@@ -19,9 +19,7 @@ from .forms import PacienteForm, CitaForm, InformeForm
 from django.urls import reverse
 from django.utils import timezone
 import datetime
-from reportlab.pdfgen import canvas
 from django.http import HttpResponse
-from reportlab.lib.pagesizes import letter
 
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
@@ -344,7 +342,7 @@ def login_view(request):
                 if Paciente.objects.filter(usuario=usuario).exists():
                     rol = 'paciente'
                     login(request, usuario)
-                    return redirect('paciente_dashboard')
+                    return redirect('inicio')
                 elif Doctor.objects.filter(usuario=usuario).exists():
                     rol = 'doctor'
                     login(request, usuario)
