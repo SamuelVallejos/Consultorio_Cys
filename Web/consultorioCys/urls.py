@@ -34,4 +34,5 @@ urlpatterns = [
     path("agendar_cita/", views.agendar_cita, name="agendar_cita"),
     path("resumen_cita/<int:cita_id>/", views.resumen_cita, name="resumen_cita"),
     path('finalizar_cita/<int:cita_id>/', views.finalizar_cita, name='finalizar_cita'),
+    path('generar_pdf/<int:informe_id>/', views.generar_pdf, name='generar_pdf'),
 ]

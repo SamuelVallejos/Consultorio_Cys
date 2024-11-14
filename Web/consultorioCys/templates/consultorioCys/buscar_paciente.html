@@ -1,46 +1,45 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Búsqueda de Paciente</title>
-</head>
-
-<body>
-    {% block content %}
-    <div class="container mt-5">
-      <div class="card shadow-lg" style="background-color: #e3f2fd;">
-        <div class="card-header text-white" style="background-color: #0277bd;">
-          <h2 class="text-center">Información del Paciente</h2>
-        </div>
-        <div class="card-body">
-          <p><strong>Nombre Completo:</strong> 
-             {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}
-          </p>
-          <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
-          <p><strong>Email:</strong> {{ paciente.correo_paciente }}</p>
-          <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
-          <p><strong>Fecha de Nacimiento:</strong> {{ paciente.fecha_nacimiento_paciente }}</p>
-          <p><strong>Género:</strong> {{ paciente.get_genero_paciente_display }}</p>
-          <p><strong>Dirección:</strong> {{ paciente.direccion_paciente }}</p>
-    
-          {% if paciente.archivo %}
-            <div class="mt-4">
-              <a href="{{ paciente.archivo.url }}" class="btn btn-primary" download>
-                Descargar Archivo del Paciente
-              </a>
-            </div>
-          {% else %}
-            <p class="text-warning mt-4">No hay archivo disponible para este paciente.</p>
-          {% endif %}
-        </div>
-        <div class="card-footer text-center">
-          <a href="{% url 'doctor_dashboard' %}" class="btn btn-secondary">Volver al Dashboard</a>
-        </div>
-      </div>
+{% extends 'consultorioCys/base_generic.html' %} 
+{% block content %}
+<h2>Información del Paciente</h2>
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}</h3>
     </div>
-    {% endblock %}
-</body>
+    <div class="card-body">
+        <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
+        <p><strong>Correo Electrónico:</strong> {{ paciente.correo_paciente }}</p>
+        <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
+        <p><strong>Fecha de Nacimiento:</strong> {{ paciente.fecha_nacimiento_paciente }}</p>
+        <p><strong>Género:</strong> {{ paciente.get_genero_paciente_display }}</p>
+        <p><strong>Dirección:</strong> {{ paciente.direccion_paciente }}</p>
+    </div>
+</div>
 
-</html>
+<h2>Informes de {{ paciente.nombres_paciente }}</h2>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Título</th>
+            <th>Fecha</th>
+            <th>Notas</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for informe in informes %}
+        <tr>
+            <td>{{ informe.titulo_informe }}</td>
+            <td>{{ informe.fecha_informe }}</td>
+            <td>{{ informe.notas_doctor }}</td>
+            <td>
+                {% if informe.documentos_extra %}
+                <a href="{{ informe.documentos_extra.url }}" class="btn btn-success btn-sm" target="_blank">Descargar PDF</a>
+                {% else %}
+                <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">Generar PDF</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

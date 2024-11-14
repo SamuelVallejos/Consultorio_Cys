@@ -130,6 +130,7 @@ class Informe(models.Model):
     instrucciones_tratamiento = models.TextField(blank=True)  # Instrucciones (medicamentos o tratamientos)
     fecha_informe = models.DateTimeField(auto_now_add=True)  # Fecha del Informe (subido)
     documentos_extra = models.FileField(upload_to='documentos_extra/', blank=True)  # Documentos extras
+    
 
     class Meta:
         verbose_name = "Informe"

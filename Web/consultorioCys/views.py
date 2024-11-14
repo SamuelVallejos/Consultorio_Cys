@@ -19,6 +19,10 @@ from .forms import PacienteForm, CitaForm, InformeForm
 from django.urls import reverse
 from django.utils import timezone
 import datetime
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -467,10 +471,15 @@ def buscar_paciente(request):
                     # Obtener el paciente relacionado
                     paciente = usuario.paciente
 
-                    # Redirigir usando reverse() para asegurar la ruta
-                    from django.urls import reverse
-                    url = reverse('paciente_info', kwargs={'rut_paciente': paciente.rut_paciente})
-                    return redirect(url)
+                    # Obtener los informes del paciente
+                    informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
+
+                    # Renderizar la vista de búsqueda de paciente con los informes
+                    return render(request, 'consultorioCys/buscar_paciente.html', {
+                        'paciente': paciente,
+                        'informes': informes
+                    })
+
                 except Paciente.DoesNotExist:
                     messages.error(request, "Este RUT no corresponde a un paciente. Inténtelo de nuevo.")
             else:
@@ -612,3 +621,32 @@ def obtener_citas_json(request):
         return JsonResponse([], safe=False)
 
 #ACA TERMINA EL CALENDARIO 
+
+
+def generar_pdf(request, informe_id):
+    informe = get_object_or_404(Informe, id_informe=informe_id)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="informe_{informe.id_informe}.pdf"'
+
+    pdf = canvas.Canvas(response, pagesize=letter)
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(100, 750, f"Título del Informe: {informe.titulo_informe}")
+
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(100, 720, f"Fecha: {informe.fecha_informe}")
+    pdf.drawString(100, 700, f"Nombre del Paciente: {informe.paciente.nombres_paciente} {informe.paciente.apellidos_paciente}")
+    pdf.drawString(100, 680, f"RUT: {informe.paciente.rut_paciente}")
+    pdf.drawString(100, 660, f"Doctor: {informe.doctor.nombre_doctor}")
+    pdf.drawString(100, 640, f"Clínica: {informe.clinica.nombre_clinica}")
+    pdf.drawString(100, 620, f"Sede: {informe.sede.nombre_sede}")
+
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(100, 580, "Descripción del Informe")
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(100, 560, informe.descripcion_informe)
+
+    pdf.showPage()
+    pdf.save()
+
+    return response
