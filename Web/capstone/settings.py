@@ -147,3 +147,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 
 AUTH_USER_MODEL = 'consultorioCys.Usuario'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'cysconsultorio@gmail.com'
+EMAIL_HOST_PASSWORD = 'siajitbewyitfjgy'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # cysconsultorio@gmail.com

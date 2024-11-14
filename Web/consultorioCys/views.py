@@ -20,7 +20,15 @@ from django.urls import reverse
 from django.utils import timezone
 import datetime
 from django.http import HttpResponse
-
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth import get_user_model
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -59,8 +67,57 @@ def inicio(request):
         'cita_existente': cita_existente
     })
 
-def ia(request):
-    return render(request, 'consultorioCys/ia.html')
+User = get_user_model()
+
+def cambiar_clave(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == "POST":
+            new_password = request.POST.get("new_password")
+            confirm_password = request.POST.get("confirm_password")
+
+            if new_password == confirm_password:
+                user.password = make_password(new_password)
+                user.save()
+                messages.success(request, "Tu contraseña ha sido cambiada exitosamente.")
+                return redirect("login")  # Redirige al login después de cambiar la contraseña
+            else:
+                messages.error(request, "Las contraseñas no coinciden.")
+        return render(request, "cambiar_clave.html", {"validlink": True})
+    else:
+        messages.error(request, "El enlace de restablecimiento no es válido o ha expirado.")
+        return render(request, "cambiar_clave.html", {"validlink": False})
+
+def restablecer_clave(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        users = Usuario.objects.filter(email=email)
+        if users.exists():
+            user = users.first()
+            subject = "Restablecimiento de contraseña"
+            email_template_name = "mensaje_cambio_clave.txt"
+            context = {
+                "email": user.email,
+                "domain": "localhost:8000",  # Cambia esto a tu dominio en producción
+                "site_name": "Tu Sitio",
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": default_token_generator.make_token(user),
+                "protocol": "http",  # Cambia a "https" si usas SSL en producción
+}
+            email_content = render_to_string(email_template_name, context)
+            send_mail(subject, email_content, settings.DEFAULT_FROM_EMAIL, [user.email])
+
+            messages.success(request, f"Se ha enviado un mensaje a tu correo {user.email}")
+            return redirect("restablecer_clave")
+        else:
+            messages.error(request, "No se encontró un usuario con ese correo.")
+            return redirect("restablecer_clave")
+    return render(request, "restablecer_clave.html")
 
 def acercade(request):
     return render(request, 'consultorioCys/acercade.html')

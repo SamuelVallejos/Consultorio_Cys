@@ -15,9 +15,6 @@
 <body>
   {% block content %}
   <div class="container py-5">
-    <div class="logo-section text-center mb-4">
-      <h1 class="text-primary consultorio-title">Consultorio Cys</h1>
-    </div>
 
     <!-- Formulario de inicio de sesión -->
     <div class="form-container">
@@ -34,6 +31,10 @@
           <label for="contrasena" class="form-label text-primary">Contraseña:</label>
           <input type="password" class="form-control" id="contrasena" name="contrasena"
             placeholder="Ingrese su contraseña" required />
+        </div>
+
+        <div class="form-group mb-3" style="text-align: end;">
+          <a href="{% url 'restablecer_clave' %}">¿Olvidaste tu contraseña?</a>
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
