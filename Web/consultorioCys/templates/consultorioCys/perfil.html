@@ -12,80 +12,139 @@
 
 <body>
   {% block content %}
-  <!-- Contenedor principal con diseño responsivo -->
+  <!-- Contenedor principal -->
   <div class="container d-flex flex-column flex-md-row justify-content-center align-items-start my-5"
     style="max-width: 1200px;">
     <!-- Contenedor del Perfil -->
     <div class="container p-5 bg-white rounded shadow-lg mb-4 mb-md-0" style="max-width: 800px;">
       <h1 class="text-center mb-4 display-5 text-primary">
         <i class="bi bi-person-circle me-2"></i>
-        Perfil de {{ usuario.nombre }} {{ usuario.apellido }}
+        {{ usuario.nombre }} {{ usuario.apellido }}
       </h1>
 
-      <div class="d-flex justify-content-center mb-4">
-        <div class="col-md-8">
-          <ul class="list-unstyled">
-            <li class="mb-2 pb-2 border-bottom">
-              <strong>RUT:</strong> {{ usuario.rut }}
-            </li>
-            <li class="mb-2 pb-2 border-bottom">
-              <strong>Email:</strong> {{ usuario.email }} <a ><img
-              src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;"/></a>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <!-- Formulario para editar -->
+      <form method="POST" id="perfil-form">
+        {% csrf_token %}
+        <div class="d-flex justify-content-center mb-4">
+          <div class="col-md-8">
+            <ul class="list-unstyled">
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>RUT:</strong>
+                <span>{{ usuario.rut }}</span>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Email:</strong>
+                <div class="d-flex align-items-center">
+                  <span id="email-view">{{ usuario.email }}</span>
+                  <input type="email" name="email" id="email-edit" value="{{ usuario.email }}" class="form-control d-none"
+                    style="width: 300px;">
+                  <a href="#" onclick="toggleEdit('email')" class="ms-2">
+                    <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                  </a>
+                </div>
+              </li>
 
-      {% if doctor %}
-      <!-- Datos del Doctor -->
-      <h2 class="text-center mt-4 mb-3 text-primary">
-        <i class="bi bi-clipboard-pulse me-2"></i>
-        Datos del Doctor
-      </h2>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-          <strong>Especialidad:</strong> {{ doctor.especialidad_doctor }}
-        </li>
-        <li class="list-group-item">
-          <strong>Teléfono:</strong> {{ doctor.telefono_doctor }}
-        </li>
-        <li class="list-group-item">
-          <strong>Fecha de Nacimiento:</strong> {{ doctor.fecha_nacimiento_doctor }}
-        </li>
-      </ul>
-      {% elif paciente %}
-      <!-- Datos del Paciente -->
-      <h2 class="text-center mt-4 mb-3 text-primary">
-        <i class="bi bi-heart-pulse me-2"></i>
-        Datos del Paciente
-      </h2>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-          <strong>Teléfono:</strong> {{ paciente.telefono_paciente }}
-        </li>
-        <li class="list-group-item">
-          <strong>Fecha de Nacimiento:</strong> {{ paciente.fecha_nacimiento_paciente }}
-        </li>
-        <li class="list-group-item">
-          <strong>Dirección:</strong> {{ paciente.direccion_paciente }}
-        </li>
-        <li class="list-group-item">
-          <strong>Género:</strong> {{ paciente.genero_paciente }}
-        </li>
-      </ul>
-      {% endif %}
+              {% if doctor %}
+              <!-- Datos del Doctor -->
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Teléfono:</strong>
+                <div class="d-flex align-items-center">
+                  <span id="telefono-view">{{ doctor.telefono_doctor }}</span>
+                  <input type="text" name="telefono" id="telefono-edit" value="{{ doctor.telefono_doctor }}"
+                    class="form-control d-none" style="width: 300px;">
+                  <a href="#" onclick="toggleEdit('telefono')" class="ms-2">
+                    <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                  </a>
+                </div>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Dirección:</strong>
+                <div class="d-flex align-items-center">
+                  <span id="direccion-view">{{ doctor.direccion_doctor }}</span>
+                  <input type="text" name="direccion" id="direccion-edit" value="{{ paciente.direccion_paciente }}"
+                    class="form-control d-none" style="width: 300px;">
+                  <a href="#" onclick="toggleEdit('direccion')" class="ms-2">
+                    <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                  </a>
+                </div>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Especialidad:</strong>
+                <span>{{ doctor.especialidad_doctor }}</span>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Fecha de Nacimiento:</strong>
+                <span>{{ doctor.fecha_nacimiento_doctor }}</span>
+              </li>
+
+              {% elif paciente %}
+              <!-- Datos del Paciente -->
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Teléfono:</strong>
+                <div class="d-flex align-items-center">
+                  <span id="telefono-view">{{ paciente.telefono_paciente }}</span>
+                  <input type="text" name="telefono" id="telefono-edit" value="{{ paciente.telefono_paciente }}"
+                    class="form-control d-none" style="width: 300px;">
+                  <a href="#" onclick="toggleEdit('telefono')" class="ms-2">
+                    <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                  </a>
+                </div>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Dirección:</strong>
+                <div class="d-flex align-items-center">
+                  <span id="direccion-view">{{ paciente.direccion_paciente }}</span>
+                  <input type="text" name="direccion" id="direccion-edit" value="{{ paciente.direccion_paciente }}"
+                    class="form-control d-none" style="width: 300px;">
+                  <a href="#" onclick="toggleEdit('direccion')" class="ms-2">
+                    <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                  </a>
+                </div>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Fecha de Nacimiento:</strong>
+                <span>{{ paciente.fecha_nacimiento_paciente }}</span>
+              </li>
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Género:</strong>
+                <span>{{ paciente.genero_paciente }}</span>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Botón para guardar cambios -->
+        <button type="submit" class="btn btn-primary mt-3 d-none" id="guardar-cambios-btn">Guardar Cambios</button>
+      </form>
     </div>
 
-    <!-- Foto del Usuario a la Derecha -->
+    <!-- Foto del Usuario -->
     <div class="text-center mx-auto mx-md-4 mt-5">
-      <img src="{% static 'consultorioCys/img/perfil.jpg' %}"
-        style="width: 100%; max-width: 1000px; object-fit: cover;" />
+      <img src="{% static 'consultorioCys/img/perfil.jpg' %}" style="width: 100%; max-width: 1000px; object-fit: cover;" />
     </div>
   </div>
 
   <!-- Bootstrap Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
-    rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+  <!-- Script para alternar entre vista y edición -->
+  <script>
+    function toggleEdit(field) {
+      const view = document.getElementById(`${field}-view`);
+      const edit = document.getElementById(`${field}-edit`);
+      const saveButton = document.getElementById('guardar-cambios-btn');
+
+      if (edit.classList.contains('d-none')) {
+        view.classList.add('d-none');
+        edit.classList.remove('d-none');
+        saveButton.classList.remove('d-none');
+      } else {
+        view.classList.remove('d-none');
+        edit.classList.add('d-none');
+      }
+    }
+  </script>
   {% endblock %}
 </body>
 

@@ -464,19 +464,43 @@ def login_view(request):
 
 @login_required
 def perfil_view(request):
-    usuario = request.user  # Obtiene el usuario autenticado
-    # Si tienes información del doctor o paciente relacionada, puedes obtenerla así:
-    try:
-        doctor = Doctor.objects.get(usuario=usuario)
-        return render(request, 'consultorioCys/perfil.html', {'usuario': usuario, 'doctor': doctor})
-    except Doctor.DoesNotExist:
-        # Si no es doctor, verifica si es paciente
-        try:
-            paciente = Paciente.objects.get(usuario=usuario)
-            return render(request, 'consultorioCys/perfil.html', {'usuario': usuario, 'paciente': paciente})
-        except Paciente.DoesNotExist:
-            # Si no es doctor ni paciente
-            return render(request, 'consultorioCys/perfil.html', {'usuario': usuario})
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        telefono = request.POST.get('telefono')
+        direccion = request.POST.get('direccion')
+
+        usuario = request.user
+
+        # Actualizar datos comunes
+        if email:
+            usuario.email = email
+
+        # Si el usuario es un doctor
+        if hasattr(usuario, 'doctor'):
+            doctor = usuario.doctor
+            if telefono:
+                doctor.telefono_doctor = telefono
+            doctor.save()
+
+        # Si el usuario es un paciente
+        elif hasattr(usuario, 'paciente'):
+            paciente = usuario.paciente
+            if telefono:
+                paciente.telefono_paciente = telefono
+            if direccion:
+                paciente.direccion_paciente = direccion
+            paciente.save()
+
+        usuario.save()
+        messages.success(request, 'Tus datos han sido actualizados exitosamente.')
+        return redirect('perfil')
+
+    return render(request, 'consultorioCys/perfil.html', {
+        'usuario': request.user,
+        'doctor': getattr(request.user, 'doctor', None),
+        'paciente': getattr(request.user, 'paciente', None),
+    })
+
 
 def logout_view(request):
     logout(request)
