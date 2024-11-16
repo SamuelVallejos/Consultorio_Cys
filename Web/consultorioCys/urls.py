@@ -9,7 +9,6 @@ urlpatterns = [
     path('login/', views.login_view, name="login"),
     path('logout/', views.logout_view, name="logout"),
     path('dashboard/doctor/', views.doctor_dashboard, name="doctor_dashboard"),
-    path('dashboard/paciente/', views.paciente_dashboard, name="paciente_dashboard"),
     path('doctor/add/', views.add_doctor_view, name="add_doctor"),
     path('cambiar_clave/<uidb64>/<token>/', views.cambiar_clave, name='cambiar_clave'),
     path('cambiar_clave_usuario/', views.cambiar_clave_usuario, name='cambiar_clave_usuario'),

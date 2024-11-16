@@ -520,13 +520,6 @@ def is_paciente(user):
     return user.groups.filter(name='Paciente').exists()
 
 @login_required
-@user_passes_test(is_paciente)
-def paciente_dashboard(request):
-    if request.user.is_authenticated and isinstance(request.user, Paciente):
-        return render(request, 'consultorioCys/paciente_dashboard.html', {'paciente': request.user})
-    return redirect('login')
-
-@login_required
 def doctor_dashboard(request):
     if hasattr(request.user, 'paciente'):
         messages.error(request, 'No tienes permisos para acceder a esta sección como paciente.')

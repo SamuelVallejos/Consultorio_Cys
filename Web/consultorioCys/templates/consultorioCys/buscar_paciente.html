@@ -1,9 +1,9 @@
-{% extends 'consultorioCys/base_generic.html' %} 
+{% extends 'consultorioCys/base_generic.html' %}
 {% block content %}
 <h2>Información del Paciente</h2>
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
-        <h3>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}</h3>
+        <h3>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{paciente.segundo_apellido_paciente }}</h3>
     </div>
     <div class="card-body">
         <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
@@ -15,7 +15,7 @@
     </div>
 </div>
 
-<h2>Informes de {{ paciente.nombres_paciente }}</h2>
+<h2>Informes</h2>
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
@@ -33,9 +33,11 @@
             <td>{{ informe.notas_doctor }}</td>
             <td>
                 {% if informe.documentos_extra %}
-                <a href="{{ informe.documentos_extra.url }}" class="btn btn-success btn-sm" target="_blank">Descargar PDF</a>
+                <a href="{{ informe.documentos_extra.url }}" class="btn btn-success btn-sm" target="_blank">Descargar
+                    PDF</a>
                 {% else %}
-                <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">Generar PDF</a>
+                <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm"
+                    target="_blank">Generar PDF</a>
                 {% endif %}
             </td>
         </tr>

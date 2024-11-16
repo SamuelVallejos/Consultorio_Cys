@@ -58,17 +58,6 @@
                 </div>
               </li>
               <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                <strong>Dirección:</strong>
-                <div class="d-flex align-items-center">
-                  <span id="direccion-view">{{ doctor.direccion_doctor }}</span>
-                  <input type="text" name="direccion" id="direccion-edit" value="{{ paciente.direccion_paciente }}"
-                    class="form-control d-none" style="width: 300px;">
-                  <a href="#" onclick="toggleEdit('direccion')" class="ms-2">
-                    <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
-                  </a>
-                </div>
-              </li>
-              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
                 <strong>Especialidad:</strong>
                 <span>{{ doctor.especialidad_doctor }}</span>
               </li>
