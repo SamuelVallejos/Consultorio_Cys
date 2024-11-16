@@ -12,6 +12,7 @@ urlpatterns = [
     path('dashboard/paciente/', views.paciente_dashboard, name="paciente_dashboard"),
     path('doctor/add/', views.add_doctor_view, name="add_doctor"),
     path('cambiar_clave/<uidb64>/<token>/', views.cambiar_clave, name='cambiar_clave'),
+    path('cambiar_clave_usuario/', views.cambiar_clave_usuario, name='cambiar_clave_usuario'),
     path('restablecer_clave/', views.restablecer_clave, name="restablecer_clave"), 
     path('form_cita/', views.form_cita, name="form_cita"), 
     path('informe_doctores/', views.informe_doctores, name='informe_doctores'),

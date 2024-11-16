@@ -67,57 +67,99 @@ def inicio(request):
         'cita_existente': cita_existente
     })
 
+@login_required
+def cambiar_clave_usuario(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        user = request.user
+
+        # Validar la contraseña antigua
+        if not user.check_password(old_password):
+            messages.error(request, 'La contraseña actual no es correcta.')
+            return render(request, 'consultorioCys/cambiar_clave_usuario.html')
+
+        # Validar que las contraseñas nuevas coincidan
+        if new_password != confirm_password:
+            messages.error(request, 'Las contraseñas no coinciden.')
+            return render(request, 'consultorioCys/cambiar_clave_usuario.html')
+
+        # Cambiar la contraseña
+        user.password = make_password(new_password)
+        user.save()
+        messages.success(request, 'La contraseña ha sido cambiada exitosamente.')
+        return redirect('perfil')  # Redirigir al perfil del usuario
+
+    return render(request, 'consultorioCys/cambiar_clave_usuario.html')
+
 User = get_user_model()
 
 def cambiar_clave(request, uidb64, token):
     try:
+        # Decodificar el UID para obtener al usuario
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
 
-    if user is not None and default_token_generator.check_token(user, token):
-        if request.method == "POST":
-            new_password = request.POST.get("new_password")
-            confirm_password = request.POST.get("confirm_password")
+        # Validar el token
+        if not default_token_generator.check_token(user, token):
+            return render(request, 'consultorioCys/cambiar_clave.html', {'error': 'El enlace no es válido o ha expirado.'})
+
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
 
             if new_password == confirm_password:
+                # Cambiar la contraseña
                 user.password = make_password(new_password)
                 user.save()
-                messages.success(request, "Tu contraseña ha sido cambiada exitosamente.")
-                return redirect("login")  # Redirige al login después de cambiar la contraseña
+                return redirect('login')  # Redirige al login después del cambio exitoso
             else:
-                messages.error(request, "Las contraseñas no coinciden.")
-        return render(request, "cambiar_clave.html", {"validlink": True})
-    else:
-        messages.error(request, "El enlace de restablecimiento no es válido o ha expirado.")
-        return render(request, "cambiar_clave.html", {"validlink": False})
+                return render(request, 'consultorioCys/cambiar_clave.html', {'error': 'Las contraseñas no coinciden.'})
+
+        return render(request, 'consultorioCys/cambiar_clave.html', {'uidb64': uidb64, 'token': token})
+    except (User.DoesNotExist, ValueError, TypeError):
+        return render(request, 'consultorioCys/cambiar_clave.html', {'error': 'Ha ocurrido un error. Intenta nuevamente.'})
 
 def restablecer_clave(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        users = Usuario.objects.filter(email=email)
-        if users.exists():
-            user = users.first()
-            subject = "Restablecimiento de contraseña"
-            email_template_name = "mensaje_cambio_clave.txt"
-            context = {
-                "email": user.email,
-                "domain": "localhost:8000",  # Cambia esto a tu dominio en producción
-                "site_name": "Tu Sitio",
-                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                "token": default_token_generator.make_token(user),
-                "protocol": "http",  # Cambia a "https" si usas SSL en producción
-}
-            email_content = render_to_string(email_template_name, context)
-            send_mail(subject, email_content, settings.DEFAULT_FROM_EMAIL, [user.email])
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Enlace para el correo
+            domain = request.get_host()
+            protocol = 'https' if request.is_secure() else 'http'
+            link = f"{protocol}://{domain}/cambiar_clave/{uidb64}/{token}"
+
+            # Renderizar plantilla del correo
+            email_subject = 'Restablecimiento de contraseña'
+            email_body = render_to_string('consultorioCys/mensaje_cambio_clave.txt', {
+                'protocol': protocol,
+                'domain': domain,
+                'uid': uidb64,
+                'token': token,
+                'site_name': 'Consultorio Cys',
+            })
+
+            # Enviar el correo
+            send_mail(
+                email_subject,
+                email_body,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
 
             messages.success(request, f"Se ha enviado un mensaje a tu correo {user.email}")
-            return redirect("restablecer_clave")
-        else:
-            messages.error(request, "No se encontró un usuario con ese correo.")
-            return redirect("restablecer_clave")
-    return render(request, "restablecer_clave.html")
+            return render(request, 'consultorioCys/restablecer_clave.html', {'mensaje': 'Correo enviado.'})
+        except User.DoesNotExist:
+            return render(request, 'consultorioCys/restablecer_clave.html', {'error': 'Correo no encontrado.'})
+
+    return render(request, 'consultorioCys/restablecer_clave.html')
 
 def acercade(request):
     return render(request, 'consultorioCys/acercade.html')
