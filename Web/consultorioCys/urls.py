@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.inicio, name="inicio"),
@@ -36,4 +38,8 @@ urlpatterns = [
     path("resumen_cita/<int:cita_id>/", views.resumen_cita, name="resumen_cita"),
     path('finalizar_cita/<int:cita_id>/', views.finalizar_cita, name='finalizar_cita'),
     path('generar_pdf/<int:informe_id>/', views.generar_pdf, name='generar_pdf'),
+    path('descargar_pdf/<path:path>/', views.descargar_como_pdf, name='descargar_como_pdf'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

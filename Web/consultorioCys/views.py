@@ -18,9 +18,6 @@ from .models import Paciente, Informe, Cita
 from .forms import PacienteForm, CitaForm, InformeForm
 from django.urls import reverse
 from django.utils import timezone
-import datetime
-import random
-import string
 from django.http import HttpResponse
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -31,6 +28,16 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from django.http import FileResponse, Http404
+from PIL import Image
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+import datetime
+import random
+import string
+import os
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -778,32 +785,129 @@ def obtener_citas_json(request):
     else:
         return JsonResponse([], safe=False)
 
-#ACA TERMINA EL CALENDARIO 
-
-
 def generar_pdf(request, informe_id):
+    # Obtener el objeto del informe
     informe = get_object_or_404(Informe, id_informe=informe_id)
 
+    # Configurar la respuesta como archivo PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="informe_{informe.id_informe}.pdf"'
 
+    # Crear el PDF
     pdf = canvas.Canvas(response, pagesize=letter)
+    width, height = letter
+
+    # Ruta del logo
+    logo_path = os.path.join(settings.BASE_DIR, 'static/img/logo.png')
+
+    # Encabezado
+    if os.path.exists(logo_path):
+        pdf.drawImage(logo_path, 50, height - 100, width=100, height=100)
     pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(100, 750, f"Título del Informe: {informe.titulo_informe}")
-
+    pdf.drawString(200, height - 50, "INFORME MÉDICO")
     pdf.setFont("Helvetica", 12)
-    pdf.drawString(100, 720, f"Fecha: {informe.fecha_informe}")
-    pdf.drawString(100, 700, f"Nombre del Paciente: {informe.paciente.nombres_paciente} {informe.paciente.apellidos_paciente}")
-    pdf.drawString(100, 680, f"RUT: {informe.paciente.rut_paciente}")
-    pdf.drawString(100, 660, f"Doctor: {informe.doctor.nombre_doctor}")
-    pdf.drawString(100, 640, f"Clínica: {informe.clinica.nombre_clinica}")
-    pdf.drawString(100, 620, f"Sede: {informe.sede.nombre_sede}")
+    pdf.drawString(200, height - 70, f"Emitido por: {informe.doctor.nombres_doctor} {informe.doctor.primer_apellido_doctor}")
+    pdf.drawString(200, height - 85, f"Especialidad: {informe.doctor.especialidad_doctor}")
+    pdf.drawString(200, height - 100, f"Teléfono: {informe.doctor.telefono_doctor}")
 
+    # Línea divisoria
+    pdf.line(50, height - 120, 550, height - 120)
+
+    # Información del paciente
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(100, 580, "Descripción del Informe")
-    pdf.setFont("Helvetica", 12)
-    pdf.drawString(100, 560, informe.descripcion_informe)
+    pdf.drawString(50, height - 140, "Datos del Paciente")
+    patient_data = [
+        ["Nombre:", f"{informe.paciente.nombres_paciente} {informe.paciente.primer_apellido_paciente}"],
+        ["RUT:", informe.paciente.rut_paciente],
+        ["Género:", informe.paciente.get_genero_paciente_display()],
+        ["Fecha de Nacimiento:", informe.paciente.fecha_nacimiento_paciente.strftime('%d-%m-%Y')],
+        ["Teléfono:", informe.paciente.telefono_paciente],
+        ["Dirección:", informe.paciente.direccion_paciente]
+    ]
 
+    table = Table(patient_data, colWidths=[150, 300])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (1, 0), colors.lightblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    table.wrapOn(pdf, width, height)
+    table.drawOn(pdf, 50, height - 300)
+
+    # Información del informe
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, height - 320, "Datos del Informe")
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, height - 340, f"Título: {informe.titulo_informe}")
+    pdf.drawString(50, height - 360, f"Fecha: {informe.fecha_informe.strftime('%d-%m-%Y')}")
+    pdf.drawString(50, height - 380, "Descripción:")
+    pdf.setFont("Helvetica", 10)
+
+    # Agregar la descripción del informe
+    y = height - 400
+    for line in informe.descripcion_informe.split('\n'):
+        pdf.drawString(70, y, line)
+        y -= 15
+        if y < 100:  # Si el espacio termina, agregar una nueva página
+            pdf.showPage()
+            y = height - 50
+
+    # Firma del doctor (opcional)
+    firma_path = os.path.join(settings.BASE_DIR, 'static/img/firma.png')
+    if os.path.exists(firma_path):
+        pdf.drawImage(firma_path, 400, 50, width=150, height=50)
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(400, 40, "Firma del Doctor")
+
+    # Pie de página
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(50, 30, "Centro Médico XYZ")
+    pdf.drawString(50, 15, "Dirección: Av. Principal 123, Ciudad, País - Teléfono: 123-456-789")
+
+    # Finalizar el PDF
+    pdf.save()
+
+    return response
+
+
+def descargar_como_pdf(request, path):
+    # Ruta del archivo original
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(file_path):
+        raise Http404("El archivo no existe.")
+
+    # Configurar la respuesta como PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{os.path.splitext(os.path.basename(path))[0]}.pdf"'
+
+    # Crear el objeto canvas
+    pdf = canvas.Canvas(response, pagesize=letter)
+
+    # Si es una imagen, incluirla en el PDF
+    try:
+        img = Image.open(file_path)
+        img_width, img_height = img.size
+
+        # Escalar la imagen para ajustarse al tamaño del PDF
+        page_width, page_height = letter
+        scale = min(page_width / img_width, page_height / img_height)
+        img_width = int(img_width * scale)
+        img_height = int(img_height * scale)
+
+        # Dibujar la imagen en el PDF
+        pdf.drawImage(file_path, 0, page_height - img_height, img_width, img_height)
+
+    except Exception:
+        # Si no es una imagen, simplemente incluir el nombre del archivo en el PDF
+        pdf.drawString(100, 750, "El archivo no es compatible para incrustar directamente en PDF.")
+        pdf.drawString(100, 730, f"Archivo original: {os.path.basename(path)}")
+
+    # Finalizar y cerrar el PDF
     pdf.showPage()
     pdf.save()
 

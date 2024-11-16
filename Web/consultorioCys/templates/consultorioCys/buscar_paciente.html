@@ -33,9 +33,7 @@
             <td>{{ informe.notas_doctor }}</td>
             <td>
                 {% if informe.documentos_extra %}
-                <a href="{{ informe.documentos_extra.url }}" class="btn btn-success btn-sm" target="_blank">Descargar
-                    PDF</a>
-                {% else %}
+                <a href="{% url 'descargar_como_pdf' informe.documentos_extra.name %}" class="btn btn-success btn-sm">Descargar PDF</a>
                 <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm"
                     target="_blank">Generar PDF</a>
                 {% endif %}
