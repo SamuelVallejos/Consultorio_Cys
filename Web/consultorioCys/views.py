@@ -19,6 +19,8 @@ from .forms import PacienteForm, CitaForm, InformeForm
 from django.urls import reverse
 from django.utils import timezone
 import datetime
+import random
+import string
 from django.http import HttpResponse
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -611,17 +613,59 @@ def listar_pacientes(request):
     return render(request, 'pacientes_list.html', {'pacientes': pacientes})
 
 # Crear un nuevo paciente
+Usuario = get_user_model()
 def crear_paciente(request):
-    if request.method == "POST":
-        form = PacienteForm(request.POST, request.FILES)
-        if form.is_valid():
-            paciente = form.save(commit=False)  # No guardes todavía el paciente
-            paciente.usuario = request.user  # Asigna el usuario logueado
-            paciente.save()  # Ahora guarda el paciente
-            return redirect('listar_pacientes')
-    else:
-        form = PacienteForm()
-    return render(request, 'paciente_form.html', {'form': form})
+    if request.method == 'POST':
+        # Recopilar datos del formulario
+        rut = request.POST.get('rut')
+        nombres = request.POST.get('nombres')
+        primer_apellido = request.POST.get('primer_apellido')
+        segundo_apellido = request.POST.get('segundo_apellido')
+        correo = request.POST.get('correo')
+        telefono = request.POST.get('telefono')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento')
+        direccion = request.POST.get('direccion')
+        genero = request.POST.get('genero')
+        archivo = request.FILES.get('archivo')
+
+        # Generar una contraseña aleatoria
+        password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+        try:
+            # Crear el usuario
+            usuario = Usuario.objects.create_user(
+                rut=rut,
+                email=correo,
+                password=password,
+                nombre=nombres,
+                apellido=primer_apellido,
+            )
+
+            # Crear el paciente asociado
+            paciente = Paciente.objects.create(
+                usuario=usuario,
+                rut_paciente=rut,
+                nombres_paciente=nombres,
+                primer_apellido_paciente=primer_apellido,
+                segundo_apellido_paciente=segundo_apellido,
+                correo_paciente=correo,
+                telefono_paciente=telefono,
+                fecha_nacimiento_paciente=fecha_nacimiento,
+                direccion_paciente=direccion,
+                genero_paciente=genero,
+                archivo=archivo,
+            )
+
+            # Opcional: Enviar mensaje al usuario (correo con la contraseña generada)
+            # Aquí puedes integrar una función para enviar la contraseña al correo.
+
+            messages.success(request, f"El paciente {nombres} ha sido registrado con éxito. Contraseña: {password}")
+            return redirect('listar_pacientes')  # Redirigir a la vista que corresponda
+        except Exception as e:
+            messages.error(request, f"Error al registrar el paciente: {e}")
+            return redirect('crear_paciente')
+
+    return render(request, 'consultorioCys/crear_paciente.html')
 
 # Editar un paciente existente
 def editar_paciente(request, pk):

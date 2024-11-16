@@ -458,3 +458,34 @@ Clinica.objects.all().delete()
 SedeClinica.objects.all().delete()
 Informe.objects.all().delete()
 DoctorClinica.objects.all().delete()
+
+
+
+class Paciente(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    rut_paciente = models.CharField(max_length=10, primary_key=True)  # RUT Paciente
+    primer_nombres_paciente = models.CharField(max_length=100)  # Nombre/s Paciente
+    segundo_nombres_paciente = models.CharField(max_length=100, blank=True, null=True)  # Segundo Nombre (Opcional)
+    tercer_nombres_paciente = models.CharField(max_length=100, blank=True, null=True)  # Tercer Nombre (Opcional)
+    cuarto_nombres_paciente = models.CharField(max_length=100, blank=True, null=True) 
+    primer_apellido_paciente = models.CharField(max_length=50)  # Primer Apellido Paciente
+    segundo_apellido_paciente = models.CharField(max_length=50, blank=True)  # Segundo Apellido Paciente
+    correo_paciente = models.EmailField(max_length=100)  # Correo Paciente
+    telefono_paciente = models.CharField(max_length=15)  # N° Teléfono Paciente
+    fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
+    direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
+    archivo = models.FileField(upload_to='archivos_pacientes/', blank=True, null=True)
+
+    GENDER_CHOICES = [
+        ('M', 'Masculino'),
+        ('F', 'Femenino'),
+        ('NB', 'No binario'),
+    ]
+    genero_paciente = models.CharField(max_length=2, choices=GENDER_CHOICES)  # Género
+
+    class Meta:
+        verbose_name = "Paciente"
+        verbose_name_plural = "Pacientes"
+
+    def __str__(self):
+        return f"{self.primer_nombres_paciente} {self.primer_apellido_paciente}"

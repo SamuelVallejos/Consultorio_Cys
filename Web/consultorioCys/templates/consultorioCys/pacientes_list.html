@@ -19,11 +19,6 @@
       background-color: #f8f9fa;
     }
 
-    .navbar-brand img {
-      width: 3rem;
-      height: 3rem;
-    }
-
     h1 {
       font-family: 'Poppins', sans-serif;
       color: #007bff;
@@ -46,7 +41,7 @@
       display: flex;
       flex-direction: column;
       transition: transform 0.3s;
-      height: 320px;
+      height: auto;
     }
 
     .patient-card:hover {
@@ -54,16 +49,13 @@
     }
 
     .actions {
-      margin-top: auto;
+      margin-top: 10px;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    /* Estilo unificado para todos los botones */
     .btn {
-      background-color: #007bff;
-      border: none;
       border-radius: 8px;
       color: white;
       font-weight: bold;
@@ -71,11 +63,36 @@
       padding: 10px;
       text-align: center;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .btn:hover {
-      background-color: #0056b3;
+      opacity: 0.9;
+    }
+
+    .btn-outline-primary {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-outline-danger {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .btn-outline-success {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-outline-warning {
+      background-color: #ffc107;
+      color: black;
+    }
+
+    .btn-outline-secondary {
+      background-color: #6c757d;
+      color: white;
     }
 
     .no-patients {
@@ -92,63 +109,57 @@
   {% block content %}
   <div class="container mt-5">
     <h1 class="mb-4 text-primary text-center">
-        <i class="bi bi-people-fill me-2"></i>Listado de Pacientes
+      <i class="bi bi-people-fill me-2"></i>Listado de Pacientes
     </h1>
 
     <!-- Botón Agregar Paciente -->
-    <a href="{% url 'crear_paciente' %}" class="btn btn-primary mb-4 w-100">
-        <i class="bi bi-person-plus me-2"></i> Agregar Paciente
+    <a href="{% url 'crear_paciente' %}" class="btn btn-outline-primary mb-4 w-100">
+      <i class="bi bi-person-plus me-2"></i> Agregar Paciente
     </a>
 
     <!-- Grid de Pacientes -->
     <div class="patient-grid">
-        {% for paciente in pacientes %}
-        <div class="patient-card">
-            <!-- Información del Paciente -->
-            <div class="patient-info mb-3">
-                <h3 class="text-primary">
-                    <i class="bi bi-person-circle me-2"></i>
-                    {{ forloop.counter }}. {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
-                </h3>
-                <p class="email text-muted">{{ paciente.correo_paciente }}</p>
-            </div>
-
-            <!-- Acciones -->
-            <div class="actions">
-                <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
-                    <i class="bi bi-pencil me-1"></i> Editar
-                </a>
-                <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-outline-danger">
-                    <i class="bi bi-trash3-fill me-1"></i> Eliminar
-                </a>
-
-                <!-- Botón Ver Informe -->
-                <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-outline-success">
-                    <i class="bi bi-file-earmark-text me-1"></i> Ver Informes
-                </a>
-
-                <!-- Botón Crear Informe -->
-                <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-warning">
-                    <i class="bi bi-file-earmark-plus me-1"></i> Crear Informe
-                </a>
-
-                {% if paciente.archivo %}
-                <a href="{{ paciente.archivo.url }}" class="btn btn-outline-secondary" target="_blank">
-                    <i class="bi bi-folder2-open me-1"></i> Ver Archivo
-                </a>
-                {% endif %}
-            </div>
+      {% for paciente in pacientes %}
+      <div class="patient-card">
+        <!-- Información del Paciente -->
+        <div class="patient-info mb-3">
+          <h3 class="text-primary">
+            <i class="bi bi-person-circle me-2"></i>
+            {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}
+          </h3>
         </div>
-        {% empty %}
-        <p class="no-patients">No hay pacientes registrados.</p>
-        {% endfor %}
+
+        <!-- Acciones -->
+        <div class="actions">
+          <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Editar
+          </a>
+          <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-outline-danger">
+            <i class="bi bi-trash3-fill me-1"></i> Eliminar
+          </a>
+          <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-text me-1"></i> Ver Informes
+          </a>
+          <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-warning">
+            <i class="bi bi-file-earmark-plus me-1"></i> Crear Informe
+          </a>
+          {% if paciente.archivo %}
+          <a href="{{ paciente.archivo.url }}" class="btn btn-outline-secondary" target="_blank">
+            <i class="bi bi-folder2-open me-1"></i> Ver Archivo
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="no-patients">No hay pacientes registrados.</p>
+      {% endfor %}
     </div>
-</div>
+  </div>
 
-<!-- Bootstrap Icons -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
 
-{% endblock %}
+  {% endblock %}
 </body>
 
 </html>
