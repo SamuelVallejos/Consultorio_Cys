@@ -99,6 +99,16 @@
                 <span>{{ paciente.genero_paciente }}</span>
               </li>
               {% endif %}
+
+              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <strong>Contraseña:</strong>
+                <div class="d-flex align-items-center">
+                    <span>**************</span>
+                    <a href="{% url 'cambiar_clave_usuario' %}" class="ms-2">
+                        <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                    </a>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
