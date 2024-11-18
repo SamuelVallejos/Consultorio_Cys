@@ -24,6 +24,8 @@
                 {% endfor %}
             </select>
         </div>
+        <!-- Botón de respaldo para navegadores sin JavaScript -->
+        <button type="submit" class="btn btn-secondary d-none">Seleccionar</button>
     </form>
 
     <!-- Formulario POST para seleccionar sede, fecha y buscar doctores -->
@@ -36,7 +38,9 @@
             <select id="sede" name="sede" class="form-control" required>
                 <option value="">Selecciona una sede</option>
                 {% for sede in sedes %}
-                    <option value="{{ sede.id_sede }}"> {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}</option>
+                    <option value="{{ sede.id_sede }}" {% if sede.id_sede == sede_seleccionada %}selected{% endif %}>
+                        {{ sede.clinica.nombre_clinica }} - {{ sede.comuna_sede }}, {{ sede.region_sede }}
+                    </option>
                 {% endfor %}
             </select>            
         </div>
@@ -49,5 +53,4 @@
         <button type="submit" class="btn btn-primary">Buscar Doctores</button>
     </form>
 </div>
-
 {% endblock %}

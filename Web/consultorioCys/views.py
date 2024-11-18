@@ -54,7 +54,6 @@ def handle_form_submission(request, form_class, template_name, success_url, inst
     return render(request, template_name, {'form': form})
 
 def horarios_doctor(request, doctor_id):
-    # Aquí puedes implementar la lógica para mostrar los horarios del doctor.
     doctor = Doctor.objects.get(id=doctor_id)
     horarios = doctor.horarios_set.all()  # Ajusta esto según el modelo de horarios que tengas
     return render(request, 'horarios_doctor.html', {'doctor': doctor, 'horarios': horarios})
@@ -350,21 +349,21 @@ def finalizar_cita(request, cita_id):
 @login_required
 def seleccionar_doctor(request):
     especialidad_seleccionada = request.GET.get('especialidad')
-    fecha = request.GET.get('fecha')
+    fecha = request.GET.get('fecha')  # Verifica si el parámetro coincide con el nombre del campo del formulario
 
-    # Obtener la lista de doctores de la especialidad seleccionada
+    print(f"Especialidad seleccionada: {especialidad_seleccionada}")
+    print(f"Fecha recibida: {fecha}")  # Esto debería mostrar el valor de la fecha enviada
+
     doctores = Doctor.objects.filter(especialidad_doctor=especialidad_seleccionada)
-    
-    # Crear una lista para almacenar doctores junto con sus horas disponibles
     doctores_con_horarios = []
+
     for doctor in doctores:
-        # Filtrar horas disponibles del doctor en la fecha seleccionada
         horas_disponibles = DisponibilidadDoctor.objects.filter(
             doctor=doctor,
             fecha=fecha,
-            disponible=True  # Asegúrate de que sea una hora disponible
+            disponible=True
         ).values_list('hora', flat=True)
-        
+
         doctores_con_horarios.append({
             'doctor': doctor,
             'horas_disponibles': horas_disponibles
@@ -403,14 +402,17 @@ def pedir_hora(request):
     if request.method == 'POST':
         especialidad = request.POST.get('especialidad')
         sede_id = request.POST.get('sede')
+        fecha = request.POST.get('fecha')  # Obtener la fecha del formulario
 
-        # Solo redirigir si ambos campos tienen valores
-        if especialidad and sede_id:
+        # Solo redirigir si todos los campos tienen valores
+        if especialidad and sede_id and fecha:
             # Redirigir a la página de selección de doctores con los parámetros en la URL
-            return redirect(f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}")
+            return redirect(
+                f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}&fecha={fecha}"
+            )
         
         # Mostrar mensaje de error si falta algún campo
-        error_message = "Por favor, seleccione tanto la especialidad como la sede antes de continuar."
+        error_message = "Por favor, seleccione la especialidad, la sede y la fecha antes de continuar."
 
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
@@ -757,33 +759,46 @@ def form_cita(request):
 
 @login_required
 def ver_calendario(request):
-    if request.user.is_authenticated and hasattr(request.user, 'doctor'):
-        # Obtiene las citas relacionadas al doctor autenticado
-        doctor = request.user.doctor
-        return render(request, 'consultorioCys/ver_calendario.html', {'doctor': doctor})
-    else:
-        # Redirige si el usuario no es un doctor autenticado
-        return redirect('inicio')
+    # Obtener el médico asociado al usuario autenticado
+    doctor = Doctor.objects.get(usuario=request.user)
+
+    # Obtener las citas confirmadas de la base de datos
+    citas = Cita.objects.filter(doctor=doctor, confirmado=True)
+
+    # Formatear los datos en el backend para pasarlos al template
+    eventos = [
+        {
+            'title': f"{cita.paciente.nombres_paciente} {cita.paciente.primer_apellido_paciente}",
+            'start': f"{cita.fecha_cita}T{cita.hora_cita}",
+            'end': f"{cita.fecha_cita}T{(datetime.datetime.combine(cita.fecha_cita, cita.hora_cita) + datetime.timedelta(minutes=30)).time()}",
+            'extendedProps': {
+                'tratamiento': cita.motivo_consulta or "Consulta General",
+            },
+        }
+        for cita in citas
+    ]
+
+    # Pasar los eventos como contexto al template
+    return render(request, 'consultorioCys/ver_calendario.html', {'eventos': eventos})
 
 @login_required
 def obtener_citas_json(request):
-    if request.user.is_authenticated and hasattr(request.user, 'doctor'):
-        doctor = request.user.doctor
-        citas = Cita.objects.filter(doctor=doctor)
-        citas_json = [
-            {
-                "title": f"{cita.paciente.nombres_paciente} {cita.paciente.primer_apellido_paciente}",
-                "start": f"{cita.fecha_cita}T{cita.hora}",
-                "end": f"{cita.fecha_cita}T{cita.hora}",
-                "extendedProps": {
-                    "tratamiento": cita.tratamiento
-                }
-            }
-            for cita in citas
-        ]
-        return JsonResponse(citas_json, safe=False)
-    else:
-        return JsonResponse([], safe=False)
+    # Obtener el doctor asociado al usuario autenticado
+    doctor = Doctor.objects.get(usuario=request.user)
+
+    # Filtrar citas confirmadas
+    citas = Cita.objects.filter(doctor=doctor, confirmado=True)
+
+    # Formatear eventos
+    eventos = []
+    for cita in citas:
+        eventos.append({
+            'title': f"{cita.hora_cita.strftime('%H:%M')} {cita.paciente.nombres_paciente} {cita.paciente.primer_apellido_paciente}",
+            'start': f"{cita.fecha_cita}T{cita.hora_cita}",
+            'color': '#007bff',  # Azul personalizado
+        })
+
+    return JsonResponse(eventos, safe=False)
 
 def generar_pdf(request, informe_id):
     # Obtener el objeto del informe
