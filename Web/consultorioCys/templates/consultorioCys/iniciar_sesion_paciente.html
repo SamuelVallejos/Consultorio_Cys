@@ -1,0 +1,26 @@
+{% extends 'consultorioCys/base_generic.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center">Inicio de Sesión del Paciente</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="rut" class="form-label">RUT del Paciente</label>
+      <input type="text" id="rut" class="form-control" value="{{ paciente.rut_paciente }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label for="clave" class="form-label">Clave del Paciente</label>
+      <input type="password" id="clave" name="clave" class="form-control" placeholder="Ingresa la clave del paciente"
+        required>
+    </div>
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+  </form>
+
+</div>
+{% endblock %}

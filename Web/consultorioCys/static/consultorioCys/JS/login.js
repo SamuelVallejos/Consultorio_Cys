@@ -23,3 +23,4 @@ btnDoctor.addEventListener('click', () => {
   btnDoctor.classList.add('active');
   btnPaciente.classList.remove('active');
 });
+

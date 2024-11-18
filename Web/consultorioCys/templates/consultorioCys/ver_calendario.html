@@ -7,16 +7,23 @@
     <div id="calendar"></div>
 </div>
 
-<!-- Modal para mostrar citas del día -->
-<div class="modal fade" id="citasModal" tabindex="-1" aria-labelledby="citasModalLabel" aria-hidden="true">
+<!-- Modal para mostrar los detalles del evento -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="citasModalLabel">Citas del Día</h5>
+                <h5 class="modal-title" id="eventModalLabel">Detalles de la Cita</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ul id="citasList" class="list-group"></ul>
+                <p><strong>Paciente:</strong> <span id="eventTitle"></span></p>
+                <p><strong>Hora:</strong> <span id="eventTime"></span></p>
+            </div>
+            <div class="modal-footer">
+                <!-- Botón para cerrar, alineado a la izquierda -->
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Cerrar</button>
+                <!-- Botón para iniciar sesión, alineado a la derecha -->
+                <a id="iniciarSesion" class="btn btn-primary">Ir al Inicio de Sesión</a>
             </div>
         </div>
     </div>
@@ -24,31 +31,40 @@
 
 <!-- FullCalendar Script -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'es',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            buttonText: {
-                today: 'Hoy',
-                month: 'Mes',
-                week: 'Semana',
-                day: 'Día'
-            },
-            events: {{ eventos| safe }},
-        eventClick: function (info) {
-            alert(`Cita seleccionada:\n${info.event.title}\nHora: ${info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        });
-    calendar.render();
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+        },
+        events: {{ eventos|safe }},
+        eventClick: function (info) {
+            // Llenar el contenido del modal
+            document.getElementById('eventTitle').innerText = info.event.title;
+            document.getElementById('eventTime').innerText = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Obtener el RUT del paciente y configurar el botón
+            const rutPaciente = info.event.extendedProps.rut_paciente;
+            const redirigirUrl = `/iniciar_sesion_paciente/${rutPaciente}/`; // Construir la URL
+            document.getElementById('iniciarSesion').href = redirigirUrl;
+
+            // Mostrar el modal
+            var eventModal = new bootstrap.Modal(document.getElementById('eventModal'), {});
+            eventModal.show();
+        }
     });
-
-
+    calendar.render();
+});
 
 </script>
 

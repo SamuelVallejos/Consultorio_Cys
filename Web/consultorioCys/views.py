@@ -581,38 +581,52 @@ def paciente_info(request, rut_paciente):
         'informes': informes,
     })
 
-def buscar_paciente(request):
+# Buscar pacientes
+@login_required
+def buscar_paciente(request, rut=None):
+    if rut:
+        try:
+            usuario = Usuario.objects.get(rut=rut)
+            try:
+                paciente = usuario.paciente
+
+                informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
+
+                return render(request, 'consultorioCys/buscar_paciente.html', {
+                    'paciente': paciente,
+                    'informes': informes
+                })
+            except Paciente.DoesNotExist:
+                messages.error(request, "Este RUT no corresponde a un paciente.")
+                return render(request, 'consultorioCys/doctor_dashboard.html')
+        except Usuario.DoesNotExist:
+            messages.error(request, "Usuario no encontrado.")
+            return render(request, 'consultorioCys/doctor_dashboard.html')
+
     if request.method == 'POST':
-        rut = request.POST.get('rut')  # RUT del usuario
-        clave = request.POST.get('clave')  # Clave del usuario
+        rut = request.POST.get('rut')
+        clave = request.POST.get('clave')
 
         try:
-            # Buscar al usuario por su RUT
             usuario = Usuario.objects.get(rut=rut)
 
-            # Verificar si la clave proporcionada es correcta
             if usuario.check_password(clave):
                 try:
-                    # Obtener el paciente relacionado
                     paciente = usuario.paciente
-
-                    # Obtener los informes del paciente
                     informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
-                    # Renderizar la vista de búsqueda de paciente con los informes
                     return render(request, 'consultorioCys/buscar_paciente.html', {
                         'paciente': paciente,
                         'informes': informes
                     })
 
                 except Paciente.DoesNotExist:
-                    messages.error(request, "Este RUT no corresponde a un paciente. Inténtelo de nuevo.")
+                    messages.error(request, "Este RUT no corresponde a un paciente.")
             else:
-                messages.error(request, "Clave incorrecta. Inténtelo de nuevo.")
+                messages.error(request, "Clave incorrecta.")
         except Usuario.DoesNotExist:
             messages.error(request, "Usuario no encontrado. Verifique el RUT e intente nuevamente.")
 
-    # Si hay errores, volver al dashboard
     return render(request, 'consultorioCys/doctor_dashboard.html')
 
 # Listado de pacientes
@@ -712,20 +726,32 @@ def informe_paciente(request, pk):
     
     return render(request, 'informe_paciente.html', {'paciente': paciente, 'informes': informes, 'form': form})
 
-def crear_informe(request, pk):
-    paciente = get_object_or_404(Paciente, pk=pk)
-    
+@login_required
+def crear_informe(request, rut_paciente):
+    doctor = get_object_or_404(Doctor, usuario=request.user)  # Obtener el doctor actual
+    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)  # Obtener el paciente por RUT
+
     if request.method == 'POST':
         form = InformeForm(request.POST, request.FILES)
         if form.is_valid():
             informe = form.save(commit=False)
-            informe.paciente = paciente  # Asigna el paciente al informe
+            informe.doctor = doctor
+            informe.paciente = paciente
             informe.save()
-            return redirect('listar_pacientes')
+            messages.success(request, "El informe se creó exitosamente.")
+            return redirect('buscar_paciente', rut_paciente=rut_paciente)
+        else:
+            # Imprimir errores en la consola
+            print("Errores del formulario:", form.errors)
+            messages.error(request, "Error al procesar el formulario. Verifica los datos ingresados.")
     else:
         form = InformeForm()
 
-    return render(request, 'crear_informe.html', {'form': form, 'paciente': paciente})
+    return render(request, 'consultorioCys/crear_informe.html', {
+        'form': form,
+        'paciente': paciente,
+        'doctor': doctor
+    })
 
 #formulario agendar cita y calendario en doctor 
 def form_cita(request):
@@ -773,6 +799,7 @@ def ver_calendario(request):
             'end': f"{cita.fecha_cita}T{(datetime.datetime.combine(cita.fecha_cita, cita.hora_cita) + datetime.timedelta(minutes=30)).time()}",
             'extendedProps': {
                 'tratamiento': cita.motivo_consulta or "Consulta General",
+                'rut_paciente': cita.paciente.rut_paciente,  # Pasar el RUT del paciente
             },
         }
         for cita in citas
@@ -780,6 +807,24 @@ def ver_calendario(request):
 
     # Pasar los eventos como contexto al template
     return render(request, 'consultorioCys/ver_calendario.html', {'eventos': eventos})
+
+@login_required
+def iniciar_sesion_paciente(request, rut):
+    # Obtener el paciente por su RUT
+    paciente = get_object_or_404(Paciente, rut_paciente=rut)
+
+    if request.method == 'POST':
+        # Capturar la contraseña ingresada
+        clave_ingresada = request.POST.get('clave')
+        # Validar la contraseña del paciente
+        if paciente.usuario.check_password(clave_ingresada):  # Validar usando el sistema de autenticación
+            # Redirigir al formulario de consultas/informes
+            return redirect('buscar_paciente', rut=paciente.rut_paciente)
+        else:
+            # Mostrar mensaje de error si la contraseña es incorrecta
+            messages.error(request, "Contraseña incorrecta. Intente de nuevo.")
+
+    return render(request, 'consultorioCys/iniciar_sesion_paciente.html', {'paciente': paciente})
 
 @login_required
 def obtener_citas_json(request):

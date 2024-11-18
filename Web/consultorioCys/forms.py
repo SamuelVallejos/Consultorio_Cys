@@ -91,20 +91,17 @@ class AddDoctorForm(forms.ModelForm):
             doctor_instance.save()
         return doctor_instance
 
-class AddInformeForm(forms.ModelForm):
+class InformeForm(forms.ModelForm):
     class Meta:
         model = Informe
-        fields = [
-            'doctor', 
-            'paciente', 
-            'titulo_informe', 
-            'descripcion_informe', 
-            'notas_doctor', 
-            'instrucciones_tratamiento', 
-            'documentos_extra'
-        ]
-
-#Formulario para el paciente ,crear y editar, ademas de visualizarlo.
+        fields = ['titulo_informe', 'descripcion_informe', 'notas_doctor', 'instrucciones_tratamiento', 'documentos_extra']
+        widgets = {
+            'titulo_informe': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese un título'}),
+            'descripcion_informe': forms.Textarea(attrs={'class': 'form-control'}),
+            'notas_doctor': forms.Textarea(attrs={'class': 'form-control'}),
+            'instrucciones_tratamiento': forms.Textarea(attrs={'class': 'form-control'}),
+            'documentos_extra': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
 
 class PacienteForm(forms.ModelForm):
     class Meta:
