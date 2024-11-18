@@ -30,7 +30,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from django.http import FileResponse, Http404
+from django.http import Http404
 from PIL import Image
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
