@@ -1,5 +1,6 @@
 {% extends 'consultorioCys/base_generic.html' %}
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -14,35 +15,93 @@
 
 <body>
   {% block content %}
-  <div class="container py-5">
-
-    <!-- Formulario de inicio de sesión -->
-    <div class="form-container">
+  <div class="container d-flex justify-content-center align-items-center" style="min-height: calc(60vh - 120px);">
+    <div class="form-container shadow-lg p-4 rounded" style="max-width: 400px; background-color: #ffffff;">
       <form method="POST" action="{% url 'login' %}">
         {% csrf_token %}
-        <h3 class="text-primary">Inicio de sesión</h3>
+        <h3 class="text-center text-primary mb-4"><i class="bi bi-person-circle me-2"></i>Inicio de sesión</h3>
 
-        <div class="form-group mb-3">
+        <!-- Campo de RUT -->
+        <div class="mb-3">
           <label for="rut" class="form-label text-primary">RUT:</label>
-          <input type="text" class="form-control" id="rut" name="rut" placeholder="Ingrese su RUT" required />
+          <input type="text" class="form-control form-control-sm" id="rut" name="rut" placeholder="Ej: 12345678-9" required>
         </div>
 
-        <div class="form-group mb-3">
+        <!-- Campo de Contraseña -->
+        <div class="mb-3 position-relative">
           <label for="contrasena" class="form-label text-primary">Contraseña:</label>
-          <input type="password" class="form-control" id="contrasena" name="contrasena"
-            placeholder="Ingrese su contraseña" required />
+          <div class="input-group">
+            <input type="password" class="form-control form-control-sm pe-5" id="contrasena" name="contrasena" placeholder="Ingrese su contraseña" required>
+            <span class="position-absolute end-0 top-50 translate-middle-y me-2" id="togglePassword" style="cursor: pointer;">
+              <i class="bi bi-eye-slash text-primary"></i>
+            </span>
+          </div>
         </div>
 
-        <div class="form-group mb-3" style="text-align: end;">
-          <a href="{% url 'restablecer_clave' %}">¿Olvidaste tu contraseña?</a>
+        <!-- Enlace de recuperación de contraseña -->
+        <div class="mb-3 text-center">
+          <a href="{% url 'restablecer_clave' %}" class="text-primary text-decoration-none">¿Olvidaste tu contraseña?</a>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
+        <!-- Botón de Inicio de Sesión -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
-  <script src="{% static 'consultorioCys/js/login.js' %}"></script>
+  <!-- Script para Mostrar/Ocultar Contraseña -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const togglePassword = document.getElementById('togglePassword');
+      const passwordInput = document.getElementById('contrasena');
+
+      togglePassword.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // Cambiar el ícono
+        togglePassword.querySelector('i').classList.toggle('bi-eye');
+        togglePassword.querySelector('i').classList.toggle('bi-eye-slash');
+      });
+    });
+  </script>
+
+  <!-- Estilos Personalizados -->
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .form-container {
+      border-radius: 10px;
+    }
+
+    .form-control-sm {
+      border-radius: 5px;
+      padding-right: 2.5rem; /* Espacio para el ícono */
+    }
+
+    .btn-sm {
+      border-radius: 5px;
+    }
+
+    .btn-primary:hover {
+      background-color: #084298;
+    }
+
+    #togglePassword {
+      font-size: 1.2rem;
+    }
+
+    #togglePassword:hover {
+      color: #084298;
+    }
+  </style>
+
   {% endblock %}
 </body>
 

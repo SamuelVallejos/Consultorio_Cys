@@ -9,20 +9,33 @@
 
 <!-- Modal para mostrar los detalles del evento -->
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="eventModalLabel"><i class="bi bi-info-circle me-2"></i> Detalles de la Cita</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Paciente:</strong> <span id="eventTitle"></span></p>
-                <p><strong>Hora:</strong> <span id="eventTime"></span></p>
-                <p><strong>Detalles Adicionales:</strong> <span id="eventDetails"></span></p>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-person-circle text-primary me-2" style="font-size: 1.5rem;"></i>
+                    <h6 class="mb-0"><strong>Paciente:</strong> <span id="eventTitle"></span></h6>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-clock text-primary me-2" style="font-size: 1.5rem;"></i>
+                    <h6 class="mb-0"><strong>Hora:</strong> <span id="eventTime"></span></h6>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-file-earmark-text text-primary me-2" style="font-size: 1.5rem;"></i>
+                    <h6 class="mb-0"><strong>Detalles Adicionales:</strong> <span id="eventDetails"></span></h6>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
-                <a id="iniciarSesion" class="btn btn-primary"><i class="bi bi-person-circle me-1"></i> Ir al Inicio de Sesión</a>
+                <button type="button" class="btn btn-outline-primary me-auto" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cerrar
+                </button>
+                <a id="iniciarSesion" class="btn btn-primary">
+                    <i class="bi bi-person-circle me-1"></i> Ir a paciente
+                </a>
             </div>
         </div>
     </div>
@@ -31,13 +44,16 @@
 <!-- FullCalendar Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    const calendarEl = document.getElementById('calendar');
+
+    const eventos = {{ eventos|safe }} || [];
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
         themeSystem: 'bootstrap',
         headerToolbar: {
-            left: 'prev,next today', // Incluye las flechas junto a HOY
+            left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
@@ -47,29 +63,35 @@ document.addEventListener('DOMContentLoaded', function () {
             week: 'Semana',
             day: 'Día'
         },
-        events: {{ eventos|safe }},
-        transition: true, // Activa la transición en el cambio de vista
+        slotLabelFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        },
+        nowIndicator: true,
+        scrollTime: '08:00:00',
+        slotDuration: '00:30:00',
+        slotLabelInterval: '01:00:00',
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        events: eventos,
         eventClick: function (info) {
-            // Llenar el contenido del modal
-            document.getElementById('eventTitle').innerText = info.event.title;
-            document.getElementById('eventTime').innerText = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('eventDetails').innerText = info.event.extendedProps.details || 'No hay detalles adicionales';
+            const { title, start, extendedProps } = info.event;
+            if (title && start) {
+                document.getElementById('eventTitle').innerText = title;
+                document.getElementById('eventTime').innerText = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('eventDetails').innerText = extendedProps.details || 'No hay detalles adicionales';
 
-            // Obtener el RUT del paciente y configurar el botón
-            const rutPaciente = info.event.extendedProps.rut_paciente;
-            const redirigirUrl = `/iniciar_sesion_paciente/${rutPaciente}/`;
-            document.getElementById('iniciarSesion').href = redirigirUrl;
+                const rutPaciente = extendedProps.rut_paciente || '';
+                const redirigirUrl = `/iniciar_sesion_paciente/${rutPaciente}/`;
+                document.getElementById('iniciarSesion').href = redirigirUrl;
 
-            // Mostrar el modal
-            var eventModal = new bootstrap.Modal(document.getElementById('eventModal'), {});
-            eventModal.show();
+                const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+                eventModal.show();
+            } else {
+                alert('Información del evento no válida.');
+            }
         }
-    });
-
-    // Activa la animación al cambiar de vista
-    calendar.on('viewDidMount', function () {
-        calendarEl.classList.add('animate-fade-in');
-        setTimeout(() => calendarEl.classList.remove('animate-fade-in'), 500);
     });
 
     calendar.render();
@@ -83,8 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
     padding: 20px;
     background-color: #ffffff;
     border-radius: 10px;
-    overflow: hidden;
-    position: relative;
 }
 
 /* Header */
@@ -110,6 +130,52 @@ document.addEventListener('DOMContentLoaded', function () {
     background-color: #084298 !important;
 }
 
+/* Modal */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-footer .btn {
+    border-radius: 5px;
+}
+
+/* Encabezados de columna */
+.fc-col-header-cell {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #084298;
+    border-radius: 5px 5px 0 0;
+}
+
+/* Horas en las vistas de Semana y Día */
+.fc-timegrid-slot-label {
+    font-weight: bold;
+    color: #0d6efd;
+    padding: 5px;
+    text-align: right;
+    border-right: 1px solid #ddd;
+}
+
+.fc-timegrid-slot {
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Líneas de tiempo */
+.fc-now-indicator {
+    background-color: #ff0000 !important;
+    height: 2px;
+}
+
+/* Día actual en vistas de Semana y Día */
+.fc-day-today {
+    background-color: #e0f3ff !important;
+    border: 2px solid #0d6efd;
+}
+
 /* Eventos */
 .fc-event {
     background-color: #0d6efd !important;
@@ -117,37 +183,11 @@ document.addEventListener('DOMContentLoaded', function () {
     color: #fff !important;
     border-radius: 5px;
     padding: 5px;
-}
-
-.fc-event:hover {
-    background-color: #084298 !important;
-    cursor: pointer;
-}
-
-/* Días */
-.fc-daygrid-day-number {
-    color: #0d6efd !important;
-    font-weight: bold;
-}
-
-.fc-day-today {
-    background-color: #e9f5ff !important;
-}
-
-/* Animación */
-.animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    text-align: left;
+    overflow: hidden;
+    white-space: normal;
+    line-height: 1.4;
+    word-wrap: break-word;
 }
 </style>
 {% endblock %}

@@ -134,13 +134,13 @@
           <a href="{% url 'editar_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
             <i class="bi bi-pencil me-1"></i> Editar
           </a>
-          <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-outline-danger">
+          <a href="{% url 'eliminar_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
             <i class="bi bi-trash3-fill me-1"></i> Eliminar
           </a>
-          <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-outline-success">
+          <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-text me-1"></i> Ver Informes
           </a>
-          <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-warning">
+          <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-plus me-1"></i> Crear Informe
           </a>
           {% if paciente.archivo %}

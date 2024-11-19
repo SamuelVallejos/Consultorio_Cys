@@ -722,25 +722,22 @@ def crear_informe(request, rut_paciente):
     doctor = get_object_or_404(Doctor, usuario=request.user)
     paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
 
-    # Obtener la cita asociada al paciente y al doctor que no esté finalizada
-    cita = Cita.objects.filter(paciente=paciente, doctor=doctor, finalizada=False).first()
+    # Obtener la clínica y sede asociada al doctor
+    doctor_clinica = DoctorClinica.objects.filter(doctor=doctor).first()
+    clinica = doctor_clinica.sede.clinica if doctor_clinica else None
+    sede = doctor_clinica.sede if doctor_clinica else None
 
     if request.method == 'POST':
         form = InformeForm(request.POST, request.FILES)
         if form.is_valid():
-            informe = form.save(commit=False)
+            informe = form.save(commit=False)  # No guardar aún
             informe.doctor = doctor  # Asignar el doctor automáticamente
             informe.paciente = paciente  # Asignar el paciente
-            informe.save()
-
-            # Finalizar la cita si existe
-            if cita:
-                cita.finalizada = True
-                cita.save()
-                messages.success(request, "El informe se creó y la cita fue finalizada exitosamente.")
-
-            # Redirigir al calendario
-            return redirect('ver_calendario')
+            informe.clinica = clinica  # Asignar la clínica
+            informe.sede = sede  # Asignar la sede
+            informe.save()  # Guardar el informe
+            messages.success(request, "El informe se creó exitosamente.")
+            return redirect('ver_calendario')  # Cambia según el flujo de tu app
         else:
             print("Errores del formulario:", form.errors)
             messages.error(request, "Error al procesar el formulario. Verifica los datos ingresados.")
@@ -749,8 +746,7 @@ def crear_informe(request, rut_paciente):
 
     return render(request, 'consultorioCys/crear_informe.html', {
         'form': form,
-        'paciente': paciente,
-        'cita': cita,  # Pasar la cita al template por si quieres mostrar algo
+        'paciente': paciente
     })
 
 #formulario agendar cita y calendario en doctor 
@@ -842,49 +838,33 @@ def obtener_citas_json(request):
 
 @login_required
 def generar_pdf(request, informe_id):
-    # Obtener el objeto del informe
     informe = get_object_or_404(Informe, id_informe=informe_id)
 
-    # Obtener clínica y sede asociadas al informe
-    clinica = informe.clinica
-    sede = informe.sede
-
-    # Configurar la respuesta como archivo PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="informe_{informe.id_informe}.pdf"'
 
-    # Crear el PDF
     pdf = canvas.Canvas(response, pagesize=letter)
     width, height = letter
-    y = height - 50  # Posición inicial en Y
 
     # Ruta del logo
-    logo_path = os.path.join(settings.BASE_DIR, 'static/img/logo.png')
+    logo_path = os.path.join(settings.MEDIA_ROOT, 'img/logo-png.png')
 
-    # Encabezado
+    # Encabezado con logo
     if os.path.exists(logo_path):
-        pdf.drawImage(logo_path, 50, y - 50, width=100, height=100)
+        pdf.drawImage(logo_path, 50, height - 100, width=100, height=100)
     pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(200, y, "INFORME MÉDICO")
-    y -= 50
-
-    # Información del doctor
+    pdf.drawString(200, height - 50, "INFORME MÉDICO")
     pdf.setFont("Helvetica", 12)
-    pdf.drawString(50, y, f"Emitido por: Dr. {informe.doctor.nombres_doctor} {informe.doctor.primer_apellido_doctor}")
-    y -= 15
-    pdf.drawString(50, y, f"Especialidad: {informe.doctor.especialidad_doctor}")
-    y -= 15
-    pdf.drawString(50, y, f"Teléfono: {informe.doctor.telefono_doctor}")
-    y -= 30
+    pdf.drawString(200, height - 70, f"Emitido por: {informe.doctor.nombres_doctor} {informe.doctor.primer_apellido_doctor}")
+    pdf.drawString(200, height - 85, f"Especialidad: {informe.doctor.especialidad_doctor}")
+    pdf.drawString(200, height - 100, f"Teléfono: {informe.doctor.telefono_doctor}")
 
     # Línea divisoria
-    pdf.line(50, y, width - 50, y)
-    y -= 30
+    pdf.line(50, height - 120, 550, height - 120)
 
     # Información del paciente
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(50, y, "Datos del Paciente")
-    y -= 20
+    pdf.drawString(50, height - 140, "Datos del Paciente")
     patient_data = [
         ["Nombre:", f"{informe.paciente.nombres_paciente} {informe.paciente.primer_apellido_paciente}"],
         ["RUT:", informe.paciente.rut_paciente],
@@ -905,70 +885,39 @@ def generar_pdf(request, informe_id):
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
-    table.wrapOn(pdf, width, y)
-    table.drawOn(pdf, 50, y - 120)
-    y -= 160
+    table.wrapOn(pdf, width, height)
+    table.drawOn(pdf, 50, height - 300)
 
     # Información del informe
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(50, y, "Datos del Informe")
-    y -= 20
+    pdf.drawString(50, height - 320, "Datos del Informe")
     pdf.setFont("Helvetica", 12)
-    pdf.drawString(50, y, f"Título: {informe.titulo_informe}")
-    y -= 15
-    pdf.drawString(50, y, f"Fecha: {informe.fecha_informe.strftime('%d-%m-%Y')}")
-    y -= 15
-    pdf.drawString(50, y, "Descripción:")
-    y -= 15
+    pdf.drawString(50, height - 340, f"Título: {informe.titulo_informe}")
+    pdf.drawString(50, height - 360, f"Fecha: {informe.fecha_informe.strftime('%d-%m-%Y')}")
+    pdf.drawString(50, height - 380, "Descripción:")
     pdf.setFont("Helvetica", 10)
 
-    # Agregar la descripción del informe
+    y = height - 400
     for line in informe.descripcion_informe.split('\n'):
         pdf.drawString(70, y, line)
         y -= 15
-        if y < 100:  # Si el espacio termina, agregar una nueva página
+        if y < 100:
             pdf.showPage()
             y = height - 50
 
-    y -= 20
-
-    # Información de la clínica y sede
-    pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(50, y, "Datos de la Clínica y Sede")
-    y -= 20
-    if clinica and sede:
-        pdf.drawString(50, y, f"Clínica: {clinica.nombre_clinica}")
-        y -= 15
-        pdf.drawString(50, y, f"Dirección: {sede.direccion_sede}, {sede.comuna_sede}, {sede.region_sede}")
-        y -= 15
-        pdf.drawString(50, y, f"Teléfono: {sede.telefono_sede}")
-        y -= 15
-    else:
-        pdf.setFont("Helvetica", 12)
-        pdf.drawString(50, y, "No hay datos de la clínica y sede disponibles.")
-        y -= 15
-
-    # Firma del doctor (opcional)
-    firma_path = os.path.join(settings.BASE_DIR, 'static/img/firma.png')
-    if os.path.exists(firma_path):
-        pdf.drawImage(firma_path, width - 200, 50, width=150, height=50)
-        pdf.setFont("Helvetica-Bold", 12)
-        pdf.drawString(width - 200, 40, "Firma del Doctor")
-
-    # Pie de página con datos de la clínica
+    # Pie de página con información de la clínica
     pdf.setFont("Helvetica", 10)
-    if clinica:
-        pdf.drawString(50, 30, f"Consultorio Cys - {clinica.nombre_clinica}")
-        pdf.drawString(50, 15, f"Dirección: {sede.direccion_sede}, {sede.comuna_sede}, {sede.region_sede} - Teléfono: {sede.telefono_sede}")
+    footer_y_position = 50
+    if informe.clinica and informe.sede:
+        pdf.drawString(50, footer_y_position, f"Consultorio Cys - {informe.clinica.nombre_clinica}")
+        pdf.drawString(50, footer_y_position - 10, f"Dirección: {informe.sede.direccion_sede}, {informe.sede.comuna_sede}, {informe.sede.region_sede} - Teléfono: {informe.sede.telefono_sede}")
     else:
-        pdf.drawString(50, 30, "Consultorio Cys")
-        pdf.drawString(50, 15, "Dirección: No disponible")
+        pdf.drawString(50, footer_y_position, "Consultorio Cys")
+        pdf.drawString(50, footer_y_position - 10, "Dirección: No disponible")
 
-    # Finalizar el PDF
+    # Guardar el PDF
     pdf.save()
-
     return response
-
 
 def descargar_como_pdf(request, path):
     # Ruta del archivo original

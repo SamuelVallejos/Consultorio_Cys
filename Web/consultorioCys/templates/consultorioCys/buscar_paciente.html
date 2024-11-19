@@ -1,57 +1,65 @@
 {% extends 'consultorioCys/base_generic.html' %}
-{% load static %} <!-- Esto carga el módulo estático necesario -->
+{% load static %}
 
 {% block content %}
-<h2>Información del Paciente</h2>
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h3>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{paciente.segundo_apellido_paciente }}</h3>
+<div class="container my-5">
+    <div class="card shadow-lg mb-5">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="bi bi-person-circle me-2"></i> {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} {{ paciente.segundo_apellido_paciente }}
+            </h3>
+        </div>
+        <div class="card-body">
+            <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
+            <p><strong>Correo Electrónico:</strong> {{ paciente.correo_paciente }}</p>
+            <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
+            <p><strong>Fecha de Nacimiento:</strong> {{ paciente.fecha_nacimiento_paciente }}</p>
+            <p><strong>Género:</strong> {{ paciente.get_genero_paciente_display }}</p>
+            <p><strong>Dirección:</strong> {{ paciente.direccion_paciente }}</p>
+        </div>
     </div>
-    <div class="card-body">
-        <p><strong>RUT:</strong> {{ paciente.rut_paciente }}</p>
-        <p><strong>Correo Electrónico:</strong> {{ paciente.correo_paciente }}</p>
-        <p><strong>Teléfono:</strong> {{ paciente.telefono_paciente }}</p>
-        <p><strong>Fecha de Nacimiento:</strong> {{ paciente.fecha_nacimiento_paciente }}</p>
-        <p><strong>Género:</strong> {{ paciente.get_genero_paciente_display }}</p>
-        <p><strong>Dirección:</strong> {{ paciente.direccion_paciente }}</p>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="bi bi-journal-text me-2"></i> Informes
+        </h2>
+        <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-primary">
+            <i class="bi bi-plus-circle"></i> Agregar Informe
+        </a>
     </div>
-</div>
 
-<div class="d-flex justify-content-between align-items-center">
-    <!-- Título "Informes" centrado -->
-    <h2 class="text-center w-100">Informes</h2>
-    <!-- Botón con ícono a la derecha -->
-    <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-link p-0 ms-3">
-        <img src="{% static 'consultorioCys/img/Agregar.png' %}" style="width: 20px; height: 20px;"
-            alt="Agregar Informe">
-    </a>
+    <table class="table table-hover table-striped align-middle shadow-sm">
+        <thead class="table-primary">
+            <tr>
+                <th>Título</th>
+                <th>Fecha</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for informe in informes %}
+            <tr>
+                <td>{{ informe.titulo_informe }}</td>
+                <td>{{ informe.fecha_informe|date:"d/m/Y H:i" }}</td>
+                <td>{{ informe.notas_doctor|default:"Sin notas" }}</td>
+                <td>
+                    {% if informe.documentos_extra %}
+                    <a href="{% url 'descargar_como_pdf' informe.documentos_extra.name %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-download me-1"></i> Exámenes
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Receta PDF
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">No hay informes disponibles.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
-<table class="table table-bordered table-striped mt-3">
-    <thead class="table-dark">
-        <tr>
-            <th>Título</th>
-            <th>Fecha</th>
-            <th>Notas</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for informe in informes %}
-        <tr>
-            <td>{{ informe.titulo_informe }}</td>
-            <td>{{ informe.fecha_informe }}</td>
-            <td>{{ informe.notas_doctor }}</td>
-            <td>
-                {% if informe.documentos_extra %}
-                <a href="{% url 'descargar_como_pdf' informe.documentos_extra.name %}"
-                    class="btn btn-success btn-sm">Descargar Examenes</a>
-                {% endif %}                
-                <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm"
-                    target="_blank">Descargar Receta PDF</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}
