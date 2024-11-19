@@ -90,30 +90,49 @@ class AddDoctorForm(forms.ModelForm):
         if commit:
             doctor_instance.save()
         return doctor_instance
+    
+from django import forms
+from .models import Informe
 
 class InformeForm(forms.ModelForm):
     class Meta:
         model = Informe
-        fields = ['titulo_informe', 'descripcion_informe', 'notas_doctor', 'instrucciones_tratamiento', 'documentos_extra']
+        exclude = ['doctor', 'paciente']
         widgets = {
-            'titulo_informe': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese un título'}),
-            'descripcion_informe': forms.Textarea(attrs={'class': 'form-control'}),
-            'notas_doctor': forms.Textarea(attrs={'class': 'form-control'}),
-            'instrucciones_tratamiento': forms.Textarea(attrs={'class': 'form-control'}),
-            'documentos_extra': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'titulo_informe': forms.TextInput(attrs={
+                'class': 'form-control mb-3',
+                'placeholder': 'Ingrese un título descriptivo',
+            }),
+            'descripcion_informe': forms.Textarea(attrs={
+                'class': 'form-control mb-3',
+                'placeholder': 'Describa los detalles relevantes del informe',
+                'rows': 4,
+            }),
+            'notas_doctor': forms.Textarea(attrs={
+                'class': 'form-control mb-3',
+                'placeholder': 'Añada notas o comentarios importantes',
+                'rows': 4,
+            }),
+            'instrucciones_tratamiento': forms.Textarea(attrs={
+                'class': 'form-control mb-3',
+                'placeholder': 'Escriba las instrucciones de tratamiento',
+                'rows': 3,
+            }),
+            'documentos_extra': forms.ClearableFileInput(attrs={
+                'class': 'form-control mb-3',
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.label_suffix = ""  # Eliminar los dos puntos (:) después de las etiquetas
+
 
 class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
         fields = ['rut_paciente', 'nombres_paciente', 'primer_apellido_paciente', 'segundo_apellido_paciente', 'correo_paciente', 'telefono_paciente', 'fecha_nacimiento_paciente', 'direccion_paciente', 'genero_paciente', 'archivo']
-
-class InformeForm(forms.ModelForm):
-    doctor = forms.ModelChoiceField(queryset=Doctor.objects.all(), label="Doctor Responsable")  # Permite elegir un doctor
-
-    class Meta:
-        model = Informe
-        fields = ['doctor', 'titulo_informe', 'descripcion_informe', 'notas_doctor', 'instrucciones_tratamiento', 'documentos_extra']
 
 #Formulario de cita
 

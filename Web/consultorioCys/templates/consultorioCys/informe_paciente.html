@@ -3,298 +3,172 @@
 <html lang="es">
 
 <head>
-  {% block head %}
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Informe del Paciente</title>
-  <style>
-    /* Estilo para la animación de carga */
-    .loader {
-      border: 16px solid #f3f3f3;
-      border-top: 16px solid #3498db;
-      border-radius: 50%;
-      width: 120px;
-      height: 120px;
-      animation: spin 2s linear infinite;
-      margin: 100px auto;
-      display: none;
-    }
+    {% block head %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Informe del Paciente</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        /* Loader */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1.5s linear infinite;
+            margin: 50px auto;
+            display: none;
+        }
 
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
-      100% {
-        transform: rotate(360deg);
-      }
-    }
+        /* Tabla */
+        table {
+            border-collapse: collapse;
+        }
 
-    /* Estilo general */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-    }
+        table th {
+            background-color: #007bff;
+            color: white;
+        }
 
-    h1,
-    h2 {
-      color: #333;
-    }
+        table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
 
-    .table-container {
-      overflow-x: auto;
-      margin-top: 20px;
-    }
+        .btn-sm {
+            font-size: 0.875rem;
+            padding: 5px 10px;
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-    }
+        /* Contenido oculto con transición */
+        .informes {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
+        }
 
-    th,
-    td {
-      padding: 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-      transition: background-color 0.3s ease;
-      word-wrap: break-word;
-    }
+        /* Edit form oculto */
+        .d-none {
+            display: none !important;
+        }
+    </style>
 
-    td:hover {
-      background-color: #e0e0e0;
-    }
+    <script>
+        window.onload = function () {
+            const loader = document.querySelector('.loader');
+            const informes = document.querySelector('.informes');
+            loader.style.display = 'block';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                informes.style.opacity = '1';
+                informes.style.visibility = 'visible';
+            }, 1500);
+        };
 
-    /* Media query para dispositivos pequeños */
-    @media (max-width: 768px) {
-
-      table,
-      thead,
-      tbody,
-      th,
-      td,
-      tr {
-        display: block;
-      }
-
-      th {
-        display: none;
-      }
-
-      td {
-        position: relative;
-        padding-left: 50%;
-        border-bottom: 1px solid #ddd;
-      }
-
-      td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 15px;
-        font-weight: bold;
-        color: #3498db;
-      }
-
-      .separator {
-        display: flex;
-        align-items: center;
-        margin: 10px 0;
-      }
-
-      .separator::before,
-      .separator::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #ddd;
-        margin: 0 10px;
-      }
-
-      .separator-icon {
-        font-size: 18px;
-        color: #3498db;
-      }
-    }
-
-    /* Menú de navegación */
-    .menu {
-      background-color: #3498db;
-      padding: 15px;
-      color: white;
-      text-align: right;
-    }
-
-    .menu a {
-      color: white;
-      margin-left: 15px;
-      text-decoration: none;
-    }
-
-    .menu a:hover {
-      text-decoration: underline;
-    }
-
-    .actions {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .btn {
-      padding: 10px 15px;
-      background-color: #3498db;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s ease;
-    }
-
-    .btn:hover {
-      background-color: #217dbb;
-    }
-
-    .informes {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.5s ease-in-out;
-    }
-
-    .edit-form {
-      display: none;
-      margin-top: 10px;
-    }
-  </style>
-
-  <script>
-    window.onload = function () {
-      const loader = document.querySelector('.loader');
-      const informes = document.querySelector('.informes');
-
-      loader.style.display = 'block';
-      setTimeout(() => {
-        loader.style.display = 'none';
-        informes.style.opacity = '1';
-        informes.style.visibility = 'visible';
-      }, 2000);
-    };
-
-    function toggleEditForm(informeId) {
-      var form = document.getElementById('edit-form-' + informeId);
-      if (form.style.display === 'none') {
-        form.style.display = 'block';
-      } else {
-        form.style.display = 'none';
-      }
-    }
-  </script>
-  {% endblock %}
+        function toggleEditForm(informeId) {
+            const form = document.getElementById(`edit-form-${informeId}`);
+            form.classList.toggle('d-none');
+        }
+    </script>
+    {% endblock %}
 </head>
 
 <body>
-  {% block content %}
-  <div class="container mt-5">
-    <h1 class="mb-4 text-center text-primary">
-        Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
-    </h1>
+    {% block content %}
+    <div class="container py-5">
+        <h1 class="text-center text-primary mb-4">
+            Informe del Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
+        </h1>
 
-    <!-- Loader (solo visible mientras se carga el contenido) -->
-    <div class="loader my-4"></div>
+        <!-- Loader -->
+        <div class="loader"></div>
 
-    <div class="informes">
-        {% if informes %}
-        <h2 class="mb-4 text-secondary">Informes Relacionados:</h2>
-
-        <!-- Contenedor de tabla con scroll horizontal en dispositivos pequeños -->
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-primary">
-                    <tr>
-                        <th>#</th>
-                        <th>Título</th>
-                        <th>Descripción</th>
-                        <th>Notas del Doctor</th>
-                        <th>Instrucciones de Tratamiento</th>
-                        <th>Fecha del Informe</th>
-                        <th>Documento Adjunto</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for informe in informes %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ informe.titulo_informe }}</td>
-                        <td>{{ informe.descripcion_informe }}</td>
-                        <td>{{ informe.notas_doctor }}</td>
-                        <td>{{ informe.instrucciones_tratamiento }}</td>
-                        <td>{{ informe.fecha_informe }}</td>
-                        <td>
-                            {% if informe.documentos_extra %}
-                            <a href="{{ informe.documentos_extra.url }}" target="_blank" class="btn btn-link">Ver Documento</a>
-                            {% else %}
-                            <span class="text-muted">No disponible</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-primary btn-sm" onclick="toggleEditForm('{{ informe.id }}')">
-                                <i class="bi bi-pencil-square"></i> Editar
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Formulario de edición oculto -->
-                    <tr id="edit-form-{{ informe.id }}" class="d-none">
-                        <td colspan="8">
-                            <form method="POST" enctype="multipart/form-data" class="p-3">
-                                {% csrf_token %}
-                                {{ form.as_p }}
-                                <input type="hidden" name="edit_informe_id" value="{{ informe.id }}">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        <i class="bi bi-check-circle"></i> Guardar Cambios
-                                    </button>
-                                    <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="toggleEditForm('{{ informe.id }}')">
-                                        <i class="bi bi-x-circle"></i> Cancelar
-                                    </button>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center text-muted">No hay informes disponibles para este paciente.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="informes">
+            {% if informes %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Notas</th>
+                            <th>Tratamiento</th>
+                            <th>Fecha</th>
+                            <th>Documento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for informe in informes %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ informe.titulo_informe }}</td>
+                            <td>{{ informe.descripcion_informe }}</td>
+                            <td>{{ informe.notas_doctor }}</td>
+                            <td>{{ informe.instrucciones_tratamiento }}</td>
+                            <td>{{ informe.fecha_informe }}</td>
+                            <td>
+                                {% if informe.documentos_extra %}
+                                <a href="{{ informe.documentos_extra.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    Ver
+                                </a>
+                                {% else %}
+                                <span class="text-muted">No disponible</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="toggleEditForm('{{ informe.id }}')">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr id="edit-form-{{ informe.id }}" class="d-none">
+                            <td colspan="8">
+                                <form method="POST" enctype="multipart/form-data" class="text-start">
+                                    {% csrf_token %}
+                                    {{ form.as_p }}
+                                    <input type="hidden" name="edit_informe_id" value="{{ informe.id }}">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="bi bi-check-circle"></i> Guardar
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="toggleEditForm('{{ informe.id }}')">
+                                            <i class="bi bi-x-circle"></i> Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No hay informes disponibles.</p>
+            {% endif %}
         </div>
-        {% else %}
-        <p class="text-center text-muted">No hay informes disponibles para este paciente.</p>
-        {% endif %}
+
+        <!-- Botón para volver -->
+        <div class="text-center mt-4">
+            <a href="{% url 'listar_pacientes' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Volver al Listado
+            </a>
+        </div>
     </div>
 
-    <!-- Botón para volver al listado -->
-    <div class="text-center mt-4">
-        <a href="{% url 'listar_pacientes' %}" class="btn btn-outline-secondary"style="margin: 3px;">
-            <i class="bi bi-arrow-left-circle" ></i> Volver al Listado de Pacientes
-        </a>
-    </div>
-</div>
-
-<!-- Bootstrap Icons -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
-<!-- JavaScript para mostrar/ocultar formularios de edición -->
-<script>
-    function toggleEditForm(id) {
-        const form = document.getElementById(`edit-form-${id}`);
-        form.classList.toggle('d-none');
-    }
-</script>
-{% endblock %}
+    
+    {% endblock %}
 </body>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 </html>

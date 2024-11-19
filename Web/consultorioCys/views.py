@@ -583,25 +583,19 @@ def paciente_info(request, rut_paciente):
 
 # Buscar pacientes
 @login_required
-def buscar_paciente(request, rut=None):
-    if rut:
+def buscar_paciente(request, rut_paciente=None):
+    if rut_paciente:
         try:
-            usuario = Usuario.objects.get(rut=rut)
-            try:
-                paciente = usuario.paciente
+            paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
+            informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
-                informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
-
-                return render(request, 'consultorioCys/buscar_paciente.html', {
-                    'paciente': paciente,
-                    'informes': informes
-                })
-            except Paciente.DoesNotExist:
-                messages.error(request, "Este RUT no corresponde a un paciente.")
-                return render(request, 'consultorioCys/doctor_dashboard.html')
-        except Usuario.DoesNotExist:
-            messages.error(request, "Usuario no encontrado.")
-            return render(request, 'consultorioCys/doctor_dashboard.html')
+            return render(request, 'consultorioCys/buscar_paciente.html', {
+                'paciente': paciente,
+                'informes': informes
+            })
+        except Paciente.DoesNotExist:
+            messages.error(request, "Este RUT no corresponde a un paciente.")
+            return redirect('doctor_dashboard')
 
     if request.method == 'POST':
         rut = request.POST.get('rut')
@@ -611,23 +605,20 @@ def buscar_paciente(request, rut=None):
             usuario = Usuario.objects.get(rut=rut)
 
             if usuario.check_password(clave):
-                try:
-                    paciente = usuario.paciente
-                    informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
+                paciente = usuario.paciente
+                informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
-                    return render(request, 'consultorioCys/buscar_paciente.html', {
-                        'paciente': paciente,
-                        'informes': informes
-                    })
+                return render(request, 'consultorioCys/buscar_paciente.html', {
+                    'paciente': paciente,
+                    'informes': informes
+                })
 
-                except Paciente.DoesNotExist:
-                    messages.error(request, "Este RUT no corresponde a un paciente.")
             else:
                 messages.error(request, "Clave incorrecta.")
         except Usuario.DoesNotExist:
             messages.error(request, "Usuario no encontrado. Verifique el RUT e intente nuevamente.")
 
-    return render(request, 'consultorioCys/doctor_dashboard.html')
+    return redirect('doctor_dashboard')
 
 # Listado de pacientes
 def listar_pacientes(request):
@@ -728,20 +719,29 @@ def informe_paciente(request, pk):
 
 @login_required
 def crear_informe(request, rut_paciente):
-    doctor = get_object_or_404(Doctor, usuario=request.user)  # Obtener el doctor actual
-    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)  # Obtener el paciente por RUT
+    doctor = get_object_or_404(Doctor, usuario=request.user)
+    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
+
+    # Obtener la cita asociada al paciente y al doctor que no esté finalizada
+    cita = Cita.objects.filter(paciente=paciente, doctor=doctor, finalizada=False).first()
 
     if request.method == 'POST':
         form = InformeForm(request.POST, request.FILES)
         if form.is_valid():
             informe = form.save(commit=False)
-            informe.doctor = doctor
-            informe.paciente = paciente
+            informe.doctor = doctor  # Asignar el doctor automáticamente
+            informe.paciente = paciente  # Asignar el paciente
             informe.save()
-            messages.success(request, "El informe se creó exitosamente.")
-            return redirect('buscar_paciente', rut_paciente=rut_paciente)
+
+            # Finalizar la cita si existe
+            if cita:
+                cita.finalizada = True
+                cita.save()
+                messages.success(request, "El informe se creó y la cita fue finalizada exitosamente.")
+
+            # Redirigir al calendario
+            return redirect('ver_calendario')
         else:
-            # Imprimir errores en la consola
             print("Errores del formulario:", form.errors)
             messages.error(request, "Error al procesar el formulario. Verifica los datos ingresados.")
     else:
@@ -750,7 +750,7 @@ def crear_informe(request, rut_paciente):
     return render(request, 'consultorioCys/crear_informe.html', {
         'form': form,
         'paciente': paciente,
-        'doctor': doctor
+        'cita': cita,  # Pasar la cita al template por si quieres mostrar algo
     })
 
 #formulario agendar cita y calendario en doctor 
@@ -809,19 +809,14 @@ def ver_calendario(request):
     return render(request, 'consultorioCys/ver_calendario.html', {'eventos': eventos})
 
 @login_required
-def iniciar_sesion_paciente(request, rut):
-    # Obtener el paciente por su RUT
-    paciente = get_object_or_404(Paciente, rut_paciente=rut)
+def iniciar_sesion_paciente(request, rut_paciente):
+    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
 
     if request.method == 'POST':
-        # Capturar la contraseña ingresada
         clave_ingresada = request.POST.get('clave')
-        # Validar la contraseña del paciente
-        if paciente.usuario.check_password(clave_ingresada):  # Validar usando el sistema de autenticación
-            # Redirigir al formulario de consultas/informes
-            return redirect('buscar_paciente', rut=paciente.rut_paciente)
+        if paciente.usuario.check_password(clave_ingresada):
+            return redirect('buscar_paciente', rut_paciente=rut_paciente)
         else:
-            # Mostrar mensaje de error si la contraseña es incorrecta
             messages.error(request, "Contraseña incorrecta. Intente de nuevo.")
 
     return render(request, 'consultorioCys/iniciar_sesion_paciente.html', {'paciente': paciente})
@@ -845,9 +840,14 @@ def obtener_citas_json(request):
 
     return JsonResponse(eventos, safe=False)
 
+@login_required
 def generar_pdf(request, informe_id):
     # Obtener el objeto del informe
     informe = get_object_or_404(Informe, id_informe=informe_id)
+
+    # Obtener clínica y sede asociadas al informe
+    clinica = informe.clinica
+    sede = informe.sede
 
     # Configurar la respuesta como archivo PDF
     response = HttpResponse(content_type='application/pdf')
@@ -856,26 +856,35 @@ def generar_pdf(request, informe_id):
     # Crear el PDF
     pdf = canvas.Canvas(response, pagesize=letter)
     width, height = letter
+    y = height - 50  # Posición inicial en Y
 
     # Ruta del logo
     logo_path = os.path.join(settings.BASE_DIR, 'static/img/logo.png')
 
     # Encabezado
     if os.path.exists(logo_path):
-        pdf.drawImage(logo_path, 50, height - 100, width=100, height=100)
+        pdf.drawImage(logo_path, 50, y - 50, width=100, height=100)
     pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(200, height - 50, "INFORME MÉDICO")
+    pdf.drawString(200, y, "INFORME MÉDICO")
+    y -= 50
+
+    # Información del doctor
     pdf.setFont("Helvetica", 12)
-    pdf.drawString(200, height - 70, f"Emitido por: {informe.doctor.nombres_doctor} {informe.doctor.primer_apellido_doctor}")
-    pdf.drawString(200, height - 85, f"Especialidad: {informe.doctor.especialidad_doctor}")
-    pdf.drawString(200, height - 100, f"Teléfono: {informe.doctor.telefono_doctor}")
+    pdf.drawString(50, y, f"Emitido por: Dr. {informe.doctor.nombres_doctor} {informe.doctor.primer_apellido_doctor}")
+    y -= 15
+    pdf.drawString(50, y, f"Especialidad: {informe.doctor.especialidad_doctor}")
+    y -= 15
+    pdf.drawString(50, y, f"Teléfono: {informe.doctor.telefono_doctor}")
+    y -= 30
 
     # Línea divisoria
-    pdf.line(50, height - 120, 550, height - 120)
+    pdf.line(50, y, width - 50, y)
+    y -= 30
 
     # Información del paciente
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(50, height - 140, "Datos del Paciente")
+    pdf.drawString(50, y, "Datos del Paciente")
+    y -= 20
     patient_data = [
         ["Nombre:", f"{informe.paciente.nombres_paciente} {informe.paciente.primer_apellido_paciente}"],
         ["RUT:", informe.paciente.rut_paciente],
@@ -896,20 +905,24 @@ def generar_pdf(request, informe_id):
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
-    table.wrapOn(pdf, width, height)
-    table.drawOn(pdf, 50, height - 300)
+    table.wrapOn(pdf, width, y)
+    table.drawOn(pdf, 50, y - 120)
+    y -= 160
 
     # Información del informe
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(50, height - 320, "Datos del Informe")
+    pdf.drawString(50, y, "Datos del Informe")
+    y -= 20
     pdf.setFont("Helvetica", 12)
-    pdf.drawString(50, height - 340, f"Título: {informe.titulo_informe}")
-    pdf.drawString(50, height - 360, f"Fecha: {informe.fecha_informe.strftime('%d-%m-%Y')}")
-    pdf.drawString(50, height - 380, "Descripción:")
+    pdf.drawString(50, y, f"Título: {informe.titulo_informe}")
+    y -= 15
+    pdf.drawString(50, y, f"Fecha: {informe.fecha_informe.strftime('%d-%m-%Y')}")
+    y -= 15
+    pdf.drawString(50, y, "Descripción:")
+    y -= 15
     pdf.setFont("Helvetica", 10)
 
     # Agregar la descripción del informe
-    y = height - 400
     for line in informe.descripcion_informe.split('\n'):
         pdf.drawString(70, y, line)
         y -= 15
@@ -917,17 +930,39 @@ def generar_pdf(request, informe_id):
             pdf.showPage()
             y = height - 50
 
+    y -= 20
+
+    # Información de la clínica y sede
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, y, "Datos de la Clínica y Sede")
+    y -= 20
+    if clinica and sede:
+        pdf.drawString(50, y, f"Clínica: {clinica.nombre_clinica}")
+        y -= 15
+        pdf.drawString(50, y, f"Dirección: {sede.direccion_sede}, {sede.comuna_sede}, {sede.region_sede}")
+        y -= 15
+        pdf.drawString(50, y, f"Teléfono: {sede.telefono_sede}")
+        y -= 15
+    else:
+        pdf.setFont("Helvetica", 12)
+        pdf.drawString(50, y, "No hay datos de la clínica y sede disponibles.")
+        y -= 15
+
     # Firma del doctor (opcional)
     firma_path = os.path.join(settings.BASE_DIR, 'static/img/firma.png')
     if os.path.exists(firma_path):
-        pdf.drawImage(firma_path, 400, 50, width=150, height=50)
+        pdf.drawImage(firma_path, width - 200, 50, width=150, height=50)
         pdf.setFont("Helvetica-Bold", 12)
-        pdf.drawString(400, 40, "Firma del Doctor")
+        pdf.drawString(width - 200, 40, "Firma del Doctor")
 
-    # Pie de página
+    # Pie de página con datos de la clínica
     pdf.setFont("Helvetica", 10)
-    pdf.drawString(50, 30, "Centro Médico XYZ")
-    pdf.drawString(50, 15, "Dirección: Av. Principal 123, Ciudad, País - Teléfono: 123-456-789")
+    if clinica:
+        pdf.drawString(50, 30, f"Consultorio Cys - {clinica.nombre_clinica}")
+        pdf.drawString(50, 15, f"Dirección: {sede.direccion_sede}, {sede.comuna_sede}, {sede.region_sede} - Teléfono: {sede.telefono_sede}")
+    else:
+        pdf.drawString(50, 30, "Consultorio Cys")
+        pdf.drawString(50, 15, "Dirección: No disponible")
 
     # Finalizar el PDF
     pdf.save()

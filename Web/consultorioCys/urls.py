@@ -17,14 +17,15 @@ urlpatterns = [
     path('restablecer_clave/', views.restablecer_clave, name="restablecer_clave"), 
     path('form_cita/', views.form_cita, name="form_cita"), 
     path('informe_doctores/', views.informe_doctores, name='informe_doctores'),
-    path('buscar_paciente/<str:rut>/', views.buscar_paciente, name='buscar_paciente'),
+    path('buscar_paciente/<str:rut_paciente>/', views.buscar_paciente, name='buscar_paciente'),
+    path('crear_informe/<str:rut_paciente>/', views.crear_informe, name='crear_informe'),
+    path('iniciar_sesion_paciente/<str:rut_paciente>/', views.iniciar_sesion_paciente, name='iniciar_sesion_paciente'),
     path('historial_personal/', views.historial_personal, name='historial_personal'),
     path('pacientes/', views.listar_pacientes, name='listar_pacientes'),
     path('pacientes/nuevo/', views.crear_paciente, name='crear_paciente'),
     path('pacientes/<str:pk>/editar/', views.editar_paciente, name='editar_paciente'),
     path('pacientes/<str:pk>/eliminar/', views.eliminar_paciente, name='eliminar_paciente'),
     path('pacientes/<str:pk>/informe/', views.informe_paciente, name='informe_paciente'),
-    path('crear_informe/<str:rut_paciente>/', views.crear_informe, name='crear_informe'),
     path('paciente_info/<str:rut_paciente>/', views.paciente_info, name='paciente_info'),
     path('ver_calendario/', views.ver_calendario, name='ver_calendario'),
     path('obtener_citas_json/', views.obtener_citas_json, name='obtener_citas_json'),
@@ -39,8 +40,6 @@ urlpatterns = [
     path('finalizar_cita/<int:cita_id>/', views.finalizar_cita, name='finalizar_cita'),
     path('generar_pdf/<int:informe_id>/', views.generar_pdf, name='generar_pdf'),
     path('descargar_pdf/<path:path>/', views.descargar_como_pdf, name='descargar_como_pdf'),
-    path('iniciar_sesion_paciente/<str:rut>/', views.iniciar_sesion_paciente, name='iniciar_sesion_paciente'),
-
 ]
 
 if settings.DEBUG:

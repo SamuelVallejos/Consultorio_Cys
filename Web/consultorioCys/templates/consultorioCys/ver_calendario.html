@@ -3,27 +3,26 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Calendario de Citas</h2>
-    <div id="calendar"></div>
+    <h2 class="text-center text-primary mb-4"><i class="bi bi-calendar-event me-2"></i> Calendario de Citas</h2>
+    <div id="calendar" class="shadow rounded border"></div>
 </div>
 
 <!-- Modal para mostrar los detalles del evento -->
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="eventModalLabel">Detalles de la Cita</h5>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="eventModalLabel"><i class="bi bi-info-circle me-2"></i> Detalles de la Cita</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p><strong>Paciente:</strong> <span id="eventTitle"></span></p>
                 <p><strong>Hora:</strong> <span id="eventTime"></span></p>
+                <p><strong>Detalles Adicionales:</strong> <span id="eventDetails"></span></p>
             </div>
             <div class="modal-footer">
-                <!-- Botón para cerrar, alineado a la izquierda -->
-                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Cerrar</button>
-                <!-- Botón para iniciar sesión, alineado a la derecha -->
-                <a id="iniciarSesion" class="btn btn-primary">Ir al Inicio de Sesión</a>
+                <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
+                <a id="iniciarSesion" class="btn btn-primary"><i class="bi bi-person-circle me-1"></i> Ir al Inicio de Sesión</a>
             </div>
         </div>
     </div>
@@ -36,8 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
+        themeSystem: 'bootstrap',
         headerToolbar: {
-            left: 'prev,next today',
+            left: 'prev,next today', // Incluye las flechas junto a HOY
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
@@ -48,14 +48,16 @@ document.addEventListener('DOMContentLoaded', function () {
             day: 'Día'
         },
         events: {{ eventos|safe }},
+        transition: true, // Activa la transición en el cambio de vista
         eventClick: function (info) {
             // Llenar el contenido del modal
             document.getElementById('eventTitle').innerText = info.event.title;
             document.getElementById('eventTime').innerText = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('eventDetails').innerText = info.event.extendedProps.details || 'No hay detalles adicionales';
 
             // Obtener el RUT del paciente y configurar el botón
             const rutPaciente = info.event.extendedProps.rut_paciente;
-            const redirigirUrl = `/iniciar_sesion_paciente/${rutPaciente}/`; // Construir la URL
+            const redirigirUrl = `/iniciar_sesion_paciente/${rutPaciente}/`;
             document.getElementById('iniciarSesion').href = redirigirUrl;
 
             // Mostrar el modal
@@ -63,13 +65,93 @@ document.addEventListener('DOMContentLoaded', function () {
             eventModal.show();
         }
     });
+
+    // Activa la animación al cambiar de vista
+    calendar.on('viewDidMount', function () {
+        calendarEl.classList.add('animate-fade-in');
+        setTimeout(() => calendarEl.classList.remove('animate-fade-in'), 500);
+    });
+
     calendar.render();
 });
-
 </script>
 
-<!-- Bootstrap JS (para el modal) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.6/locales/es.js"></script>
+<!-- Estilos Personalizados para FullCalendar -->
+<style>
+/* General */
+#calendar {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
 
+/* Header */
+.fc-toolbar {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.fc-button {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 5px !important;
+}
+
+.fc-button:hover {
+    background-color: #084298 !important;
+}
+
+/* Eventos */
+.fc-event {
+    background-color: #0d6efd !important;
+    border: 1px solid #084298 !important;
+    color: #fff !important;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.fc-event:hover {
+    background-color: #084298 !important;
+    cursor: pointer;
+}
+
+/* Días */
+.fc-daygrid-day-number {
+    color: #0d6efd !important;
+    font-weight: bold;
+}
+
+.fc-day-today {
+    background-color: #e9f5ff !important;
+}
+
+/* Animación */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
 {% endblock %}
+
+<!-- Scripts de Bootstrap y FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.6/locales/es.js"></script>

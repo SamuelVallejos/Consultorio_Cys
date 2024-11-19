@@ -16,32 +16,8 @@
 
   <body>
     {% block content %}
-      <div class="container mt-5" data-aos="fade-down">
-        <h2 class="text-center fw-bold mb-4" style="color: #0d6efd;">Dashboard del Doctor</h2>
 
-        <div class="text-center mb-4">
-          <i class="bi bi-person-vcard" style="font-size: 4rem; color: #0d6efd;"></i>
-        </div>
-
-        <div class="container mt-4 p-5 bg-light rounded shadow-lg position-relative" style="max-width: 500px;">
-          <div class="position-absolute top-0 end-0 opacity-10" style="z-index: 0;">
-          </div>
-
-          <form action="{% url 'buscar_paciente' %}" method="POST" style="z-index: 1; position: relative;">
-            {% csrf_token %}
-            <div class="mb-4">
-              <label for="rut" class="form-label">RUT del Paciente</label>
-              <input type="text" class="form-control" id="rut" name="rut" placeholder="Ingresa el RUT" required />
-            </div>
-            <div class="mb-4">
-              <label for="clave" class="form-label">Clave del Paciente</label>
-              <input type="password" class="form-control" id="clave" name="clave" placeholder="Ingresa la clave" required />
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Buscar Paciente</button>
-          </form>
-        </div>
-      </div>
-
+    
       <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
       <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
       <script>

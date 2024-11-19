@@ -125,7 +125,7 @@ class Informe(models.Model):
     clinica = models.ForeignKey(Clinica, on_delete=models.SET_NULL, null=True, blank=True)
     sede = models.ForeignKey(SedeClinica, on_delete=models.SET_NULL, null=True, blank=True)
     titulo_informe = models.CharField(max_length=200)  # Título del Informe
-    descripcion_informe = models.TextField(default='Descripción por defecto.')  # Descripción del Informe
+    descripcion_informe = models.TextField()  # Descripción del Informe
     notas_doctor = models.TextField(blank=True)  # Notas o comentarios del doctor
     instrucciones_tratamiento = models.TextField(blank=True)  # Instrucciones (medicamentos o tratamientos)
     fecha_informe = models.DateTimeField(auto_now_add=True)  # Fecha del Informe (subido)

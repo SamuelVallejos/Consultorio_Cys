@@ -2,48 +2,61 @@
 
 {% block content %}
 <div class="container mt-5">
-  <h2 class="text-center mb-4">Crear Informe para {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</h2>
-  <div class="card shadow p-4">
+  <h2 class="text-center text-primary mb-4">
+    <i class="bi bi-file-earmark-text me-2"></i> Crear Informe para {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
+  </h2>
+  <div class="card shadow-lg p-4 border-0" style="max-width: 800px; margin: 0 auto;">
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
-      <div class="row mb-3">
+      
+      <!-- Título Informe -->
+      <div class="mb-3">
+        <label for="titulo_informe" class="form-label fw-bold">Título Informe:</label>
+        <input type="text" id="titulo_informe" name="titulo_informe" class="form-control border-info rounded-3"
+          placeholder="Ej: Evaluación General" required>
+      </div>
+
+      <div class="row g-3">
+        <!-- Descripción Informe -->
         <div class="col-md-6">
-          <label for="doctor_responsable" class="form-label">Doctor Responsable</label>
-          <input type="text" id="doctor_responsable" class="form-control"
-            value="{{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }} {{ doctor.segundo_apellido_doctor }}" readonly>
+          <label for="descripcion_informe" class="form-label fw-bold">Descripción Informe:</label>
+          <textarea id="descripcion_informe" name="descripcion_informe" class="form-control border-info rounded-3"
+            rows="3" placeholder="Ej: Resumen detallado del informe" required></textarea>
         </div>
+
+        <!-- Diagnóstico del Doctor -->
         <div class="col-md-6">
-          <label for="titulo_informe" class="form-label">Título Informe</label>
-          <input type="text" id="titulo_informe" name="titulo_informe" class="form-control"
-            placeholder="Ingrese un título" required>
+          <label for="notas_doctor" class="form-label fw-bold">Diagnóstico del Doctor:</label>
+          <textarea id="notas_doctor" name="notas_doctor" class="form-control border-info rounded-3" rows="3"
+            placeholder="Ej: Diagnóstico médico detallado"></textarea>
         </div>
       </div>
-      <div class="row mb-3">
+
+      <div class="row g-3 mt-3">
+        <!-- Instrucciones Tratamiento -->
         <div class="col-md-6">
-          <label for="descripcion_informe" class="form-label">Descripción Informe</label>
-          <textarea id="descripcion_informe" name="descripcion_informe" class="form-control"
-            rows="3">Descripción por defecto.</textarea>
+          <label for="instrucciones_tratamiento" class="form-label fw-bold">Instrucciones Tratamiento:</label>
+          <textarea id="instrucciones_tratamiento" name="instrucciones_tratamiento" class="form-control border-info rounded-3"
+            rows="3" placeholder="Ej: Tomar 2 comprimidos diarios"></textarea>
         </div>
+
+        <!-- Documentos Extra -->
         <div class="col-md-6">
-          <label for="notas_doctor" class="form-label">Diagnostíco del Doctor</label>
-          <textarea id="notas_doctor" name="notas_doctor" class="form-control" rows="3"></textarea>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label for="instrucciones_tratamiento" class="form-label">Instrucciones Tratamiento</label>
-          <textarea id="instrucciones_tratamiento" name="instrucciones_tratamiento" class="form-control"
-            rows="3"></textarea>
-        </div>
-        <div class="col-md-6">
-          <label for="documentos_extra" class="form-label">Documentos Extra</label>
-          <input type="file" id="documentos_extra" name="documentos_extra" class="form-control">
+          <label for="documentos_extra" class="form-label fw-bold">Subir Documentos Extra:</label>
+          <input type="file" id="documentos_extra" name="documentos_extra" class="form-control border-info rounded-3">
         </div>
       </div>
-      <div class="text-center">
-        <button type="submit" class="btn btn-primary">Guardar Informe</button>
+
+      <!-- Botón Guardar -->
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary btn-lg shadow">
+          <i class="bi bi-save me-2"></i> Guardar Informe
+        </button>
       </div>
     </form>
   </div>
 </div>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
 {% endblock %}
