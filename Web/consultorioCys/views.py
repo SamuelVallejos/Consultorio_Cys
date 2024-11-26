@@ -38,6 +38,8 @@ import datetime
 import random
 import string
 import os
+from .ai_processor import analyze_informe
+from django.http import JsonResponse
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -589,6 +591,24 @@ def buscar_paciente(request, rut_paciente=None):
             paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
             informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
+            # Verifica si es una solicitud POST para analizar un informe
+            if request.method == 'POST' and 'informe_id' in request.POST:
+                informe_id = request.POST.get('informe_id')
+                try:
+                    informe = get_object_or_404(Informe, id_informe=informe_id)
+
+                    # Analizar el informe con IA
+                    diagnosis = analyze_informe(informe.descripcion_informe)
+                    
+                    # Guardar el diagnóstico en el informe
+                    informe.notas_doctor = f"Diagnóstico sugerido: {diagnosis}"
+                    informe.save()
+
+                    messages.success(request, f"Diagnóstico generado: {diagnosis}")
+                except Informe.DoesNotExist:
+                    messages.error(request, "El informe seleccionado no existe.")
+            
+            # Renderizar la plantilla con los datos del paciente e informes
             return render(request, 'consultorioCys/buscar_paciente.html', {
                 'paciente': paciente,
                 'informes': informes
@@ -597,7 +617,8 @@ def buscar_paciente(request, rut_paciente=None):
             messages.error(request, "Este RUT no corresponde a un paciente.")
             return redirect('doctor_dashboard')
 
-    if request.method == 'POST':
+    # Manejo de autenticación del paciente (si es necesario)
+    if request.method == 'POST' and 'rut' in request.POST and 'clave' in request.POST:
         rut = request.POST.get('rut')
         clave = request.POST.get('clave')
 

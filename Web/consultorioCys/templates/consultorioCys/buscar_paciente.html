@@ -52,6 +52,14 @@
                     <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">
                         <i class="bi bi-file-earmark-pdf me-1"></i> Receta PDF
                     </a>
+                    <!-- Botón para analizar informe -->
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="informe_id" value="{{ informe.id_informe }}">
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            <i class="bi bi-gear me-1"></i> Analizar Informe
+                        </button>
+                    </form>
                 </td>
             </tr>
             {% empty %}
@@ -62,4 +70,6 @@
         </tbody>
     </table>
 </div>
+
+
 {% endblock %}
