@@ -44,24 +44,45 @@
                 <td>{{ informe.fecha_informe|date:"d/m/Y H:i" }}</td>
                 <td>{{ informe.notas_doctor|default:"Sin notas" }}</td>
                 <td>
-                    {% if informe.documentos_extra %}
-                    <a href="{% url 'descargar_como_pdf' informe.documentos_extra.name %}" class="btn btn-success btn-sm">
-                        <i class="bi bi-download me-1"></i> Exámenes
-                    </a>
-                    {% endif %}
                     <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> Receta PDF
+                        Descargar PDF
                     </a>
-                    <!-- Botón para analizar informe -->
-                    <form method="post" class="d-inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="informe_id" value="{{ informe.id_informe }}">
-                        <button type="submit" class="btn btn-warning btn-sm">
-                            <i class="bi bi-gear me-1"></i> Analizar Informe
-                        </button>
-                    </form>
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#diagnosisModal-{{ informe.id_informe }}">
+                        <i class="bi bi-gear me-1"></i> Analizar Informe
+                    </button>
                 </td>
             </tr>
+
+            <!-- Modal para este informe -->
+            <div class="modal fade" id="diagnosisModal-{{ informe.id_informe }}" tabindex="-1" aria-labelledby="diagnosisModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Seleccionar Diagnóstico para "{{ informe.titulo_informe }}"</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="informe_id" value="{{ informe.id_informe }}">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="selectedDiagnosis-{{ informe.id_informe }}" class="form-label">Sugerencias de Diagnóstico</label>
+                                    <select class="form-select" name="selected_diagnosis" id="selectedDiagnosis-{{ informe.id_informe }}" required>
+                                        {% for suggestion in informe.diagnosis_suggestions %}
+                                        <option value="{{ suggestion.text }}">
+                                            {{ suggestion.text }} ({{ suggestion.source }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Aplicar Diagnóstico</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             {% empty %}
             <tr>
                 <td colspan="4" class="text-center text-muted">No hay informes disponibles.</td>
@@ -70,6 +91,4 @@
         </tbody>
     </table>
 </div>
-
-
 {% endblock %}

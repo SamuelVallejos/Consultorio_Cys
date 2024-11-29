@@ -591,24 +591,37 @@ def buscar_paciente(request, rut_paciente=None):
             paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
             informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
-            # Verifica si es una solicitud POST para analizar un informe
-            if request.method == 'POST' and 'informe_id' in request.POST:
+            # Guardar el diagnóstico seleccionado
+            if request.method == 'POST' and 'selected_diagnosis' in request.POST:
                 informe_id = request.POST.get('informe_id')
+                selected_diagnosis = request.POST.get('selected_diagnosis')
+
+                # Obtener el nombre del doctor
+                if hasattr(request.user, 'doctor'):
+                    doctor_name = f"{request.user.doctor.nombres_doctor} {request.user.doctor.primer_apellido_doctor}"
+                else:
+                    doctor_name = "Doctor desconocido"
+
                 try:
                     informe = get_object_or_404(Informe, id_informe=informe_id)
 
-                    # Analizar el informe con IA
-                    diagnosis = analyze_informe(informe.descripcion_informe)
-                    
-                    # Guardar el diagnóstico en el informe
-                    informe.notas_doctor = f"Diagnóstico sugerido: {diagnosis}"
+                    # Guardar el diagnóstico seleccionado y registrar su origen
+                    informe.notas_doctor = f"Diagnóstico seleccionado: {selected_diagnosis} (por: {doctor_name})"
                     informe.save()
 
-                    messages.success(request, f"Diagnóstico generado: {diagnosis}")
+                    messages.success(request, "Diagnóstico aplicado correctamente.")
+                    return redirect('buscar_paciente', rut_paciente=rut_paciente)
                 except Informe.DoesNotExist:
                     messages.error(request, "El informe seleccionado no existe.")
             
-            # Renderizar la plantilla con los datos del paciente e informes
+            # Preparar los diagnósticos y sugerencias para el frontend
+            for informe in informes:
+                informe.diagnosis_suggestions = [
+                    {"text": informe.notas_doctor or "Sin diagnóstico previo", "source": "Doctor"},  # Diagnóstico previo
+                    {"text": analyze_informe(informe.descripcion_informe), "source": "IA"},  # Diagnóstico de IA
+                    {"text": "Diagnóstico no concluyente", "source": "General"}  # Diagnóstico genérico
+                ]
+
             return render(request, 'consultorioCys/buscar_paciente.html', {
                 'paciente': paciente,
                 'informes': informes
@@ -616,28 +629,6 @@ def buscar_paciente(request, rut_paciente=None):
         except Paciente.DoesNotExist:
             messages.error(request, "Este RUT no corresponde a un paciente.")
             return redirect('doctor_dashboard')
-
-    # Manejo de autenticación del paciente (si es necesario)
-    if request.method == 'POST' and 'rut' in request.POST and 'clave' in request.POST:
-        rut = request.POST.get('rut')
-        clave = request.POST.get('clave')
-
-        try:
-            usuario = Usuario.objects.get(rut=rut)
-
-            if usuario.check_password(clave):
-                paciente = usuario.paciente
-                informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
-
-                return render(request, 'consultorioCys/buscar_paciente.html', {
-                    'paciente': paciente,
-                    'informes': informes
-                })
-
-            else:
-                messages.error(request, "Clave incorrecta.")
-        except Usuario.DoesNotExist:
-            messages.error(request, "Usuario no encontrado. Verifique el RUT e intente nuevamente.")
 
     return redirect('doctor_dashboard')
 
@@ -859,11 +850,14 @@ def obtener_citas_json(request):
 
 @login_required
 def generar_pdf(request, informe_id):
+    # Obtener el informe desde la base de datos
     informe = get_object_or_404(Informe, id_informe=informe_id)
 
+    # Configuración del archivo PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="informe_{informe.id_informe}.pdf"'
 
+    # Crear el PDF
     pdf = canvas.Canvas(response, pagesize=letter)
     width, height = letter
 
@@ -920,6 +914,19 @@ def generar_pdf(request, informe_id):
 
     y = height - 400
     for line in informe.descripcion_informe.split('\n'):
+        pdf.drawString(70, y, line)
+        y -= 15
+        if y < 100:
+            pdf.showPage()
+            y = height - 50
+
+    # Diagnóstico Seleccionado
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, y - 20, "Diagnóstico Seleccionado:")
+    pdf.setFont("Helvetica", 10)
+    y -= 40
+    diagnosis_text = informe.notas_doctor or "Sin diagnóstico disponible."
+    for line in diagnosis_text.split('\n'):
         pdf.drawString(70, y, line)
         y -= 15
         if y < 100:
