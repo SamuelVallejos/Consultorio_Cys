@@ -40,6 +40,7 @@ import string
 import os
 from .ai_processor import analyze_informe
 from django.http import JsonResponse
+from .ai_processor import preprocess_text
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -613,25 +614,40 @@ def buscar_paciente(request, rut_paciente=None):
                     return redirect('buscar_paciente', rut_paciente=rut_paciente)
                 except Informe.DoesNotExist:
                     messages.error(request, "El informe seleccionado no existe.")
-            
-            # Preparar los diagnósticos y sugerencias para el frontend
+
+            # Analizar cada informe y generar diagnósticos sugeridos
             for informe in informes:
-                informe.diagnosis_suggestions = [
-                    {"text": informe.notas_doctor or "Sin diagnóstico previo", "source": "Doctor"},  # Diagnóstico previo
-                    {"text": analyze_informe(informe.descripcion_informe), "source": "IA"},  # Diagnóstico de IA
-                    {"text": "Diagnóstico no concluyente", "source": "General"}  # Diagnóstico genérico
+                # Llamar a la función de análisis
+                analysis_result = analyze_informe(informe.descripcion_informe)
+
+                # Diagnóstico más probable
+                most_probable = analysis_result["most_probable"]
+                confidence = analysis_result["confidence"]
+                alternatives = analysis_result["alternatives"]
+
+                # Diagnósticos de la IA etiquetados
+                ia_diagnoses = [
+                    {"text": f"{alt['diagnosis']} (sugerido por IA)", "confidence": alt["confidence"]}
+                    for alt in alternatives
                 ]
+
+                # Incluir el diagnóstico del doctor como opción
+                doctor_diagnosis = [
+                    {"text": f"{informe.notas_doctor or 'Sin diagnóstico previo'} (actual del doctor)", "confidence": None}
+                ]
+
+                # Combinar diagnósticos
+                informe.diagnosis_suggestions = doctor_diagnosis + ia_diagnoses
 
             return render(request, 'consultorioCys/buscar_paciente.html', {
                 'paciente': paciente,
-                'informes': informes
+                'informes': informes,
             })
         except Paciente.DoesNotExist:
             messages.error(request, "Este RUT no corresponde a un paciente.")
             return redirect('doctor_dashboard')
 
     return redirect('doctor_dashboard')
-
 # Listado de pacientes
 def listar_pacientes(request):
     pacientes = Paciente.objects.prefetch_related('informe_set')

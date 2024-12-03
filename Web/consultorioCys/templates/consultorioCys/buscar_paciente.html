@@ -58,19 +58,37 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Seleccionar Diagnóstico para "{{ informe.titulo_informe }}"</h5>
+                            <h5 class="modal-title">Diagnósticos para "{{ informe.titulo_informe }}"</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="informe_id" value="{{ informe.id_informe }}">
                             <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="selectedDiagnosis-{{ informe.id_informe }}" class="form-label">Sugerencias de Diagnóstico</label>
+                                <p><strong>Diagnóstico Actual del Doctor:</strong></p>
+                                <ul>
+                                    <li>{{ informe.diagnosis_suggestions.0.text }}</li>
+                                </ul>
+                                <p><strong>Sugerencias de Diagnósticos:</strong></p>
+                                <ul>
+                                    {% for suggestion in informe.diagnosis_suggestions %}
+                                    <li>
+                                        {{ suggestion.text }}
+                                        {% if suggestion.confidence %}
+                                        (Confianza: {{ suggestion.confidence }}%)
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <div class="mt-3">
+                                    <label for="selectedDiagnosis-{{ informe.id_informe }}" class="form-label">Seleccionar Diagnóstico</label>
                                     <select class="form-select" name="selected_diagnosis" id="selectedDiagnosis-{{ informe.id_informe }}" required>
                                         {% for suggestion in informe.diagnosis_suggestions %}
                                         <option value="{{ suggestion.text }}">
-                                            {{ suggestion.text }} ({{ suggestion.source }})
+                                            {{ suggestion.text }}
+                                            {% if suggestion.confidence %}
+                                            (Confianza: {{ suggestion.confidence }}%)
+                                            {% endif %}
                                         </option>
                                         {% endfor %}
                                     </select>
