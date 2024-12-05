@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Historial Médico | Consultorio Cys</title>
+    <title>Mis Informes Médicos | Consultorio Cys</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -66,14 +66,16 @@
 <body>
     {% block content %}
     <div class="container my-4">
-
-        <!-- Contenedor de contenido -->
         <div class="content-container shadow-lg p-4">
             <!-- Información del Paciente -->
             <table class="table table-bordered table-hover">
                 <thead class="table-primary">
                     <tr>
-                        <th colspan="2" class="text-center"> <h2 class="fw-bold mb-0"><i class="bi bi-folder2-open me-2"></i> Información del {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} </h2> </th>
+                        <th colspan="2" class="text-center">
+                            <h2 class="fw-bold mb-0"><i class="bi bi-folder2-open me-2"></i> Información del
+                                {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}
+                            </h2>
+                        </th>
                     </tr>
                 </thead>
             </table>
@@ -96,7 +98,7 @@
                     {% for informe in informes %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ informe.fecha_informe|date:"d/m/Y" }}</td>
+                        <td>{{ informe.fecha_informe|date:"d-m-Y" }}</td>
                         <td>Dr. {{ informe.doctor.nombres_doctor }} {{ informe.doctor.primer_apellido_doctor }}</td>
                         <td>{{ informe.titulo_informe }}</td>
                         <td>
@@ -115,6 +117,43 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Paginación -->
+            <nav aria-label="Paginación de informes">
+                <ul class="pagination justify-content-center">
+                    {% if informes.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="Primera">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ informes.previous_page_number }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in informes.paginator.page_range %}
+                    <li class="page-item {% if informes.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if informes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ informes.next_page_number }}" aria-label="Siguiente">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ informes.paginator.num_pages }}" aria-label="Última">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
 
         <!-- Botón de regreso -->

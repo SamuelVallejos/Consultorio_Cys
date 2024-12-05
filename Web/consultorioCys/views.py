@@ -42,6 +42,7 @@ from .ai_processor import analyze_informe
 from django.http import JsonResponse
 from django.db.models import Q
 from .ai_processor import preprocess_text
+from django.core.paginator import Paginator
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -176,6 +177,7 @@ def restablecer_clave(request):
 def acercade(request):
     return render(request, 'consultorioCys/acercade.html')
 
+@login_required
 def historial_personal(request):
     usuario = request.user
 
@@ -184,6 +186,11 @@ def historial_personal(request):
 
     # Obtener todos los informes del paciente
     informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
+
+    # Configurar la paginación
+    paginator = Paginator(informes, 10)  # Máximo 10 informes por página
+    page_number = request.GET.get('page')  # Obtener el número de página de la URL
+    page_obj = paginator.get_page(page_number)  # Obtener la página correspondiente
 
     # Obtener el informe más reciente (opcional, si se necesita para destacar)
     informe_reciente = informes.first() if informes.exists() else None
@@ -201,7 +208,7 @@ def historial_personal(request):
 
     context = {
         'paciente': paciente,
-        'informes': informes,  # Todos los informes del paciente
+        'informes': page_obj,  # Usar la página actual de informes
         'informe_reciente': informe_reciente,  # Informe más reciente
         'doctor': doctor,
         'clinica': clinica,
