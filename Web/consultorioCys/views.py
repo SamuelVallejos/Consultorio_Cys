@@ -383,10 +383,10 @@ def pedir_hora(request):
     # Obtener el paciente asociado al usuario autenticado
     paciente = get_object_or_404(Paciente, usuario=request.user)
 
-    # Obtener la cantidad de citas activas (confirmadas y no finalizadas)
+    # Obtener la cantidad de citas activas
     citas_activas = Cita.objects.filter(paciente=paciente, confirmado=True, finalizada=0).count()
 
-    # Obtener la cita más reciente activa (confirmada y no finalizada)
+    # Obtener la cita más reciente activa
     cita_existente = Cita.objects.filter(paciente=paciente, confirmado=True, finalizada=0).first()
 
     # Manejo del límite de citas activas (máximo 3)
@@ -436,7 +436,6 @@ def pedir_hora(request):
         'cita_existente': cita_existente,
     })
 
-    
 def sedes_por_especialidad(request, especialidad):
     # Filtrar las sedes que tienen doctores con la especialidad seleccionada
     sedes = SedeClinica.objects.filter(

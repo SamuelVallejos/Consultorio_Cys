@@ -426,9 +426,14 @@ DoctorClinica.objects.create(doctor=doctor6, sede=sede3)
 
 print("Datos cargados exitosamente.")
 
+
+from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica, DisponibilidadDoctor
+from django.utils import timezone
+import datetime
+
 doctor = Doctor.objects.get(rut_doctor="12345678-1")  # Reemplaza con el RUT de un doctor existente
 
-fecha = datetime.date(2024, 11, 17)
+fecha = datetime.date(2024, 12, 17)
 horas = ["09:00", "10:00", "11:00", "14:00", "15:00"]
 
 for hora in horas:
