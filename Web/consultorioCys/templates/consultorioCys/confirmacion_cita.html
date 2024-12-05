@@ -4,40 +4,30 @@
 <div class="container mt-5">
     <div class="card shadow-lg border-0">
         <div class="card-header bg-primary text-white text-center">
-            <h2 class="mb-0">Cita Confirmada</h2>
+            <h2 class="mb-0">Mis Citas Activas</h2>
         </div>
         <div class="card-body">
-            {% if error %}
-                <div class="alert alert-danger text-center">
-                    {{ error }}
+            {% if citas %}
+                <!-- Mostrar todas las citas activas -->
+                <div class="list-group">
+                    {% for cita in citas %}
+                        <div class="list-group-item">
+                            <h5 class="mb-1">
+                                Cita con el Dr. {{ cita.doctor.nombres_doctor }} {{ cita.doctor.primer_apellido_doctor }}
+                            </h5>
+                            <p class="mb-1">
+                                <strong>Fecha:</strong> {{ cita.fecha_cita }}<br>
+                                <strong>Hora:</strong> {{ cita.hora_cita|date:"H:i" }}<br>
+                                <strong>Motivo:</strong> {{ cita.motivo_consulta|default:"Consulta General" }}
+                            </p>
+                            <small class="text-muted">Especialidad: {{ cita.doctor.especialidad_doctor }}</small>
+                        </div>
+                    {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center">
-                    <p class="fs-5 mb-4">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        Su cita ha sido confirmada con éxito.
-                    </p>
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    <strong>Médico:</strong> Dr. {{ doctor.nombres_doctor }} {{ doctor.primer_apellido_doctor }}
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Fecha:</strong> {{ fecha }}
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Hora:</strong> {{ hora }}
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Especialidad:</strong> {{ especialidad }}
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Ubicación:</strong> {{ ubicacion }}
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                <!-- Mostrar mensaje si no hay citas activas -->
+                <div class="alert alert-info text-center">
+                    No tienes citas activas en este momento.
                 </div>
             {% endif %}
         </div>

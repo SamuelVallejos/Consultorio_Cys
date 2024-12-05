@@ -307,8 +307,8 @@ def confirmacion_cita(request):
         # Verificar si se está solicitando ver una cita existente
         cita_id = request.GET.get('cita_id')
         if cita_id:
-            # Obtener la cita existente
-            cita = get_object_or_404(Cita, id=cita_id, paciente__usuario=request.user)
+            # Obtener la cita existente (confirmada y no finalizada)
+            cita = get_object_or_404(Cita, id=cita_id, paciente__usuario=request.user, finalizada=0)
             doctor = cita.doctor
             sede = DoctorClinica.objects.filter(doctor=doctor).first().sede
 
@@ -383,14 +383,21 @@ def pedir_hora(request):
     # Obtener el paciente asociado al usuario autenticado
     paciente = get_object_or_404(Paciente, usuario=request.user)
 
-    # Verificar si el usuario ya tiene una cita confirmada
-    cita_existente = Cita.objects.filter(paciente=paciente, confirmado=True).first()
+    # Obtener la cantidad de citas activas (confirmadas y no finalizadas)
+    citas_activas = Cita.objects.filter(paciente=paciente, confirmado=True, finalizada=0).count()
 
-    # Si ya tiene una cita, redirigir a la página de confirmación de la cita existente
-    if cita_existente:
-        return redirect(f"{reverse('confirmacion_cita')}?cita_id={cita_existente.id}")
+    # Obtener la cita más reciente activa (confirmada y no finalizada)
+    cita_existente = Cita.objects.filter(paciente=paciente, confirmado=True, finalizada=0).first()
 
-    # Código para manejar el agendamiento de una nueva cita (si no existe cita)
+    # Manejo del límite de citas activas (máximo 3)
+    if citas_activas >= 3:
+        return render(request, 'confirmacion_cita.html', {
+            'mensaje_error': 'No puedes agendar más de 3 citas activas. Cancela alguna para agendar una nueva.',
+            'citas_activas': citas_activas,
+            'cita_existente': cita_existente,
+        })
+
+    # Código para manejar el agendamiento de una nueva cita
     especialidad_seleccionada = request.GET.get('especialidad') or request.POST.get('especialidad')
     sedes = []
     error_message = None
@@ -401,7 +408,7 @@ def pedir_hora(request):
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()
 
-    # Validar ambos campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
+    # Validar los campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
     if request.method == 'POST':
         especialidad = request.POST.get('especialidad')
         sede_id = request.POST.get('sede')
@@ -409,22 +416,26 @@ def pedir_hora(request):
 
         # Solo redirigir si todos los campos tienen valores
         if especialidad and sede_id and fecha:
-            # Redirigir a la página de selección de doctores con los parámetros en la URL
             return redirect(
                 f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}&fecha={fecha}"
             )
-        
+
         # Mostrar mensaje de error si falta algún campo
         error_message = "Por favor, seleccione la especialidad, la sede y la fecha antes de continuar."
 
+    # Obtener todas las especialidades disponibles
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
+    # Renderizar la página de pedir hora
     return render(request, 'pedir_hora.html', {
         'especialidades': especialidades,
         'sedes': sedes,
         'especialidad_seleccionada': especialidad_seleccionada,
         'error_message': error_message,
+        'citas_activas': citas_activas,
+        'cita_existente': cita_existente,
     })
+
     
 def sedes_por_especialidad(request, especialidad):
     # Filtrar las sedes que tienen doctores con la especialidad seleccionada
@@ -765,7 +776,7 @@ def crear_informe(request, rut_paciente):
             informe.sede = sede  # Asignar la sede
             informe.save()  # Guardar el informe
             messages.success(request, "El informe se creó exitosamente.")
-            return redirect('ver_calendario')  # Cambia según el flujo de tu app
+            return redirect('crear_informe')  # Cambia según el flujo de tu app
         else:
             print("Errores del formulario:", form.errors)
             messages.error(request, "Error al procesar el formulario. Verifica los datos ingresados.")
@@ -821,6 +832,7 @@ def ver_calendario(request):
             'title': f"{cita.paciente.nombres_paciente} {cita.paciente.primer_apellido_paciente}",
             'start': f"{cita.fecha_cita}T{cita.hora_cita}",
             'end': f"{cita.fecha_cita}T{(datetime.datetime.combine(cita.fecha_cita, cita.hora_cita) + datetime.timedelta(minutes=30)).time()}",
+            'className': 'evento-finalizado' if cita.finalizada else 'evento-pendiente',  # Clase CSS según el estado
             'extendedProps': {
                 'tratamiento': cita.motivo_consulta or "Consulta General",
                 'rut_paciente': cita.paciente.rut_paciente,  # Pasar el RUT del paciente
@@ -828,7 +840,6 @@ def ver_calendario(request):
         }
         for cita in citas
     ]
-
     # Pasar los eventos como contexto al template
     return render(request, 'consultorioCys/ver_calendario.html', {'eventos': eventos})
 
