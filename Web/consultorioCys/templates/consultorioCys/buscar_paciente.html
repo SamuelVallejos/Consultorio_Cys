@@ -19,6 +19,31 @@
         </div>
     </div>
 
+    <!-- Cita Activa Seleccionada -->
+    <div class="mb-4">
+        <h3 class="text-primary">
+            <i class="bi bi-calendar-check me-2"></i> Cita Activa
+        </h3>
+        {% if cita_activa %}
+        <div class="card my-3">
+            <div class="card-body">
+                <p><strong>Doctor:</strong> Dr. {{ cita_activa.doctor.nombres_doctor }} {{ cita_activa.doctor.primer_apellido_doctor }}</p>
+                <p><strong>Fecha:</strong> {{ cita_activa.fecha_cita }}</p>
+                <p><strong>Hora:</strong> {{ cita_activa.hora_cita }}</p>
+                <form method="post" action="{% url 'finalizar_cita' cita_activa.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-check-circle"></i> Finalizar Cita
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted">No hay citas activas asociadas a este paciente.</p>
+        {% endif %}
+    </div>
+
+    <!-- Sección de Informes -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-primary">
             <i class="bi bi-journal-text me-2"></i> Informes
@@ -47,14 +72,16 @@
                     <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">
                         Descargar PDF
                     </a>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#diagnosisModal-{{ informe.id_informe }}">
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#diagnosisModal-{{ informe.id_informe }}">
                         <i class="bi bi-gear me-1"></i> Analizar Informe
                     </button>
                 </td>
             </tr>
 
             <!-- Modal para este informe -->
-            <div class="modal fade" id="diagnosisModal-{{ informe.id_informe }}" tabindex="-1" aria-labelledby="diagnosisModalLabel" aria-hidden="true">
+            <div class="modal fade" id="diagnosisModal-{{ informe.id_informe }}" tabindex="-1"
+                aria-labelledby="diagnosisModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -81,8 +108,10 @@
                                     {% endfor %}
                                 </ul>
                                 <div class="mt-3">
-                                    <label for="selectedDiagnosis-{{ informe.id_informe }}" class="form-label">Seleccionar Diagnóstico</label>
-                                    <select class="form-select" name="selected_diagnosis" id="selectedDiagnosis-{{ informe.id_informe }}" required>
+                                    <label for="selectedDiagnosis-{{ informe.id_informe }}"
+                                        class="form-label">Seleccionar Diagnóstico</label>
+                                    <select class="form-select" name="selected_diagnosis"
+                                        id="selectedDiagnosis-{{ informe.id_informe }}" required>
                                         {% for suggestion in informe.diagnosis_suggestions %}
                                         <option value="{{ suggestion.text }}">
                                             {{ suggestion.text }}

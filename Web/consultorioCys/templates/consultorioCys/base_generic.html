@@ -90,14 +90,11 @@
 
               <li>
                 {% if citas_activas == 0 %}
-                <!-- Si no hay citas activas, muestra el botón "Agendar Cita" -->
                 <a class="dropdown-item" href="{% url 'pedir_hora' %}">Agendar Cita</a>
-                {% elif citas_activas < 3 %} <!-- Si hay menos de 3 citas activas, muestra "Ver Cita" y "Agendar Cita"
-                  -->
+                {% elif citas_activas < 3 %}
                   <a class="dropdown-item" href="{% url 'confirmacion_cita' %}">Ver Cita</a>
                   <a class="dropdown-item" href="{% url 'pedir_hora' %}">Agendar Cita</a>
                   {% else %}
-                  <!-- Si hay 3 o más citas activas, solo muestra "Ver Cita" -->
                   <a class="dropdown-item" href="{% url 'confirmacion_cita' %}">Ver Cita</a>
                   {% endif %}
               </li>

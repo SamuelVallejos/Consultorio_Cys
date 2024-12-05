@@ -40,6 +40,7 @@ import string
 import os
 from .ai_processor import analyze_informe
 from django.http import JsonResponse
+from django.db.models import Q
 from .ai_processor import preprocess_text
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
@@ -250,31 +251,31 @@ def agendar_cita(request):
     else:
         return redirect("pedir_hora")
     
-
 @login_required
 def confirmacion_cita(request):
+    # Obtener el paciente asociado al usuario autenticado
+    paciente = get_object_or_404(Paciente, usuario=request.user)
+
     if request.method == 'POST':
+        # Procesar la lógica de creación de una nueva cita
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
 
         # Verificar que los datos requeridos existen
         if not doctor_id or not fecha or not hora:
-            return render(request, 'confirmacion_cita.html', {
+            return render(request, 'consultorioCys/confirmacion_cita.html', {
                 'error': 'Faltan datos necesarios para la confirmación de la cita.'
             })
 
         # Obtener el doctor y su información
         doctor = get_object_or_404(Doctor, rut_doctor=doctor_id)
-        
-        # Obtener al paciente desde el usuario autenticado
-        paciente = get_object_or_404(Paciente, usuario=request.user)
-        
+
         # Convertir la hora al formato HH:MM
         try:
             hora_obj = datetime.datetime.strptime(hora, "%H:%M").time()
         except ValueError:
-            return render(request, 'confirmacion_cita.html', {
+            return render(request, 'consultorioCys/confirmacion_cita.html', {
                 'error': f'El formato de la hora recibido ({hora}) no es válido. Debe estar en el formato HH:MM.'
             })
 
@@ -292,62 +293,58 @@ def confirmacion_cita(request):
         doctor_clinica = DoctorClinica.objects.filter(doctor=doctor).first()
         sede = doctor_clinica.sede if doctor_clinica else None
 
-        # Preparar contexto con la información de la cita, incluyendo la ubicación
+        # Preparar contexto con la información de la nueva cita
         context = {
             'doctor': doctor,
             'fecha': fecha,
             'hora': hora_obj.strftime("%H:%M"),
             'especialidad': doctor.especialidad_doctor,
-            'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible"
+            'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible",
+            'citas': Cita.objects.filter(paciente=paciente, finalizada=0).distinct().order_by('fecha_cita', 'hora_cita')
         }
 
-        return render(request, 'confirmacion_cita.html', context)
-    
-    elif request.method == 'GET':
-        # Verificar si se está solicitando ver una cita existente
-        cita_id = request.GET.get('cita_id')
-        if cita_id:
-            # Obtener la cita existente (confirmada y no finalizada)
-            cita = get_object_or_404(Cita, id=cita_id, paciente__usuario=request.user, finalizada=0)
-            doctor = cita.doctor
-            sede = DoctorClinica.objects.filter(doctor=doctor).first().sede
+        return render(request, 'consultorioCys/confirmacion_cita.html', context)
 
-            context = {
-                'doctor': doctor,
-                'fecha': cita.fecha_cita,
-                'hora': cita.hora_cita.strftime("%H:%M"),
-                'especialidad': doctor.especialidad_doctor,
-                'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible"
-            }
-            return render(request, 'confirmacion_cita.html', context)
-        else:
-            return render(request, 'confirmacion_cita.html', {
-                'error': 'No se ha especificado ninguna cita para mostrar.'
-            })
-    
-    else:
-        return render(request, 'confirmacion_cita.html', {
-            'error': 'Método de solicitud no válido.'
-        })
+    elif request.method == 'GET':
+        # Obtener todas las citas activas (finalizada=0) del paciente
+        citas = Cita.objects.filter(paciente=paciente, finalizada=0).distinct().order_by('fecha_cita', 'hora_cita')
+
+        # Pasar las citas activas al contexto
+        context = {'citas': citas} if citas.exists() else {'error': 'No tienes citas activas en este momento.'}
+
+        return render(request, 'consultorioCys/confirmacion_cita.html', context)
+
+    # Manejo para otros métodos no válidos
+    return render(request, 'consultorioCys/confirmacion_cita.html', {
+        'error': 'Método de solicitud no válido.'
+    })
     
 @login_required
 def finalizar_cita(request, cita_id):
+    # Obtener la cita con el ID proporcionado
     cita = get_object_or_404(Cita, id=cita_id)
 
-    # Verifica que el usuario sea el doctor de la cita o tenga permisos especiales
-    if request.user != cita.doctor.usuario:
-        return render(request, 'error.html', {'error': 'No tienes permiso para finalizar esta cita.'})
+    # Verificar que el usuario es un doctor y que es el doctor asignado a la cita
+    if not hasattr(request.user, 'doctor') or request.user.doctor != cita.doctor:
+        messages.error(request, 'No tienes permiso para finalizar esta cita.')
+        return redirect('ver_calendario')  # Redirigir al calendario en caso de error
 
     # Marcar la cita como finalizada
     cita.finalizada = True
     cita.save()
 
-    # Reactivar la disponibilidad de la hora del doctor
-    DisponibilidadDoctor.objects.filter(
-        doctor=cita.doctor, fecha=cita.fecha_cita, hora=cita.hora_cita
-    ).update(disponible=True)
+    # Reactivar la disponibilidad de la hora del doctor en el calendario
+    disponibilidad = DisponibilidadDoctor.objects.filter(
+        doctor=cita.doctor,
+        fecha=cita.fecha_cita,
+        hora=cita.hora_cita
+    )
+    if disponibilidad.exists():
+        disponibilidad.update(disponible=True)
 
-    return render(request, 'cita_finalizada.html', {'cita': cita})
+    # Enviar un mensaje de confirmación y redirigir al calendario del doctor
+    messages.success(request, f'La cita con el paciente {cita.paciente.nombres_paciente} {cita.paciente.primer_apellido_paciente} ha sido finalizada con éxito.')
+    return redirect('ver_calendario')  # Cambia esto según dónde desees redirigir al doctor
     
 @login_required
 def seleccionar_doctor(request):
@@ -602,6 +599,13 @@ def buscar_paciente(request, rut_paciente=None):
             paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
             informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
 
+            # Obtener la cita activa (confirmada y no finalizada) asociada al doctor autenticado
+            cita_activa = Cita.objects.filter(
+                paciente=paciente,
+                doctor=request.user.doctor,
+                finalizada=False
+            ).first()
+
             # Guardar el diagnóstico seleccionado
             if request.method == 'POST' and 'selected_diagnosis' in request.POST:
                 informe_id = request.POST.get('informe_id')
@@ -652,12 +656,14 @@ def buscar_paciente(request, rut_paciente=None):
             return render(request, 'consultorioCys/buscar_paciente.html', {
                 'paciente': paciente,
                 'informes': informes,
+                'cita_activa': cita_activa,  # Pasar la cita activa al contexto
             })
         except Paciente.DoesNotExist:
             messages.error(request, "Este RUT no corresponde a un paciente.")
             return redirect('doctor_dashboard')
 
     return redirect('doctor_dashboard')
+
 # Listado de pacientes
 def listar_pacientes(request):
     pacientes = Paciente.objects.prefetch_related('informe_set')
@@ -775,7 +781,8 @@ def crear_informe(request, rut_paciente):
             informe.sede = sede  # Asignar la sede
             informe.save()  # Guardar el informe
             messages.success(request, "El informe se creó exitosamente.")
-            return redirect('crear_informe')  # Cambia según el flujo de tu app
+            # Redirigir correctamente con el argumento necesario
+            return redirect('buscar_paciente', rut_paciente=paciente.rut_paciente)
         else:
             print("Errores del formulario:", form.errors)
             messages.error(request, "Error al procesar el formulario. Verifica los datos ingresados.")
