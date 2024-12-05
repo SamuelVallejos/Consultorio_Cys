@@ -66,12 +66,6 @@
 <body>
     {% block content %}
     <div class="container my-4">
-        <!-- Encabezado -->
-        <div class="header-bar">
-            <h2 class="fw-bold mb-0">
-                <i class="bi bi-folder2-open me-2"></i>Historial Médico
-            </h2>
-        </div>
 
         <!-- Contenedor de contenido -->
         <div class="content-container shadow-lg p-4">
@@ -79,31 +73,9 @@
             <table class="table table-bordered table-hover">
                 <thead class="table-primary">
                     <tr>
-                        <th colspan="2" class="text-center">Información del Paciente</th>
+                        <th colspan="2" class="text-center"> <h2 class="fw-bold mb-0"><i class="bi bi-folder2-open me-2"></i> Información del {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }} </h2> </th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Nombre</strong></td>
-                        <td>{{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fecha de Nacimiento</strong></td>
-                        <td>{{ paciente.fecha_nacimiento_paciente }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Dirección</strong></td>
-                        <td>{{ paciente.direccion_paciente }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Teléfono</strong></td>
-                        <td>{{ paciente.telefono_paciente }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Correo</strong></td>
-                        <td>{{ paciente.correo_paciente }}</td>
-                    </tr>
-                </tbody>
             </table>
 
             <!-- Tabla de Informes Médicos -->
@@ -124,12 +96,15 @@
                     {% for informe in informes %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ informe.fecha_informe|date:"d/m/Y H:i" }}</td>
+                        <td>{{ informe.fecha_informe|date:"d/m/Y" }}</td>
                         <td>Dr. {{ informe.doctor.nombres_doctor }} {{ informe.doctor.primer_apellido_doctor }}</td>
                         <td>{{ informe.titulo_informe }}</td>
                         <td>
                             <a href="{% url 'detalle_informe' informe.id_informe %}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-eye"></i> Ver Informe
+                            </a>
+                            <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">
+                                <i class="bi bi-download"></i> Descargar PDF
                             </a>
                         </td>
                     </tr>

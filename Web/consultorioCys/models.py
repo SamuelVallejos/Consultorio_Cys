@@ -25,7 +25,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     apellido = models.CharField(max_length=100)  # Apellido del usuario
     is_active = models.BooleanField(default=True)  # Estado activo/inactivo
     is_staff = models.BooleanField(default=False)  # True si es personal de administración
-
+    
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'rut'

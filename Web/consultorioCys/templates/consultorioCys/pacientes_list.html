@@ -140,9 +140,6 @@
           <a href="{% url 'informe_paciente' paciente.rut_paciente %}" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-text me-1"></i> Ver Informes
           </a>
-          <a href="{% url 'crear_informe' paciente.rut_paciente %}" class="btn btn-outline-primary">
-            <i class="bi bi-file-earmark-plus me-1"></i> Crear Informe
-          </a>
           {% if paciente.archivo %}
           <a href="{{ paciente.archivo.url }}" class="btn btn-outline-secondary" target="_blank">
             <i class="bi bi-folder2-open me-1"></i> Ver Archivo
