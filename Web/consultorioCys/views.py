@@ -242,6 +242,7 @@ def restablecer_clave(request):
             messages.success(request, f"Se ha enviado un mensaje a tu correo {user.email}")
             return render(request, 'consultorioCys/restablecer_clave.html', {'mensaje': 'Correo enviado.'})
         except User.DoesNotExist:
+            messages.error(request, "El correo electrónico ingresado no está registrado.")
             return render(request, 'consultorioCys/restablecer_clave.html', {'error': 'Correo no encontrado.'})
 
     return render(request, 'consultorioCys/restablecer_clave.html')
@@ -277,6 +278,7 @@ def historial_personal(request):
     }
     return render(request, 'consultorioCys/historial_personal.html', context)
 
+@login_required
 def detalle_informe(request, pk):
     informe = get_object_or_404(Informe, pk=pk)
 
@@ -642,8 +644,6 @@ def logout_view(request):
 def is_doctor(user):
     return user.groups.filter(name='Doctor').exists()
 
-
-
 @login_required
 @user_passes_test(is_doctor)
 def doctor_dashboard(request):
@@ -778,14 +778,14 @@ def buscar_paciente(request, rut_paciente=None):
 
     return redirect('doctor_dashboard')
 
-# Listado de pacientes
+@login_required
 def listar_pacientes(request):
     pacientes = Paciente.objects.prefetch_related('informe_set')
     pacientes = Paciente.objects.all()
     return render(request, 'pacientes_list.html', {'pacientes': pacientes})
 
-# Crear un nuevo paciente
 Usuario = get_user_model()
+@login_required
 def crear_paciente(request):
     if request.method == 'POST':
         # Recopilar datos del formulario
@@ -839,7 +839,7 @@ def crear_paciente(request):
 
     return render(request, 'consultorioCys/crear_paciente.html')
 
-# Editar un paciente existente
+@login_required
 def editar_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
     if request.method == "POST":
@@ -851,7 +851,7 @@ def editar_paciente(request, pk):
         form = PacienteForm(instance=paciente)
     return render(request, 'paciente_form.html', {'form': form})
 
-# Eliminar un paciente
+@login_required
 def eliminar_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
     if request.method == "POST":
@@ -859,6 +859,7 @@ def eliminar_paciente(request, pk):
         return redirect('listar_pacientes')
     return render(request, 'confirmar_eliminar.html', {'paciente': paciente})
 
+@login_required
 def informe_paciente(request, pk):
     paciente = get_object_or_404(Paciente, pk=pk)
     informes = Informe.objects.filter(paciente=paciente)  # Trae todos los informes del paciente
@@ -908,7 +909,7 @@ def crear_informe(request, rut_paciente):
         'paciente': paciente
     })
 
-#formulario agendar cita y calendario en doctor 
+@login_required
 def form_cita(request):
     # Verificar que el usuario autenticado es un paciente
     try:
@@ -1094,6 +1095,7 @@ def generar_pdf(request, informe_id):
     pdf.save()
     return response
 
+@login_required
 def descargar_como_pdf(request, path):
     # Ruta del archivo original
     file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -1132,7 +1134,6 @@ def descargar_como_pdf(request, path):
 
     return response
 
-# Vista para mostrar planes disponibles
 def seleccionar_plan(request):
     if request.method == 'POST':
         plan_id = request.POST.get('plan_id')  # Obtener el id_plan enviado desde el formulario
@@ -1147,7 +1148,7 @@ def seleccionar_plan(request):
     planes = Plan.objects.all()
     return render(request, 'consultorioCys/seleccionar_plan.html', {'planes': planes})
 
-# Vista para renovar suscripción
+@login_required
 def renovar_suscripcion(request):
     if not request.user.is_authenticated:
         return redirect('login')  # Redirigir a login si el usuario no está autenticado
@@ -1169,7 +1170,6 @@ def renovar_suscripcion(request):
     return redirect('perfil')
 
 
-# Middleware para validar suscripción activa
 class ValidarSuscripcionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
