@@ -188,28 +188,16 @@ def acercade(request):
 @login_required
 def historial_personal(request):
     usuario = request.user
-
-    # Obtener el paciente asociado al usuario autenticado
     paciente = get_object_or_404(Paciente, usuario=usuario)
-
-    # Obtener todos los informes del paciente
     informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
-
-    # Configurar la paginación
     paginator = Paginator(informes, 10)  # Máximo 10 informes por página
-    page_number = request.GET.get('page')  # Obtener el número de página de la URL
-    page_obj = paginator.get_page(page_number)  # Obtener la página correspondiente
-
-    # Obtener el informe más reciente (opcional, si se necesita para destacar)
+    page_number = request.GET.get('page') 
+    page_obj = paginator.get_page(page_number) 
     informe_reciente = informes.first() if informes.exists() else None
-
-    # Obtener las citas futuras del paciente
     citas = Cita.objects.filter(
         paciente=paciente,
         fecha_cita__gte=timezone.now().date()
     ).order_by('fecha_cita', 'hora_cita')
-
-    # Obtener el doctor, clínica y sede del informe más reciente
     doctor = informe_reciente.doctor if informe_reciente else None
     clinica = informe_reciente.clinica if informe_reciente else None
     sede = informe_reciente.sede if informe_reciente else None
@@ -226,12 +214,9 @@ def historial_personal(request):
     return render(request, 'consultorioCys/historial_personal.html', context)
 
 def detalle_informe(request, pk):
-    # Obtener el informe por su ID
     informe = get_object_or_404(Informe, pk=pk)
 
     return render(request, 'consultorioCys/detalle_informe.html', {'informe': informe})
-
-#AQUI TERMINA EL historial_personal
 
 def historial(request):
     return render(request, 'consultorioCys/historial.html')
@@ -247,11 +232,8 @@ def agendar_cita(request):
         doctor_id = request.POST.get("doctor_id")
         hora_cita = request.POST.get("hora_cita")
         fecha_cita = request.POST.get("fecha_cita")
-        paciente = request.user.paciente  # Asegúrate de que el usuario tenga un perfil de paciente
-
+        paciente = request.user.paciente  
         doctor = get_object_or_404(Doctor, id=doctor_id)
-
-        # Crea la cita con la información recibida
         nueva_cita = Cita.objects.create(
             paciente=paciente,
             doctor=doctor,
@@ -260,33 +242,26 @@ def agendar_cita(request):
             motivo_consulta=request.POST.get("motivo_consulta", ""),
             confirmado=True
         )
-
-        # Redirige a la página de resumen con el ID de la cita
         return redirect("resumen_cita", cita_id=nueva_cita.id)
     else:
         return redirect("pedir_hora")
     
 @login_required
 def confirmacion_cita(request):
-    # Obtener el paciente asociado al usuario autenticado
     paciente = get_object_or_404(Paciente, usuario=request.user)
 
     if request.method == 'POST':
-        # Procesar la lógica de creación de una nueva cita
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
 
-        # Verificar que los datos requeridos existen
         if not doctor_id or not fecha or not hora:
             return render(request, 'consultorioCys/confirmacion_cita.html', {
                 'error': 'Faltan datos necesarios para la confirmación de la cita.'
             })
 
-        # Obtener el doctor y su información
         doctor = get_object_or_404(Doctor, rut_doctor=doctor_id)
 
-        # Convertir la hora al formato HH:MM
         try:
             hora_obj = datetime.datetime.strptime(hora, "%H:%M").time()
         except ValueError:
@@ -294,7 +269,6 @@ def confirmacion_cita(request):
                 'error': f'El formato de la hora recibido ({hora}) no es válido. Debe estar en el formato HH:MM.'
             })
 
-        # Crear la cita y guardarla en la base de datos
         cita = Cita(
             paciente=paciente,
             doctor=doctor,
@@ -304,11 +278,9 @@ def confirmacion_cita(request):
         )
         cita.save()
 
-        # Obtener la sede asociada al doctor
         doctor_clinica = DoctorClinica.objects.filter(doctor=doctor).first()
         sede = doctor_clinica.sede if doctor_clinica else None
 
-        # Preparar contexto con la información de la nueva cita
         context = {
             'doctor': doctor,
             'fecha': fecha,
@@ -321,34 +293,25 @@ def confirmacion_cita(request):
         return render(request, 'consultorioCys/confirmacion_cita.html', context)
 
     elif request.method == 'GET':
-        # Obtener todas las citas activas (finalizada=0) del paciente
         citas = Cita.objects.filter(paciente=paciente, finalizada=0).distinct().order_by('fecha_cita', 'hora_cita')
-
-        # Pasar las citas activas al contexto
         context = {'citas': citas} if citas.exists() else {'error': 'No tienes citas activas en este momento.'}
 
         return render(request, 'consultorioCys/confirmacion_cita.html', context)
 
-    # Manejo para otros métodos no válidos
     return render(request, 'consultorioCys/confirmacion_cita.html', {
         'error': 'Método de solicitud no válido.'
     })
     
 @login_required
 def finalizar_cita(request, cita_id):
-    # Obtener la cita con el ID proporcionado
     cita = get_object_or_404(Cita, id=cita_id)
-
-    # Verificar que el usuario es un doctor y que es el doctor asignado a la cita
     if not hasattr(request.user, 'doctor') or request.user.doctor != cita.doctor:
         messages.error(request, 'No tienes permiso para finalizar esta cita.')
-        return redirect('ver_calendario')  # Redirigir al calendario en caso de error
+        return redirect('ver_calendario')
 
-    # Marcar la cita como finalizada
     cita.finalizada = True
     cita.save()
 
-    # Reactivar la disponibilidad de la hora del doctor en el calendario
     disponibilidad = DisponibilidadDoctor.objects.filter(
         doctor=cita.doctor,
         fecha=cita.fecha_cita,
@@ -463,39 +426,45 @@ def sedes_por_especialidad(request, especialidad):
 
 def login_view(request):
     if request.method == 'POST':
-        # Obtener datos del formulario
         rut = request.POST.get('rut', '').strip()
         password = request.POST.get('contrasena', '')
 
         try:
-            # Busca el usuario por RUT
             usuario = Usuario.objects.get(rut=rut)
 
-            # Verifica la contraseña
             if usuario.check_password(password):
-                # Determina el rol automáticamente
                 if Paciente.objects.filter(usuario=usuario).exists():
-                    rol = 'paciente'
+                    paciente = Paciente.objects.get(usuario=usuario) 
+
+                    suscripcion_activa = Suscripcion.objects.filter(
+                        paciente=paciente, fecha_fin__gte=now()
+                    ).exists()
+
+                    if not suscripcion_activa:
+                        messages.error(
+                            request, 'No tienes una suscripción activa. Por favor, renueva tu suscripción.'
+                        )
+                        return redirect('login')
+
                     login(request, usuario)
                     return redirect('inicio')
+
                 elif Doctor.objects.filter(usuario=usuario).exists():
-                    rol = 'doctor'
                     login(request, usuario)
                     return redirect('doctor_dashboard')
+
                 else:
                     messages.error(request, 'No tienes un rol asignado en el sistema.')
                     return redirect('login')
+
             else:
-                # Si la contraseña es incorrecta
                 messages.error(request, 'Contraseña incorrecta.')
                 return redirect('login')
 
         except Usuario.DoesNotExist:
-            # Si el RUT no existe en la base de datos
             messages.error(request, 'RUT no se encuentra registrado.')
             return redirect('login')
 
-    # Renderiza el formulario de login
     return render(request, 'consultorioCys/login.html')
 
 @login_required

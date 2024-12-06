@@ -10,148 +10,109 @@ USE consultoriocys;
 SHOW DATABASES;
 EXIT;
 
-python manage.py makemigrations consultorioCys
-python manage.py migrate
 
-datos para llenar las tablas
 
 Ejeturar en cmd "python manage.py shell" y pega de la linea 19 a la 217
 
 ------------------------------------------------------------------------------
 
-from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica, DisponibilidadDoctor
+from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica, DisponibilidadDoctor, Plan, Suscripcion
 from django.utils import timezone
+from django.utils.timezone import now, timedelta
 import datetime
 
 # Crear usuarios (doctores)
 usuario_doctor1 = Usuario(
-    rut='12345678-1',
-    email='juan.perez@usuario.com',
-    nombre='Juan',
-    apellido='Pérez'
+    rut='20637502-7',
+    email='gui.rojas@duocuc.cl',
+    nombre='Guillermo',
+    apellido='Rojas'
 )
 usuario_doctor1.set_password('contrasena123')
 usuario_doctor1.save()
 
 usuario_doctor2 = Usuario(
-    rut='87654321-2',
-    email='ana.gomez@usuario.com',
-    nombre='Ana',
-    apellido='Gómez'
+    rut='21059713-1',
+    email='ja.rojast@duocuc.cl',
+    nombre='Javier',
+    apellido='Rojas'
 )
 usuario_doctor2.set_password('contrasena123')
 usuario_doctor2.save()
 
-usuario_doctor3 = Usuario(
-    rut='54678912-3',
-    email='carlos.soto@usuario.com',
-    nombre='Carlos',
-    apellido='Soto'
-)
-usuario_doctor3.set_password('contrasena123')
-usuario_doctor3.save()
-
 # Crear doctores
 doctor1 = Doctor(
     usuario=usuario_doctor1,  
-    rut_doctor='12345678-1',
-    nombres_doctor='Juan',
-    primer_apellido_doctor='Pérez',
-    segundo_apellido_doctor='González',
-    correo_doctor='juan.perez@example.com',
-    telefono_doctor='123456789',
-    fecha_nacimiento_doctor='1980-01-01',
+    rut_doctor='20637502-7',
+    nombres_doctor='Guillermo',
+    primer_apellido_doctor='Rojas',
+    segundo_apellido_doctor='Muñoz',
+    correo_doctor='gui.rojas@duocuc.cl',
+    telefono_doctor='954123655',
+    fecha_nacimiento_doctor='2000-01-01',
     especialidad_doctor='Cardiología'
 )
 doctor1.save()
 
 doctor2 = Doctor(
     usuario=usuario_doctor2,  
-    rut_doctor='87654321-2',
-    nombres_doctor='Ana',
-    primer_apellido_doctor='Gómez',
-    segundo_apellido_doctor='Fernández',
-    correo_doctor='ana.gomez@example.com',
+    rut_doctor='21059713-1',
+    nombres_doctor='Javier',
+    primer_apellido_doctor='Rojas',
+    segundo_apellido_doctor='Teran',
+    correo_doctor='ja.rojast@duocuc.cl',
     telefono_doctor='987654321',
-    fecha_nacimiento_doctor='1975-02-15',
+    fecha_nacimiento_doctor='2000-02-15',
     especialidad_doctor='Pediatría'
 )
 doctor2.save()
 
-doctor3 = Doctor(
-    usuario=usuario_doctor3,
-    rut_doctor='54678912-3',
-    nombres_doctor='Carlos',
-    primer_apellido_doctor='Soto',
-    segundo_apellido_doctor='Fernández',
-    correo_doctor='carlos.soto@doctor.com',
-    telefono_doctor='123456789',
-    fecha_nacimiento_doctor='1985-03-10',
-    especialidad_doctor='Medicina General'
-)
-doctor3.save()
-
 # Crear pacientes
 usuario_paciente1 = Usuario(
-    rut='98765432-3',
-    email='maria.lopez@example.com',
-    nombre='María',
-    apellido='López'
+    rut='21235179-2',
+    email='gokussj4ssvm@gmail.com',
+    nombre='Samuel',
+    apellido='Vallejos'
 )
 usuario_paciente1.set_password('contrasena123')
 usuario_paciente1.save()
 
 paciente1 = Paciente(
     usuario=usuario_paciente1,  
-    rut_paciente='98765432-3',
-    nombres_paciente='María',
-    primer_apellido_paciente='López',
-    segundo_apellido_paciente='Martínez',
-    correo_paciente='maria.lopez@example.com',
-    telefono_paciente='987654321',
-    fecha_nacimiento_paciente='1990-05-15',
+    rut_paciente='21235179-2',
+    nombres_paciente='Samuel',
+    primer_apellido_paciente='Vallejos',
+    segundo_apellido_paciente='Millanao',
+    correo_paciente='gokussj4ssvm@gmail.com',
+    telefono_paciente='995067507',
+    fecha_nacimiento_paciente='2000-05-15',
     direccion_paciente='Av. Siempre Viva 123',
-    genero_paciente='F'
+    genero_paciente='M'
 )
 paciente1.save()
 
 usuario_paciente2 = Usuario(
-    rut='12345679-4',
-    email='carlos.sanchez@example.com',
-    nombre='Carlos',
-    apellido='Sánchez'
+    rut='24787781-9',
+    email='di.cordova@duocuc.cl',
+    nombre='Diego',
+    apellido='Cordova'
 )
 usuario_paciente2.set_password('contrasena123')
 usuario_paciente2.save()
 
 paciente2 = Paciente(
     usuario=usuario_paciente2,  
-    rut_paciente='12345679-4',
-    nombres_paciente='Carlos',
-    primer_apellido_paciente='Sánchez',
-    segundo_apellido_paciente='Torres',
-    correo_paciente='carlos.sanchez@example.com',
-    telefono_paciente='123987456',
-    fecha_nacimiento_paciente='1995-08-20',
+    rut_paciente='24787781-9',
+    nombres_paciente='Diego',
+    primer_apellido_paciente='Cordova',
+    segundo_apellido_paciente='Sejas',
+    correo_paciente='di.cordova@duocuc.cl',
+    telefono_paciente='958741254',
+    fecha_nacimiento_paciente='2000-08-20',
     direccion_paciente='Calle Falsa 456',
     genero_paciente='M'
 )
 paciente2.save()
-
-# Crear pacientes para el usuario compartido
-paciente_compartido = Paciente(
-    usuario=usuario_doctor3,  
-    rut_paciente='54678912-3',
-    nombres_paciente='Carlos',
-    primer_apellido_paciente='Soto',
-    segundo_apellido_paciente='Fernández',
-    correo_paciente='carlos.soto@paciente.com',
-    telefono_paciente='987654321',
-    fecha_nacimiento_paciente='1985-03-10',
-    direccion_paciente='Av. Independencia 456',
-    genero_paciente='M'
-)
-paciente_compartido.save()
 
 # Crear clínicas
 clinica1 = Clinica(
@@ -213,7 +174,6 @@ informe2.save()
 
 DoctorClinica.objects.create(doctor=doctor1, sede=nueva_sede1)
 DoctorClinica.objects.create(doctor=doctor2, sede=nueva_sede2)
-DoctorClinica.objects.create(doctor=doctor3, sede=nueva_sede1)
 
 # Crear usuarios para doctores adicionales
 usuario_doctor4 = Usuario(
@@ -431,9 +391,9 @@ from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinic
 from django.utils import timezone
 import datetime
 
-doctor = Doctor.objects.get(rut_doctor="12345678-1")  # Reemplaza con el RUT de un doctor existente
+doctor = Doctor.objects.get(rut_doctor="20637502-7")  # Reemplaza con el RUT de un doctor existente
 
-fecha = datetime.date(2024, 12, 17)
+fecha = datetime.date(2024, 12, 10)
 horas = ["09:00", "10:00", "11:00", "14:00", "15:00"]
 
 for hora in horas:
@@ -447,14 +407,66 @@ for hora in horas:
 
 print("Horas disponibles agregadas.")
 
-exit()
+doctor = Doctor.objects.get(rut_doctor="21059713-1")  # Reemplaza con el RUT de un doctor existente
 
+fecha = datetime.date(2024, 12, 10)
+horas = ["09:00", "10:00", "11:00", "14:00", "15:00"]
+
+for hora in horas:
+    hora_disponible = datetime.datetime.strptime(hora, "%H:%M").time()
+    DisponibilidadDoctor.objects.get_or_create(
+        doctor=doctor,
+        fecha=fecha,
+        hora=hora_disponible,
+        defaults={'disponible': True}
+    )
+
+print("Horas disponibles agregadas.")
+
+# Crear planes
+Plan.objects.create(
+    id_plan=1,
+    nombre='Plan 1 mes',
+    descripcion='Acceso 1 mes al consultorio',
+    precio=2000,
+    tipo='Paciente'
+)
+
+Plan.objects.create(
+    id_plan=2,  # Clave primaria correcta
+    nombre='Plan X6 meses',
+    descripcion='Acceso por 6 meses al consultorio',
+    precio=10000,
+    tipo='Paciente'
+)
+
+Plan.objects.create(
+    id_plan=3,  # Clave primaria correcta
+    nombre='Plan 1 año',
+    descripcion='Acceso 1 año al consultorio',
+    precio=18000,
+    tipo='Paciente'
+)
+
+# Crear suscripción
+paciente = Paciente.objects.get(rut_paciente="21235179-2")  # Asegúrate de que el paciente exista
+plan = Plan.objects.get(id_plan=1)  # Asegúrate de que el plan exista
+
+Suscripcion.objects.create(
+    paciente=paciente,
+    plan=plan,
+    fecha_inicio=now(),
+    fecha_fin=now() + timedelta(days=30),  # Vigencia de 30 días
+    renovado=False
+)
+
+exit()
 
 -------------------------------------------------------------------------------------------------------
 
 por si hay que eliminar los datos de la db
 
-from consultorioCys.models import Usuario, Doctor, Paciente, Clinica, SedeClinica, Informe, DoctorClinica
+from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica, DisponibilidadDoctor, Plan, Suscripcion
 
 Usuario.objects.all().delete()
 Doctor.objects.all().delete()
@@ -463,34 +475,5 @@ Clinica.objects.all().delete()
 SedeClinica.objects.all().delete()
 Informe.objects.all().delete()
 DoctorClinica.objects.all().delete()
-
-
-
-class Paciente(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    rut_paciente = models.CharField(max_length=10, primary_key=True)  # RUT Paciente
-    primer_nombres_paciente = models.CharField(max_length=100)  # Nombre/s Paciente
-    segundo_nombres_paciente = models.CharField(max_length=100, blank=True, null=True)  # Segundo Nombre (Opcional)
-    tercer_nombres_paciente = models.CharField(max_length=100, blank=True, null=True)  # Tercer Nombre (Opcional)
-    cuarto_nombres_paciente = models.CharField(max_length=100, blank=True, null=True) 
-    primer_apellido_paciente = models.CharField(max_length=50)  # Primer Apellido Paciente
-    segundo_apellido_paciente = models.CharField(max_length=50, blank=True)  # Segundo Apellido Paciente
-    correo_paciente = models.EmailField(max_length=100)  # Correo Paciente
-    telefono_paciente = models.CharField(max_length=15)  # N° Teléfono Paciente
-    fecha_nacimiento_paciente = models.DateField(null=True, blank=True)  # Fecha de Nacimiento Paciente
-    direccion_paciente = models.CharField(max_length=100, blank=True)  # Dirección Paciente (Opcional)
-    archivo = models.FileField(upload_to='archivos_pacientes/', blank=True, null=True)
-
-    GENDER_CHOICES = [
-        ('M', 'Masculino'),
-        ('F', 'Femenino'),
-        ('NB', 'No binario'),
-    ]
-    genero_paciente = models.CharField(max_length=2, choices=GENDER_CHOICES)  # Género
-
-    class Meta:
-        verbose_name = "Paciente"
-        verbose_name_plural = "Pacientes"
-
-    def __str__(self):
-        return f"{self.primer_nombres_paciente} {self.primer_apellido_paciente}"
+Plan.objects.all().delete()
+Suscripcion.objects.all().delete()

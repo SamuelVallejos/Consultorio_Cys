@@ -11,13 +11,13 @@
                     <h4>{{ plan.nombre }}</h4>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">${{ plan.precio }} CLP / mes</h5>
+                    <h5 class="card-title">${{ plan.precio|floatformat:0 }} CLP / mes</h5>
                     <ul class="list-unstyled mt-3 mb-4">
                         <li>{{ plan.descripcion }}</li>
                     </ul>
                     <form method="POST">
                         {% csrf_token %}
-                        <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                        <input type="hidden" name="plan_id" value="{{ plan.id_plan }}">
                         <button type="submit" class="btn btn-primary">Seleccionar</button>
                     </form>
                 </div>

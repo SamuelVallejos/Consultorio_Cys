@@ -133,14 +133,12 @@ class Informe(models.Model):
     fecha_informe = models.DateTimeField(auto_now_add=True)  # Fecha del Informe (subido)
     documentos_extra = models.FileField(upload_to='documentos_extra/', blank=True)  # Documentos extras
     
-
     class Meta:
         verbose_name = "Informe"
         verbose_name_plural = "Informes"
 
     def __str__(self):
         return f"Informe: {self.titulo_informe} - Paciente: {self.paciente}"
-
 
 class PacienteInforme(models.Model):
     id_paciente_informe = models.AutoField(primary_key=True)  # ID autoincrementable
@@ -154,7 +152,6 @@ class PacienteInforme(models.Model):
 
     def __str__(self):
         return f"Informe de {self.paciente} - ID: {self.informe.id_informe}"
-    
     
 class Cita(models.Model):
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
@@ -182,9 +179,8 @@ class DisponibilidadDoctor(models.Model):
     def __str__(self):
         return f"{self.doctor} - {self.fecha} {self.hora} ({'Disponible' if self.disponible else 'No disponible'})"
     
-
-# Nuevos modelos para Plan y Suscripcion
 class Plan(models.Model):
+    id_plan = models.AutoField(primary_key=True)  # Clave primaria
     nombre = models.CharField(max_length=50)
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
@@ -193,19 +189,15 @@ class Plan(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class Suscripcion(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, db_column='id_plan')  # Conexión con Plan
     fecha_inicio = models.DateTimeField(default=timezone.now)
-    fecha_fin = models.DateTimeField()
+    fecha_fin = models.DateTimeField(null=True, blank=True)
     renovado = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.usuario.nombre} - {self.plan.nombre}"
-
-
-#Tarjetas y metodo de pago
+        return f"{self.paciente.nombres_paciente} - {self.plan.nombre}"
 
 class MetodoPago(models.Model):
     usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
@@ -216,8 +208,6 @@ class MetodoPago(models.Model):
 
     def __str__(self):
         return f"{self.tarjeta_tipo} - {self.tarjeta_numero[-4:]}"
-    
-
 
 class PagoForm(forms.Form):
     tarjeta_numero = forms.CharField(max_length=16, min_length=16, label="Número de Tarjeta")
