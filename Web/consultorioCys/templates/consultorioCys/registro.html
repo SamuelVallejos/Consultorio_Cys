@@ -1,0 +1,81 @@
+{% extends "consultorioCys/base_generic.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Registro de Usuario</h2>
+
+    <!-- Registro de Paciente -->
+    <div class="card mb-4">
+        <div class="card-header text-white bg-primary">Registro de Paciente</div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="tipo_registro" value="paciente">
+
+                <div class="mb-3">
+                    <label for="rut_paciente" class="form-label">RUT</label>
+                    <input type="text" class="form-control" id="rut_paciente" name="rut_paciente" placeholder="Ej: 12345678-9" required>
+                </div>
+                <div class="mb-3">
+                    <label for="nombre_paciente" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="nombre_paciente" name="nombre_paciente" required>
+                </div>
+                <div class="mb-3">
+                    <label for="apellido_paciente" class="form-label">Apellido</label>
+                    <input type="text" class="form-control" id="apellido_paciente" name="apellido_paciente" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email_paciente" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email_paciente" name="email_paciente" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password_paciente" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="password_paciente" name="password_paciente" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password_paciente" class="form-label">Confirmar Contraseña</label>
+                    <input type="password" class="form-control" id="confirm_password_paciente" name="confirm_password_paciente" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar Paciente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Registro de Doctor -->
+    <div class="card">
+        <div class="card-header text-white bg-secondary">Registro de Doctor</div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="tipo_registro" value="doctor">
+
+                <div class="mb-3">
+                    <label for="rut_doctor" class="form-label">RUT</label>
+                    <input type="text" class="form-control" id="rut_doctor" name="rut_doctor" placeholder="Ej: 12345678-9" required>
+                </div>
+                <div class="mb-3">
+                    <label for="nombre_doctor" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="nombre_doctor" name="nombre_doctor" required>
+                </div>
+                <div class="mb-3">
+                    <label for="apellido_doctor" class="form-label">Apellido</label>
+                    <input type="text" class="form-control" id="apellido_doctor" name="apellido_doctor" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email_doctor" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email_doctor" name="email_doctor" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password_doctor" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="password_doctor" name="password_doctor" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password_doctor" class="form-label">Confirmar Contraseña</label>
+                    <input type="password" class="form-control" id="confirm_password_doctor" name="confirm_password_doctor" required>
+                </div>
+                <button type="submit" class="btn btn-secondary">Registrar Doctor</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -18,6 +18,7 @@ urlpatterns = [
     path('cambiar_clave_usuario/', views.cambiar_clave_usuario, name='cambiar_clave_usuario'),
     path('restablecer_clave/', views.restablecer_clave, name="restablecer_clave"), 
     path('form_cita/', views.form_cita, name="form_cita"), 
+    path('registro/', views.registro_view, name='registro'),
     path('informe_doctores/', views.informe_doctores, name='informe_doctores'),
     path('buscar_paciente/<str:rut_paciente>/', views.buscar_paciente, name='buscar_paciente'),
     path('crear_informe/<str:rut_paciente>/', views.crear_informe, name='crear_informe'),

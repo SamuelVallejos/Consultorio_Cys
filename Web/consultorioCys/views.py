@@ -88,6 +88,89 @@ def inicio(request):
         'cita_existente': cita_existente
     })
 
+def registro_view(request):
+    if request.method == 'POST':
+        tipo_registro = request.POST['tipo_registro']
+
+        if tipo_registro == 'paciente':
+            # Datos de paciente
+            rut = request.POST['rut_paciente']
+            nombre = request.POST['nombre_paciente']
+            apellido = request.POST['apellido_paciente']
+            email = request.POST['email_paciente']
+            password = request.POST['password_paciente']
+            confirm_password = request.POST['confirm_password_paciente']
+
+            if password != confirm_password:
+                messages.error(request, "Las contraseñas no coinciden.")
+                return redirect('registro')
+
+            try:
+                usuario = Usuario.objects.create(
+                    rut=rut,
+                    nombre=nombre,
+                    apellido=apellido,
+                    email=email,
+                )
+                usuario.set_password(password)
+                usuario.save()
+
+                Paciente.objects.create(
+                    usuario=usuario,
+                    rut_paciente=rut,
+                    nombres_paciente=nombre,
+                    primer_apellido_paciente=apellido,
+                    correo_paciente=email,
+                )
+
+                messages.success(request, "Paciente registrado correctamente.")
+                return redirect('login')
+
+            except Exception as e:
+                messages.error(request, f"Error al registrar paciente: {str(e)}")
+                return redirect('registro')
+
+        elif tipo_registro == 'doctor':
+            # Datos de doctor
+            rut = request.POST['rut_doctor']
+            nombre = request.POST['nombre_doctor']
+            apellido = request.POST['apellido_doctor']
+            email = request.POST['email_doctor']
+            password = request.POST['password_doctor']
+            confirm_password = request.POST['confirm_password_doctor']
+
+            if password != confirm_password:
+                messages.error(request, "Las contraseñas no coinciden.")
+                return redirect('registro')
+
+            try:
+                usuario = Usuario.objects.create(
+                    rut=rut,
+                    nombre=nombre,
+                    apellido=apellido,
+                    email=email,
+                )
+                usuario.set_password(password)
+                usuario.save()
+
+                Doctor.objects.create(
+                    usuario=usuario,
+                    rut_doctor=rut,
+                    nombres_doctor=nombre,
+                    primer_apellido_doctor=apellido,
+                    correo_doctor=email,
+                    especialidad_doctor="General",
+                )
+
+                messages.success(request, "Doctor registrado correctamente.")
+                return redirect('login')
+
+            except Exception as e:
+                messages.error(request, f"Error al registrar doctor: {str(e)}")
+                return redirect('registro')
+
+    return render(request, 'consultorioCys/registro.html')
+
 @login_required
 def cambiar_clave_usuario(request):
     if request.method == 'POST':
