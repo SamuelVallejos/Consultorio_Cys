@@ -5,16 +5,18 @@
   <div class="form-container shadow-lg p-4 rounded" style="max-width: 400px; background-color: #ffffff;">
     <form method="POST">
       {% csrf_token %}
-      <h3 class="text-center text-primary mb-4"><i class="bi bi-person-circle me-2"></i>Inicio de Sesión del Paciente</h3>
+      <h3 class="text-center text-primary mb-4">
+        <i class="bi bi-lock me-2"></i>Cambiar Contraseña
+      </h3>
 
-      <!-- Campo de RUT -->
+      <!-- Campo de Contraseña Actual -->
       <div class="mb-3 position-relative">
-        <label for="rut" class="form-label text-primary">RUT del Paciente:</label>
+        <label for="clave-actual" class="form-label text-primary">Contraseña Actual:</label>
         <div class="input-group">
-          <input type="text" id="rut" class="form-control" name="rut" value="{{ paciente.rut_paciente }}"
-            placeholder="Ingresa el RUT del paciente" required>
+          <input type="password" id="clave-actual" name="old_password" class="form-control"
+            placeholder="Ingresa tu contraseña actual" required>
           <span class="position-absolute end-0 top-50 translate-middle-y me-2 toggle-password"
-            data-password-target="rut" style="cursor: pointer;">
+            data-password-target="clave-actual" style="cursor: pointer;">
             <i class="bi bi-eye-slash text-primary"></i>
           </span>
         </div>
@@ -24,7 +26,7 @@
       <div class="mb-3 position-relative">
         <label for="nueva-clave" class="form-label text-primary">Nueva Contraseña:</label>
         <div class="input-group">
-          <input type="password" id="nueva-clave" name="nueva_clave" class="form-control"
+          <input type="password" id="nueva-clave" name="new_password" class="form-control"
             placeholder="Ingresa la nueva contraseña" required>
           <span class="position-absolute end-0 top-50 translate-middle-y me-2 toggle-password"
             data-password-target="nueva-clave" style="cursor: pointer;">
@@ -37,7 +39,7 @@
       <div class="mb-3 position-relative">
         <label for="confirmar-clave" class="form-label text-primary">Confirmar Nueva Contraseña:</label>
         <div class="input-group">
-          <input type="password" id="confirmar-clave" name="confirmar_clave" class="form-control"
+          <input type="password" id="confirmar-clave" name="confirm_password" class="form-control"
             placeholder="Confirma la nueva contraseña" required>
           <span class="position-absolute end-0 top-50 translate-middle-y me-2 toggle-password"
             data-password-target="confirmar-clave" style="cursor: pointer;">
@@ -46,17 +48,20 @@
         </div>
       </div>
 
-      <!-- Botón de Inicio de Sesión -->
-      <div class="d-grid">
+      <!-- Botón para Cambiar Contraseña -->
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" onclick="history.back();">
+          <i class="bi bi-arrow-left me-2"></i>Volver
+        </button>
         <button type="submit" class="btn btn-primary">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+          <i class="bi bi-check-circle me-2"></i>Cambiar Contraseña
         </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Script para Mostrar/Ocultar Contenido -->
+<!-- Script para Mostrar/Ocultar Contraseña -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const togglePasswordElements = document.querySelectorAll('.toggle-password');
@@ -67,8 +72,7 @@
         const inputField = document.getElementById(targetId);
 
         if (inputField) {
-          const type = inputField.getAttribute('type') === 'password' || inputField.getAttribute('type') === 'text' ? 
-            (inputField.getAttribute('type') === 'password' ? 'text' : 'password') : inputField.getAttribute('type');
+          const type = inputField.getAttribute('type') === 'password' ? 'text' : 'password';
           inputField.setAttribute('type', type);
 
           // Cambiar el ícono

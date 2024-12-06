@@ -64,3 +64,35 @@ form input[type="submit"] {
     width: 100px;
     height: 100px;
 }
+
+.section {
+    display: none;
+}
+
+.section:not(.d-none) {
+    display: block;
+}
+
+.nav {
+    font-size: 16px;
+    line-height: 2.5;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #000;
+    /* Texto negro */
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+    /* Solo subrayado al pasar el mouse */
+    color: #007bff;
+    /* Cambia el color al pasar el mouse */
+}
+
+.nav-link.active {
+    color: #007bff;
+    /* Color para el texto activo */
+}

@@ -535,60 +535,80 @@ def login_view(request):
 def perfil_view(request):
     usuario = request.user
 
-    # Obtener el plan y la suscripción actual del usuario
+    # Variables iniciales
     plan_actual = None
     fecha_fin = None
     suscripcion = None
+    datos_usuario = {}
 
     # Si el usuario es un paciente
     if hasattr(usuario, 'paciente'):
         paciente = usuario.paciente
-        suscripcion = Suscripcion.objects.filter(paciente=paciente).last()
+        suscripcion = Suscripcion.objects.filter(paciente=paciente).order_by('-fecha_inicio').first()
+        if suscripcion:
+            plan_actual = suscripcion.plan
+            fecha_fin = suscripcion.fecha_fin
+        # Datos específicos del paciente
+        datos_usuario = {
+            'nombre': paciente.nombres_paciente,
+            'apellido': f"{paciente.primer_apellido_paciente} {paciente.segundo_apellido_paciente or ''}".strip(),
+            'email': paciente.correo_paciente,
+            'telefono': paciente.telefono_paciente,
+            'fecha_nacimiento': paciente.fecha_nacimiento_paciente,
+            'genero': paciente.get_genero_paciente_display(),
+            'direccion': paciente.direccion_paciente,
+        }
 
-    # Si el usuario es un doctor (opcional, si aplica)
-    elif hasattr(usuario, 'doctor'):
-        # Puedes manejar la lógica de suscripciones para doctores aquí si es necesario
-        pass
+        # Actualizar datos del paciente
+        if request.method == 'POST':
+            email = request.POST.get('email')
+            telefono = request.POST.get('telefono')
+            direccion = request.POST.get('direccion')
 
-    if suscripcion:
-        plan_actual = suscripcion.plan
-        fecha_fin = suscripcion.fecha_fin
-
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        telefono = request.POST.get('telefono')
-        direccion = request.POST.get('direccion')
-
-        # Actualizar datos comunes
-        if email:
-            usuario.email = email
-
-        # Si el usuario es un doctor
-        if hasattr(usuario, 'doctor'):
-            doctor = usuario.doctor
-            if telefono:
-                doctor.telefono_doctor = telefono
-            doctor.save()
-
-        # Si el usuario es un paciente
-        elif hasattr(usuario, 'paciente'):
-            paciente = usuario.paciente
+            if email:
+                paciente.correo_paciente = email
             if telefono:
                 paciente.telefono_paciente = telefono
             if direccion:
                 paciente.direccion_paciente = direccion
             paciente.save()
+            messages.success(request, 'Tus datos se han actualizado correctamente.')
+            return redirect('perfil')
 
-        usuario.save()
-        messages.success(request, 'Tus datos han sido actualizados exitosamente.')
-        return redirect('perfil')
+    # Si el usuario es un doctor
+    elif hasattr(usuario, 'doctor'):
+        doctor = usuario.doctor
+        datos_usuario = {
+            'nombre': doctor.nombres_doctor,
+            'apellido': f"{doctor.primer_apellido_doctor} {doctor.segundo_apellido_doctor or ''}".strip(),
+            'email': doctor.correo_doctor,
+            'telefono': doctor.telefono_doctor,
+            'fecha_nacimiento': doctor.fecha_nacimiento_doctor,
+            'especialidad': doctor.especialidad_doctor,
+        }
+
+        # Actualizar datos del doctor
+        if request.method == 'POST':
+            email = request.POST.get('email')
+            telefono = request.POST.get('telefono')
+            especialidad = request.POST.get('especialidad')
+
+            if email:
+                doctor.correo_doctor = email
+            if telefono:
+                doctor.telefono_doctor = telefono
+            if especialidad:
+                doctor.especialidad_doctor = especialidad
+            doctor.save()
+            messages.success(request, 'Tus datos se han actualizado correctamente.')
+            return redirect('perfil')
 
     return render(request, 'consultorioCys/perfil.html', {
         'usuario': usuario,
-        'doctor': getattr(usuario, 'doctor', None),
-        'paciente': getattr(usuario, 'paciente', None),
+        'datos_usuario': datos_usuario,
         'plan_actual': plan_actual,
         'fecha_fin': fecha_fin,
+        'suscripcion': suscripcion,
     })
 
 @login_required
