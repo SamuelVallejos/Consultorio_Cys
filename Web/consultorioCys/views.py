@@ -43,8 +43,14 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .ai_processor import preprocess_text
 from django.core.paginator import Paginator
-from .models import Plan, Suscripcion
+from .models import Plan, Suscripcion, Transaccion
 from django.utils.timezone import now, timedelta
+from django.core.mail import send_mail
+from .models import MetodoPago
+from .forms import PagoForm
+
+
+
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -1043,16 +1049,15 @@ def seleccionar_plan(request):
     if request.method == 'POST':
         plan_id = request.POST.get('plan_id')
         plan = Plan.objects.get(id=plan_id)
-        fecha_fin = now() + timedelta(days=30)
+        fecha_fin = now() + timedelta(days=30)  # Duración de 1 mes
         Suscripcion.objects.create(
             usuario=request.user,
             plan=plan,
             fecha_fin=fecha_fin
         )
         return redirect('perfil')
-    planes = Plan.objects.all()  # Obtiene todos los planes
+    planes = Plan.objects.all()
     return render(request, 'consultorioCys/seleccionar_plan.html', {'planes': planes})
-
 # Vista para renovar suscripción
 def renovar_suscripcion(request):
     if not request.user.is_authenticated:
@@ -1076,9 +1081,64 @@ def renovar_suscripcion(request):
 
 
 # Middleware para validar suscripción activa
-def validar_suscripcion(request):
+class ValidarSuscripcionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
+            if not suscripcion or suscripcion.fecha_fin < now():
+                return redirect('renovar_suscripcion')  # Redirigir si la suscripción no es válida
+        return self.get_response(request)
+
+#Pagos
+
+def procesar_pago(request):
+    if not request.user.is_authenticated:
+        return redirect('login')  # Redirigir a login si no está autenticado
+
+    # Obtener la suscripción actual del usuario
+    suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
+
+    if not suscripcion:
+        messages.error(request, "No tienes una suscripción activa para renovar.")
+        return redirect('seleccionar_plan')
+
+    plan = suscripcion.plan
+    monto = plan.precio  # Supongamos que el modelo Plan tiene un campo precio
+    nueva_fecha_fin = max(suscripcion.fecha_fin, now()) + timedelta(days=30)  # Extender 30 días
+
+    if request.method == 'POST':
+        form = PagoForm(request.POST)
+        if form.is_valid():
+            # Registrar transacción
+            transaccion = Transaccion.objects.create(
+                usuario=request.user,
+                plan=plan,
+                monto=monto,
+                estado="Exitoso"
+            )
+
+            # Actualizar suscripción
+            suscripcion.fecha_fin = nueva_fecha_fin
+            suscripcion.renovado = True
+            suscripcion.save()
+
+            messages.success(request, f"El pago para renovar tu plan '{plan.nombre}' fue exitoso. Tu suscripción está extendida hasta {nueva_fecha_fin.strftime('%d/%m/%Y')}.")
+            return redirect('perfil')
+    else:
+        form = PagoForm()
+
+    return render(request, 'consultorioCys/procesar_pago.html', {
+        'form': form,
+        'plan': plan,
+        'monto': monto,
+        'nueva_fecha_fin': nueva_fecha_fin,
+    })
+def historial_transacciones(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
-    if suscripcion and suscripcion.fecha_fin < now():
-        return redirect('renovar_suscripcion')
+
+    transacciones = Transaccion.objects.filter(usuario=request.user).order_by('-fecha')
+    return render(request, 'consultorioCys/historial_transacciones.html', {'transacciones': transacciones})

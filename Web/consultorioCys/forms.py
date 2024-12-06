@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Group
 from .models import Doctor, Paciente, Informe, Cita
+from django.utils.timezone import now
 
 class RUTAuthenticationForm(forms.Form):
     rut = forms.CharField(label="RUT", max_length=10)
@@ -145,3 +146,10 @@ class CitaForm(forms.ModelForm):
             'hora_cita': forms.TimeInput(attrs={'type': 'time'}),
             'motivo_consulta': forms.TextInput(attrs={'placeholder': 'Motivo de la consulta'}),
         }
+
+class PagoForm(forms.Form):
+    tarjeta_numero = forms.CharField(max_length=16, min_length=16, label="Número de Tarjeta")
+    tarjeta_tipo = forms.ChoiceField(choices=[('Visa', 'Visa'), ('Mastercard', 'Mastercard')], label="Tipo de Tarjeta")
+    vencimiento_mes = forms.ChoiceField(choices=[(str(i), f"{i:02d}") for i in range(1, 13)], label="Mes de Vencimiento")
+    vencimiento_anio = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(now().year, now().year + 10)], label="Año de Vencimiento")
+    cvv = forms.CharField(max_length=3, min_length=3, label="CVV", widget=forms.PasswordInput)

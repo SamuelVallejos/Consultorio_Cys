@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
+from django.utils.timezone import now
+from django import forms
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, rut, password=None, **extra_fields):
@@ -201,3 +203,35 @@ class Suscripcion(models.Model):
 
     def __str__(self):
         return f"{self.usuario.nombre} - {self.plan.nombre}"
+
+
+#Tarjetas y metodo de pago
+
+class MetodoPago(models.Model):
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    tarjeta_numero = models.CharField(max_length=16)  # Últimos 4 dígitos de la tarjeta
+    tarjeta_tipo = models.CharField(max_length=20)  # Visa, Mastercard, etc.
+    vencimiento = models.DateField()
+    creado_en = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return f"{self.tarjeta_tipo} - {self.tarjeta_numero[-4:]}"
+    
+
+
+class PagoForm(forms.Form):
+    tarjeta_numero = forms.CharField(max_length=16, min_length=16, label="Número de Tarjeta")
+    tarjeta_tipo = forms.ChoiceField(choices=[('Visa', 'Visa'), ('Mastercard', 'Mastercard')], label="Tipo de Tarjeta")
+    vencimiento_mes = forms.ChoiceField(choices=[(str(i), f"{i:02d}") for i in range(1, 13)], label="Mes de Vencimiento")
+    vencimiento_anio = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(now().year, now().year + 10)], label="Año de Vencimiento")
+    cvv = forms.CharField(max_length=3, min_length=3, label="CVV", widget=forms.PasswordInput)
+
+class Transaccion(models.Model):
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    plan = models.ForeignKey('Plan', on_delete=models.CASCADE)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha = models.DateTimeField(default=now)
+    estado = models.CharField(max_length=20, choices=[('Exitoso', 'Exitoso'), ('Fallido', 'Fallido')])
+
+    def __str__(self):
+        return f"{self.usuario} - {self.plan.nombre} - {self.estado}"

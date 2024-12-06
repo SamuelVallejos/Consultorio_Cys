@@ -1,0 +1,25 @@
+{% extends "consultorioCys/base_generic.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Procesar Pago</h2>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h4 class="card-title">Detalles de Renovación</h4>
+            <ul class="list-unstyled">
+                <li><strong>Plan:</strong> {{ plan.nombre }}</li>
+                <li><strong>Monto:</strong> ${{ monto }}</li>
+                <li><strong>Extensión Hasta:</strong> {{ nueva_fecha_fin|date:"d/m/Y" }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <form method="POST" class="mt-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success">Confirmar y Pagar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

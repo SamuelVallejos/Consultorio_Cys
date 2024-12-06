@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'consultorioCys.middleware.ValidarSuscripcionMiddleware',
 ]
 
 ROOT_URLCONF = 'capstone.urls'
