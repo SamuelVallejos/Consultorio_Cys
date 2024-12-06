@@ -43,7 +43,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .ai_processor import preprocess_text
 from django.core.paginator import Paginator
-from .models import Plan, Suscripcion, Transaccion
+from .models import Plan, Suscripcion, Transaccion, MetodoPago
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
 from .models import MetodoPago
@@ -1098,6 +1098,12 @@ def procesar_pago(request):
     if not request.user.is_authenticated:
         return redirect('login')  # Redirigir a login si no está autenticado
 
+    # Validar si el usuario tiene un método de pago registrado
+    metodo_pago = MetodoPago.objects.filter(usuario=request.user).last()
+    if not metodo_pago:
+        messages.error(request, "No tienes un método de pago registrado. Por favor, agrega uno antes de continuar.")
+        return redirect('perfil')
+
     # Obtener la suscripción actual del usuario
     suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
 
@@ -1106,7 +1112,7 @@ def procesar_pago(request):
         return redirect('seleccionar_plan')
 
     plan = suscripcion.plan
-    monto = plan.precio  # Supongamos que el modelo Plan tiene un campo precio
+    monto = plan.precio  # Precio del plan
     nueva_fecha_fin = max(suscripcion.fecha_fin, now()) + timedelta(days=30)  # Extender 30 días
 
     if request.method == 'POST':
@@ -1125,7 +1131,19 @@ def procesar_pago(request):
             suscripcion.renovado = True
             suscripcion.save()
 
-            messages.success(request, f"El pago para renovar tu plan '{plan.nombre}' fue exitoso. Tu suscripción está extendida hasta {nueva_fecha_fin.strftime('%d/%m/%Y')}.")
+            # Enviar correo de confirmación
+            try:
+                send_mail(
+                    subject="Confirmación de Pago",
+                    message=f"Hola {request.user.nombre},\n\nTu pago para el plan '{plan.nombre}' por ${monto} fue exitoso. Tu suscripción está extendida hasta {nueva_fecha_fin.strftime('%d/%m/%Y')}.\n\nGracias por confiar en Consultorio Cys.",
+                    from_email="soporte@consultoriocys.com",
+                    recipient_list=[request.user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, "El pago fue procesado exitosamente. Se ha enviado un correo de confirmación.")
+            except Exception as e:
+                messages.error(request, "El pago fue exitoso, pero no se pudo enviar el correo de confirmación.")
+            
             return redirect('perfil')
     else:
         form = PagoForm()
