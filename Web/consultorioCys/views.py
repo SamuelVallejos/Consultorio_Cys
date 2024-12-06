@@ -49,9 +49,6 @@ from django.core.mail import send_mail
 from .models import MetodoPago
 from .forms import PagoForm
 
-
-
-
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
     if request.method == 'POST':
@@ -90,86 +87,70 @@ def inicio(request):
 
 def registro_view(request):
     if request.method == 'POST':
-        tipo_registro = request.POST['tipo_registro']
+        rut = request.POST['rut']
+        nombre = request.POST['nombre']
+        apellido = request.POST['apellido']
+        email = request.POST['email']
+        password = request.POST['password']
+        confirm_password = request.POST['confirm_password']
+        tipo_usuario = request.POST['tipo_usuario']
+        plan_id = request.POST['plan']
+        tarjeta_numero = request.POST['tarjeta_numero']
+        tarjeta_tipo = request.POST['tarjeta_tipo']
 
-        if tipo_registro == 'paciente':
-            # Datos de paciente
-            rut = request.POST['rut_paciente']
-            nombre = request.POST['nombre_paciente']
-            apellido = request.POST['apellido_paciente']
-            email = request.POST['email_paciente']
-            password = request.POST['password_paciente']
-            confirm_password = request.POST['confirm_password_paciente']
+        if password != confirm_password:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect('registro')
 
-            if password != confirm_password:
-                messages.error(request, "Las contraseñas no coinciden.")
-                return redirect('registro')
+        try:
+            usuario = Usuario.objects.create(
+                rut=rut,
+                nombre=nombre,
+                apellido=apellido,
+                email=email,
+            )
+            usuario.set_password(password)
+            usuario.save()
 
-            try:
-                usuario = Usuario.objects.create(
-                    rut=rut,
-                    nombre=nombre,
-                    apellido=apellido,
-                    email=email,
-                )
-                usuario.set_password(password)
-                usuario.save()
-
+            if tipo_usuario == 'paciente':
                 Paciente.objects.create(
                     usuario=usuario,
                     rut_paciente=rut,
                     nombres_paciente=nombre,
                     primer_apellido_paciente=apellido,
                     correo_paciente=email,
+                    telefono_paciente=request.POST.get('telefono_paciente'),
+                    direccion_paciente=request.POST.get('direccion_paciente'),
                 )
-
-                messages.success(request, "Paciente registrado correctamente.")
-                return redirect('login')
-
-            except Exception as e:
-                messages.error(request, f"Error al registrar paciente: {str(e)}")
-                return redirect('registro')
-
-        elif tipo_registro == 'doctor':
-            # Datos de doctor
-            rut = request.POST['rut_doctor']
-            nombre = request.POST['nombre_doctor']
-            apellido = request.POST['apellido_doctor']
-            email = request.POST['email_doctor']
-            password = request.POST['password_doctor']
-            confirm_password = request.POST['confirm_password_doctor']
-
-            if password != confirm_password:
-                messages.error(request, "Las contraseñas no coinciden.")
-                return redirect('registro')
-
-            try:
-                usuario = Usuario.objects.create(
-                    rut=rut,
-                    nombre=nombre,
-                    apellido=apellido,
-                    email=email,
-                )
-                usuario.set_password(password)
-                usuario.save()
-
+            elif tipo_usuario == 'doctor':
                 Doctor.objects.create(
                     usuario=usuario,
                     rut_doctor=rut,
                     nombres_doctor=nombre,
                     primer_apellido_doctor=apellido,
                     correo_doctor=email,
-                    especialidad_doctor="General",
+                    especialidad_doctor=request.POST.get('especialidad_doctor'),
                 )
 
-                messages.success(request, "Doctor registrado correctamente.")
-                return redirect('login')
+            # Crear suscripción
+            plan = Plan.objects.get(id_plan=plan_id)
+            Suscripcion.objects.create(
+                paciente=Paciente.objects.get(usuario=usuario) if tipo_usuario == 'paciente' else None,
+                plan=plan,
+                fecha_inicio=now(),
+                fecha_fin=now() + timedelta(days=30),  # Vigencia de 30 días
+                renovado=False,
+            )
 
-            except Exception as e:
-                messages.error(request, f"Error al registrar doctor: {str(e)}")
-                return redirect('registro')
+            messages.success(request, "Registro y suscripción completados correctamente.")
+            return redirect('login')
 
-    return render(request, 'consultorioCys/registro.html')
+        except Exception as e:
+            messages.error(request, f"Error al registrar usuario: {str(e)}")
+            return redirect('registro')
+
+    planes = Plan.objects.all()
+    return render(request, 'consultorioCys/registro.html', {'planes': planes})
 
 @login_required
 def cambiar_clave_usuario(request):
@@ -554,10 +535,20 @@ def login_view(request):
 def perfil_view(request):
     usuario = request.user
 
-    # Obtener la suscripción actual
-    suscripcion = Suscripcion.objects.filter(usuario=usuario).last()
+    # Obtener el plan y la suscripción actual del usuario
     plan_actual = None
     fecha_fin = None
+    suscripcion = None
+
+    # Si el usuario es un paciente
+    if hasattr(usuario, 'paciente'):
+        paciente = usuario.paciente
+        suscripcion = Suscripcion.objects.filter(paciente=paciente).last()
+
+    # Si el usuario es un doctor (opcional, si aplica)
+    elif hasattr(usuario, 'doctor'):
+        # Puedes manejar la lógica de suscripciones para doctores aquí si es necesario
+        pass
 
     if suscripcion:
         plan_actual = suscripcion.plan
@@ -599,6 +590,31 @@ def perfil_view(request):
         'plan_actual': plan_actual,
         'fecha_fin': fecha_fin,
     })
+
+@login_required
+def mi_suscripcion(request):
+    usuario = request.user
+
+    # Inicializar valores
+    suscripcion = None
+    dias_restantes = None
+    plan_actual = None
+
+    # Verificar si el usuario está asociado a un paciente
+    if hasattr(usuario, 'paciente'):
+        paciente = usuario.paciente
+        suscripcion = Suscripcion.objects.filter(paciente=paciente).last()
+
+        if suscripcion:
+            plan_actual = suscripcion.plan
+            dias_restantes = (suscripcion.fecha_fin - now()).days if suscripcion.fecha_fin else None
+
+    return render(request, 'consultorioCys/mi_suscripcion.html', {
+        'suscripcion': suscripcion,
+        'plan_actual': plan_actual,
+        'dias_restantes': dias_restantes,
+    })
+
 def logout_view(request):
     logout(request)
     return redirect('inicio')
@@ -1099,17 +1115,18 @@ def descargar_como_pdf(request, path):
 # Vista para mostrar planes disponibles
 def seleccionar_plan(request):
     if request.method == 'POST':
-        plan_id = request.POST.get('plan_id')
-        plan = Plan.objects.get(id=plan_id)
+        plan_id = request.POST.get('plan_id')  # Obtener el id_plan enviado desde el formulario
+        plan = Plan.objects.get(id_plan=plan_id)  # Aquí cambiamos a id_plan
         fecha_fin = now() + timedelta(days=30)  # Duración de 1 mes
         Suscripcion.objects.create(
-            usuario=request.user,
+            paciente=Paciente.objects.get(usuario=request.user),  # Conectar con el paciente actual
             plan=plan,
-            fecha_fin=fecha_fin
+            fecha_fin=fecha_fin,
         )
         return redirect('perfil')
     planes = Plan.objects.all()
     return render(request, 'consultorioCys/seleccionar_plan.html', {'planes': planes})
+
 # Vista para renovar suscripción
 def renovar_suscripcion(request):
     if not request.user.is_authenticated:

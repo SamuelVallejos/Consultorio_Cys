@@ -3,79 +3,109 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="text-center">Registro de Usuario</h2>
-
-    <!-- Registro de Paciente -->
-    <div class="card mb-4">
-        <div class="card-header text-white bg-primary">Registro de Paciente</div>
-        <div class="card-body">
-            <form method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="tipo_registro" value="paciente">
-
-                <div class="mb-3">
-                    <label for="rut_paciente" class="form-label">RUT</label>
-                    <input type="text" class="form-control" id="rut_paciente" name="rut_paciente" placeholder="Ej: 12345678-9" required>
-                </div>
-                <div class="mb-3">
-                    <label for="nombre_paciente" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombre_paciente" name="nombre_paciente" required>
-                </div>
-                <div class="mb-3">
-                    <label for="apellido_paciente" class="form-label">Apellido</label>
-                    <input type="text" class="form-control" id="apellido_paciente" name="apellido_paciente" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email_paciente" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email_paciente" name="email_paciente" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password_paciente" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="password_paciente" name="password_paciente" required>
-                </div>
-                <div class="mb-3">
-                    <label for="confirm_password_paciente" class="form-label">Confirmar Contraseña</label>
-                    <input type="password" class="form-control" id="confirm_password_paciente" name="confirm_password_paciente" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Registrar Paciente</button>
-            </form>
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Tipo de Usuario -->
+        <div class="mb-3">
+            <label for="tipo_usuario" class="form-label">Tipo de Usuario</label>
+            <select class="form-select" id="tipo_usuario" name="tipo_usuario" required onchange="toggleFields()">
+                <option value="" disabled selected>Seleccione...</option>
+                <option value="paciente">Paciente</option>
+                <option value="doctor">Doctor</option>
+            </select>
         </div>
-    </div>
 
-    <!-- Registro de Doctor -->
-    <div class="card">
-        <div class="card-header text-white bg-secondary">Registro de Doctor</div>
-        <div class="card-body">
-            <form method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="tipo_registro" value="doctor">
-
-                <div class="mb-3">
-                    <label for="rut_doctor" class="form-label">RUT</label>
-                    <input type="text" class="form-control" id="rut_doctor" name="rut_doctor" placeholder="Ej: 12345678-9" required>
-                </div>
-                <div class="mb-3">
-                    <label for="nombre_doctor" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombre_doctor" name="nombre_doctor" required>
-                </div>
-                <div class="mb-3">
-                    <label for="apellido_doctor" class="form-label">Apellido</label>
-                    <input type="text" class="form-control" id="apellido_doctor" name="apellido_doctor" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email_doctor" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email_doctor" name="email_doctor" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password_doctor" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="password_doctor" name="password_doctor" required>
-                </div>
-                <div class="mb-3">
-                    <label for="confirm_password_doctor" class="form-label">Confirmar Contraseña</label>
-                    <input type="password" class="form-control" id="confirm_password_doctor" name="confirm_password_doctor" required>
-                </div>
-                <button type="submit" class="btn btn-secondary">Registrar Doctor</button>
-            </form>
+        <!-- Campos comunes -->
+        <div class="mb-3">
+            <label for="rut" class="form-label">RUT</label>
+            <input type="text" class="form-control" id="rut" name="rut" placeholder="Ej: 12345678-9" required>
         </div>
-    </div>
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" required>
+        </div>
+        <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input type="text" class="form-control" id="apellido" name="apellido" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="mb-3">
+            <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+        </div>
+
+        <!-- Campos adicionales para Paciente -->
+        <div id="paciente_fields" style="display: none;">
+            <div class="mb-3">
+                <label for="telefono_paciente" class="form-label">Teléfono</label>
+                <input type="text" class="form-control" id="telefono_paciente" name="telefono_paciente">
+            </div>
+            <div class="mb-3">
+                <label for="direccion_paciente" class="form-label">Dirección</label>
+                <input type="text" class="form-control" id="direccion_paciente" name="direccion_paciente">
+            </div>
+        </div>
+
+        <!-- Campos adicionales para Doctor -->
+        <div id="doctor_fields" style="display: none;">
+            <div class="mb-3">
+                <label for="especialidad_doctor" class="form-label">Especialidad</label>
+                <input type="text" class="form-control" id="especialidad_doctor" name="especialidad_doctor">
+            </div>
+        </div>
+
+        <!-- Selección de Plan -->
+        <div class="mb-3">
+            <label for="plan" class="form-label">Selecciona un Plan</label>
+            <select class="form-select" id="plan" name="plan" required>
+                {% for plan in planes %}
+                <option value="{{ plan.id_plan }}">{{ plan.nombre }} - ${{ plan.precio }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Información de Pago -->
+        <div class="mb-3">
+            <label for="tarjeta_numero" class="form-label">Número de Tarjeta</label>
+            <input type="text" class="form-control" id="tarjeta_numero" name="tarjeta_numero" required>
+        </div>
+        <div class="mb-3">
+            <label for="tarjeta_tipo" class="form-label">Tipo de Tarjeta</label>
+            <select class="form-select" id="tarjeta_tipo" name="tarjeta_tipo" required>
+                <option value="Visa">Visa</option>
+                <option value="Mastercard">Mastercard</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registrar</button>
+    </form>
 </div>
+
+<!-- Script para mostrar y ocultar campos -->
+<script>
+    function toggleFields() {
+        const tipoUsuario = document.getElementById('tipo_usuario').value;
+        const pacienteFields = document.getElementById('paciente_fields');
+        const doctorFields = document.getElementById('doctor_fields');
+
+        if (tipoUsuario === 'paciente') {
+            pacienteFields.style.display = 'block';
+            doctorFields.style.display = 'none';
+        } else if (tipoUsuario === 'doctor') {
+            pacienteFields.style.display = 'none';
+            doctorFields.style.display = 'block';
+        } else {
+            pacienteFields.style.display = 'none';
+            doctorFields.style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}
