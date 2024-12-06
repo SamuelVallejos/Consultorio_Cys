@@ -43,6 +43,8 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .ai_processor import preprocess_text
 from django.core.paginator import Paginator
+from .models import Plan, Suscripcion
+from django.utils.timezone import now, timedelta
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""
@@ -492,12 +494,21 @@ def login_view(request):
 
 @login_required
 def perfil_view(request):
+    usuario = request.user
+
+    # Obtener la suscripción actual
+    suscripcion = Suscripcion.objects.filter(usuario=usuario).last()
+    plan_actual = None
+    fecha_fin = None
+
+    if suscripcion:
+        plan_actual = suscripcion.plan
+        fecha_fin = suscripcion.fecha_fin
+
     if request.method == 'POST':
         email = request.POST.get('email')
         telefono = request.POST.get('telefono')
         direccion = request.POST.get('direccion')
-
-        usuario = request.user
 
         # Actualizar datos comunes
         if email:
@@ -524,18 +535,20 @@ def perfil_view(request):
         return redirect('perfil')
 
     return render(request, 'consultorioCys/perfil.html', {
-        'usuario': request.user,
-        'doctor': getattr(request.user, 'doctor', None),
-        'paciente': getattr(request.user, 'paciente', None),
+        'usuario': usuario,
+        'doctor': getattr(usuario, 'doctor', None),
+        'paciente': getattr(usuario, 'paciente', None),
+        'plan_actual': plan_actual,
+        'fecha_fin': fecha_fin,
     })
-
-
 def logout_view(request):
     logout(request)
     return redirect('inicio')
 
 def is_doctor(user):
     return user.groups.filter(name='Doctor').exists()
+
+
 
 @login_required
 @user_passes_test(is_doctor)
@@ -1024,3 +1037,48 @@ def descargar_como_pdf(request, path):
     pdf.save()
 
     return response
+
+# Vista para mostrar planes disponibles
+def seleccionar_plan(request):
+    if request.method == 'POST':
+        plan_id = request.POST.get('plan_id')
+        plan = Plan.objects.get(id=plan_id)
+        fecha_fin = now() + timedelta(days=30)
+        Suscripcion.objects.create(
+            usuario=request.user,
+            plan=plan,
+            fecha_fin=fecha_fin
+        )
+        return redirect('perfil')
+    planes = Plan.objects.all()  # Obtiene todos los planes
+    return render(request, 'consultorioCys/seleccionar_plan.html', {'planes': planes})
+
+# Vista para renovar suscripción
+def renovar_suscripcion(request):
+    if not request.user.is_authenticated:
+        return redirect('login')  # Redirigir a login si el usuario no está autenticado
+
+    # Obtener la suscripción actual del usuario
+    suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
+
+    if suscripcion:
+        if suscripcion.fecha_fin < now():  # Verificar si la suscripción está vencida
+            suscripcion.fecha_fin = now() + timedelta(days=30)  # Renueva por 30 días
+            suscripcion.renovado = True
+            suscripcion.save()
+            messages.success(request, "Tu plan ha sido renovado exitosamente. Fecha de expiración actualizada.")
+        else:
+            messages.info(request, "Tu suscripción aún está activa. No necesitas renovarla.")
+    else:
+        messages.error(request, "No tienes una suscripción activa para renovar. Por favor, selecciona un plan.")
+
+    return redirect('perfil')
+
+
+# Middleware para validar suscripción activa
+def validar_suscripcion(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
+    if suscripcion and suscripcion.fecha_fin < now():
+        return redirect('renovar_suscripcion')

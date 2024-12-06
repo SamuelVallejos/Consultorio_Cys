@@ -179,3 +179,25 @@ class DisponibilidadDoctor(models.Model):
 
     def __str__(self):
         return f"{self.doctor} - {self.fecha} {self.hora} ({'Disponible' if self.disponible else 'No disponible'})"
+    
+
+# Nuevos modelos para Plan y Suscripcion
+class Plan(models.Model):
+    nombre = models.CharField(max_length=50)
+    descripcion = models.TextField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    tipo = models.CharField(max_length=50, choices=[('Paciente', 'Paciente'), ('Instituciones', 'Instituciones')])
+
+    def __str__(self):
+        return self.nombre
+
+
+class Suscripcion(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    fecha_inicio = models.DateTimeField(default=timezone.now)
+    fecha_fin = models.DateTimeField()
+    renovado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.usuario.nombre} - {self.plan.nombre}"

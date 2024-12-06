@@ -23,8 +23,37 @@
         {{ usuario.nombre }} {{ usuario.apellido }}
       </h1>
 
+      <!-- Información de Suscripción -->
+      <h3 class="text-center mt-4">Información de Suscripción</h3>
+      <ul class="list-unstyled">
+        {% if plan_actual %}
+          <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+            <strong>Plan Actual:</strong>
+            <span>{{ plan_actual.nombre }}</span>
+          </li>
+          <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+            <strong>Fecha de Expiración:</strong>
+            <span>{{ fecha_fin|date:"d/m/Y" }}</span>
+          </li>
+          {% if suscripcion_vencida %}
+            <li class="text-danger">Tu suscripción ha vencido. Por favor, renueva tu plan.</li>
+            <div class="text-center">
+              <a href="{% url 'renovar_suscripcion' %}" class="btn btn-warning mt-3">Renovar Plan</a>
+            </div>
+          {% endif %}
+        {% else %}
+          <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+            <strong>Plan Actual:</strong>
+            <span class="text-danger">No tienes un plan activo</span>
+          </li>
+          <div class="text-center">
+            <a href="{% url 'seleccionar_plan' %}" class="btn btn-primary mt-3">Suscribirme</a>
+          </div>
+        {% endif %}
+      </ul>
+
       <!-- Formulario para editar -->
-      <form method="POST" id="perfil-form">
+      <form method="POST" id="perfil-form" class="mt-5">
         {% csrf_token %}
         <div class="d-flex justify-content-center mb-4">
           <div class="col-md-8">
@@ -62,10 +91,6 @@
                 <strong>Especialidad:</strong>
                 <span>{{ doctor.especialidad_doctor }}</span>
               </li>
-              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                <strong>Fecha de Nacimiento:</strong>
-                <span>{{ doctor.fecha_nacimiento_doctor }}</span>
-              </li>
 
               {% elif paciente %}
               <!-- Datos del Paciente -->
@@ -91,22 +116,13 @@
                   </a>
                 </div>
               </li>
-              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                <strong>Fecha de Nacimiento:</strong>
-                <span>{{ paciente.fecha_nacimiento_paciente }}</span>
-              </li>
-              <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                <strong>Género:</strong>
-                <span>{{ paciente.genero_paciente }}</span>
-              </li>
               {% endif %}
-
               <li class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
                 <strong>Contraseña:</strong>
                 <div class="d-flex align-items-center">
                     <span>**************</span>
                     <a href="{% url 'cambiar_clave_usuario' %}" class="ms-2">
-                        <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
+                      <img src="{% static 'consultorioCys/img/Editar.png' %}" style="width: 20px; height: 20px;" alt="Editar">
                     </a>
                 </div>
               </li>
@@ -118,15 +134,7 @@
         <button type="submit" class="btn btn-primary mt-3 d-none" id="guardar-cambios-btn">Guardar Cambios</button>
       </form>
     </div>
-
-    <!-- Foto del Usuario -->
-    <div class="text-center mx-auto mx-md-4 mt-5">
-      <img src="{% static 'consultorioCys/img/perfil.jpg' %}" style="width: 100%; max-width: 1000px; object-fit: cover;" />
-    </div>
   </div>
-
-  <!-- Bootstrap Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet" />
 
   <!-- Script para alternar entre vista y edición -->
   <script>
@@ -145,6 +153,7 @@
       }
     }
   </script>
+
   {% endblock %}
 </body>
 

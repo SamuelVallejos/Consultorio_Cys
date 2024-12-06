@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import seleccionar_plan, renovar_suscripcion
 
 urlpatterns = [
     path('', views.inicio, name="inicio"),
@@ -40,6 +41,9 @@ urlpatterns = [
     path('finalizar_cita/<int:cita_id>/', views.finalizar_cita, name='finalizar_cita'),
     path('generar_pdf/<int:informe_id>/', views.generar_pdf, name='generar_pdf'),
     path('descargar_pdf/<path:path>/', views.descargar_como_pdf, name='descargar_como_pdf'),
+    path('seleccionar-plan/', seleccionar_plan, name='seleccionar_plan'),
+    path('renovar-suscripcion/', renovar_suscripcion, name='renovar_suscripcion'),
+
 ]
 
 if settings.DEBUG:
