@@ -48,6 +48,7 @@ urlpatterns = [
     path('renovar-suscripcion/', renovar_suscripcion, name='renovar_suscripcion'),
     path('procesar-pago/', procesar_pago, name='procesar_pago'),
     path('historial-transacciones/', historial_transacciones, name='historial_transacciones'),
+    path('renovar-suscripcion-vencida/<str:rut>/', views.renovar_suscripcion_vencida, name='renovar_suscripcion_vencida'),
 ]
 
 if settings.DEBUG:

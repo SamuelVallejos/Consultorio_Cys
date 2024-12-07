@@ -499,36 +499,42 @@ def login_view(request):
             usuario = Usuario.objects.get(rut=rut)
 
             if usuario.check_password(password):
-                if Paciente.objects.filter(usuario=usuario).exists():
-                    paciente = Paciente.objects.get(usuario=usuario) 
+                # Iniciar sesión
+                login(request, usuario)
 
+                # Verificar si el usuario es un Paciente
+                if Paciente.objects.filter(usuario=usuario).exists():
+                    paciente = Paciente.objects.get(usuario=usuario)
                     suscripcion_activa = Suscripcion.objects.filter(
                         paciente=paciente, fecha_fin__gte=now()
                     ).exists()
 
                     if not suscripcion_activa:
-                        messages.error(
-                            request, 'No tienes una suscripción activa. Por favor, renueva tu suscripción.'
-                        )
-                        return redirect('login')
+                        # Redirigir directamente a la página de renovación de suscripción vencida
+                        return redirect('renovar_suscripcion_vencida', rut=paciente.rut_paciente)
 
-                    login(request, usuario)
+                    # Redirigir al inicio si la suscripción está activa
                     return redirect('inicio')
 
+                # Verificar si el usuario es un Doctor
                 elif Doctor.objects.filter(usuario=usuario).exists():
-                    login(request, usuario)
                     return redirect('doctor_dashboard')
 
+                # Usuario sin rol asignado
                 else:
-                    messages.error(request, 'No tienes un rol asignado en el sistema.')
+                    messages.error(
+                        request, 'No tienes un rol asignado en el sistema. Por favor, contacta al administrador.'
+                    )
                     return redirect('login')
 
+            # Contraseña incorrecta
             else:
                 messages.error(request, 'Contraseña incorrecta.')
                 return redirect('login')
 
         except Usuario.DoesNotExist:
-            messages.error(request, 'RUT no se encuentra registrado.')
+            # Usuario no registrado
+            messages.error(request, 'El RUT ingresado no se encuentra registrado.')
             return redirect('login')
 
     return render(request, 'consultorioCys/login.html')
@@ -1258,3 +1264,44 @@ def historial_transacciones(request):
 
     transacciones = Transaccion.objects.filter(usuario=request.user).order_by('-fecha')
     return render(request, 'consultorioCys/historial_transacciones.html', {'transacciones': transacciones})
+
+def renovar_suscripcion_vencida(request, rut):
+    try:
+        paciente = Paciente.objects.get(rut_paciente=rut)
+        planes = Plan.objects.all()
+
+        # Obtener el último plan vencido
+        plan_actual = Suscripcion.objects.filter(
+            paciente=paciente, fecha_fin__lt=now()
+        ).order_by('-fecha_fin').first()
+
+        if request.method == 'POST':
+            plan_id = request.POST.get('plan_id')
+            metodo_pago = request.POST.get('metodo_pago')
+            plan_seleccionado = Plan.objects.get(id_plan=plan_id)
+
+            # Crear la nueva suscripción
+            Suscripcion.objects.create(
+                paciente=paciente,
+                plan=plan_seleccionado,
+                fecha_inicio=now(),
+                fecha_fin=now() + timedelta(days=30),
+            )
+
+            # Simulación de flujo de pago (integración real opcional)
+            if metodo_pago == 'paypal':
+                messages.success(request, f"Redirigiendo a PayPal para pagar el plan {plan_seleccionado.nombre}.")
+                return redirect('inicio')  # Aquí se redirigiría al flujo de pago real.
+            else:
+                messages.success(request, f"Suscripción renovada exitosamente con el plan {plan_seleccionado.nombre}.")
+                return redirect('inicio')
+
+        return render(request, 'consultorioCys/renovar_suscripcion_vencida.html', {
+            'paciente': paciente,
+            'planes': planes,
+            'plan_actual': plan_actual,
+        })
+
+    except Paciente.DoesNotExist:
+        messages.error(request, 'El RUT ingresado no corresponde a un paciente válido.')
+        return redirect('login')
