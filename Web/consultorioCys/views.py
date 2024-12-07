@@ -1133,28 +1133,38 @@ def descargar_como_pdf(request, path):
     pdf.save()
 
     return response
-
+@login_required
 def seleccionar_plan(request):
     if request.method == 'POST':
         plan_id = request.POST.get('plan_id')  # Obtener el id_plan enviado desde el formulario
         plan = Plan.objects.get(id_plan=plan_id)  # Aquí cambiamos a id_plan
+        try:
+            paciente = Paciente.objects.get(usuario=request.user)  # Buscar el paciente asociado
+        except Paciente.DoesNotExist:
+            # Si no hay un paciente asociado, redirigir o manejar el error
+            messages.error(request, "No estás registrado como paciente. Por favor, completa tu perfil primero.")
+            return redirect('registro')  # Redirigir al registro
+
+        # Crear la suscripción
         fecha_fin = now() + timedelta(days=30)  # Duración de 1 mes
         Suscripcion.objects.create(
-            paciente=Paciente.objects.get(usuario=request.user),  # Conectar con el paciente actual
+            paciente=paciente,
             plan=plan,
             fecha_fin=fecha_fin,
         )
-        return redirect('perfil')
+        return redirect('registro')  # Redirigir a la página de registro
     planes = Plan.objects.all()
     return render(request, 'consultorioCys/seleccionar_plan.html', {'planes': planes})
-
 @login_required
 def renovar_suscripcion(request):
-    if not request.user.is_authenticated:
-        return redirect('login')  # Redirigir a login si el usuario no está autenticado
+    try:
+        paciente = Paciente.objects.get(usuario=request.user)  # Obtener el paciente asociado al usuario
+    except Paciente.DoesNotExist:
+        messages.error(request, "No tienes un perfil de paciente asociado. Por favor, completa tu registro.")
+        return redirect('registro')  # Redirigir al registro si no hay paciente asociado
 
-    # Obtener la suscripción actual del usuario
-    suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
+    # Obtener la última suscripción del paciente
+    suscripcion = Suscripcion.objects.filter(paciente=paciente).last()
 
     if suscripcion:
         if suscripcion.fecha_fin < now():  # Verificar si la suscripción está vencida
@@ -1168,7 +1178,6 @@ def renovar_suscripcion(request):
         messages.error(request, "No tienes una suscripción activa para renovar. Por favor, selecciona un plan.")
 
     return redirect('perfil')
-
 
 class ValidarSuscripcionMiddleware:
     def __init__(self, get_response):
