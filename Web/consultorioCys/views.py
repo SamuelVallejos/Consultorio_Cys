@@ -362,14 +362,14 @@ def confirmacion_cita(request):
             cita.save()
             return redirect('confirmacion_cita')  # Redirigir para actualizar la lista de citas
 
-        # Manejo de activación de cita
+        # Manejo de creación de cita
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
 
         if not doctor_id or not fecha or not hora:
             return render(request, 'consultorioCys/confirmacion_cita.html', {
-                'error': 'No hay citas activadas'
+                'error': 'Faltan datos necesarios para agendar la cita.'
             })
 
         doctor = get_object_or_404(Doctor, rut_doctor=doctor_id)
@@ -381,6 +381,20 @@ def confirmacion_cita(request):
                 'error': f'El formato de la hora recibido ({hora}) no es válido. Debe estar en el formato HH:MM.'
             })
 
+        # Verificar que la hora aún esté disponible
+        disponibilidad = DisponibilidadDoctor.objects.filter(
+            doctor=doctor,
+            fecha=fecha,
+            hora=hora_obj,
+            disponible=True
+        ).first()
+
+        if not disponibilidad:
+            return render(request, 'consultorioCys/confirmacion_cita.html', {
+                'error': 'La hora seleccionada ya no está disponible. Por favor, seleccione otra.'
+            })
+
+        # Crear la cita
         cita = Cita(
             paciente=paciente,
             doctor=doctor,
@@ -389,6 +403,10 @@ def confirmacion_cita(request):
             confirmado=True
         )
         cita.save()
+
+        # Marcar la hora como no disponible
+        disponibilidad.disponible = False
+        disponibilidad.save()
 
         doctor_clinica = DoctorClinica.objects.filter(doctor=doctor).first()
         sede = doctor_clinica.sede if doctor_clinica else None
