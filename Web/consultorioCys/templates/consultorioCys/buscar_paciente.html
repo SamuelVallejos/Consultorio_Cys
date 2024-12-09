@@ -25,22 +25,42 @@
             <i class="bi bi-calendar-check me-2"></i> Cita Activa
         </h3>
         {% if cita_activa %}
-        <div class="card my-3">
-            <div class="card-body">
-                <p><strong>Doctor:</strong> Dr. {{ cita_activa.doctor.nombres_doctor }} {{ cita_activa.doctor.primer_apellido_doctor }}</p>
-                <p><strong>Fecha:</strong> {{ cita_activa.fecha_cita }}</p>
-                <p><strong>Hora:</strong> {{ cita_activa.hora_cita }}</p>
-                <form method="post" action="{% url 'finalizar_cita' cita_activa.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-check-circle"></i> Finalizar Cita
-                    </button>
-                </form>
+    <div class="card my-3">
+        <div class="card-body">
+            <p><strong>Doctor:</strong> Dr. {{ cita_activa.doctor.nombres_doctor }} {{ cita_activa.doctor.primer_apellido_doctor }}</p>
+            <p><strong>Fecha:</strong> {{ cita_activa.fecha_cita }}</p>
+            <p><strong>Hora:</strong> {{ cita_activa.hora_cita }}</p>
+            <!-- Botón para abrir el modal -->
+            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#modalFinalizarCita">
+                <i class="bi bi-check-circle"></i> Finalizar Cita
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="modalFinalizarCita" tabindex="-1" aria-labelledby="modalFinalizarCitaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalFinalizarCitaLabel">Confirmación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas finalizar esta cita con el paciente {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <form method="post" action="{% url 'finalizar_cita' cita_activa.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Sí, Finalizar</button>
+                    </form>
+                </div>
             </div>
         </div>
-        {% else %}
-        <p class="text-muted">No hay citas activas asociadas a este paciente.</p>
-        {% endif %}
+    </div>
+{% else %}
+    <p class="text-muted">No hay citas activas asociadas a este paciente.</p>
+{% endif %}
     </div>
 
     <!-- Sección de Informes -->

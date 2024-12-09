@@ -86,7 +86,7 @@
                 <h3 class="text-primary mt-4 mb-3">
                     <i class="bi bi-journal-text me-2"></i>Informes Médicos
                 </h3>
-                <a href="{% url 'agregar_doc_personal' rut_paciente=paciente.rut %}" class="btn btn-primary">
+                <a href="{% url 'agregar_doc_personal' rut_paciente=rut_paciente %}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Agregar Informe
                 </a>
             </div>
@@ -105,15 +105,28 @@
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ informe.fecha_informe|date:"d-m-Y" }}</td>
-                        <td>Dr. {{ informe.doctor.nombres_doctor }} {{ informe.doctor.primer_apellido_doctor }}</td>
+                        <td>
+                            {% if informe.doctor %}
+                            Dr. {{ informe.doctor.nombres_doctor }} {{ informe.doctor.primer_apellido_doctor }}
+                            {% else %}
+                            Dr.{{ informe.notas_doctor }}
+                            {% endif %}
+                        </td>
                         <td>{{ informe.titulo_informe }}</td>
                         <td>
                             <a href="{% url 'detalle_informe' informe.id_informe %}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-eye"></i> Ver Informe
                             </a>
-                            <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm" target="_blank">
+                            {% if informe.documentos_extra %}
+                            <a href="{{ informe.documentos_extra.url }}" class="btn btn-primary btn-sm" download> <i class="bi bi-download"></i> Descargar
+                                Archivo</a>
+                            {% else %}
+                            <a href="{% url 'generar_pdf' informe.id_informe %}" class="btn btn-primary btn-sm"
+                                target="_blank">
                                 <i class="bi bi-download"></i> Descargar PDF
                             </a>
+                            {% endif %}
+
                         </td>
                     </tr>
                     {% empty %}

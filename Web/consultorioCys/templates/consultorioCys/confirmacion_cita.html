@@ -18,9 +18,34 @@
                             <p><strong>Hora:</strong> {{ cita.hora_cita }}</p>
                             <p><strong>Especialidad:</strong> {{ cita.doctor.especialidad_doctor }}</p>
                         </div>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-check-circle"></i> Finalizar Cita
+                        <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#modalCancelarCita{{ cita.id }}">
+                            <i class="bi bi-x-circle"></i> Cancelar Cita
                         </button>
+
+                        <!-- Modal de confirmación -->
+                        <div class="modal fade" id="modalCancelarCita{{ cita.id }}" tabindex="-1" aria-labelledby="modalLabel{{ cita.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalLabel{{ cita.id }}">Confirmación</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ¿Estás seguro de que deseas cancelar esta cita con el Dr. {{ cita.doctor.nombres_doctor }} {{ cita.doctor.primer_apellido_doctor }}?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                        <form method="post" action="{% url 'confirmacion_cita' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="cancelar_cita" value="true">
+                                            <input type="hidden" name="cita_id" value="{{ cita.id }}">
+                                            <button type="submit" class="btn btn-danger">Sí, Cancelar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Fin del modal -->
                     </div>
                 {% endfor %}
             {% else %}

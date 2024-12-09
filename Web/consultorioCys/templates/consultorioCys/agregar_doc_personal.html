@@ -1,5 +1,5 @@
 <h1>Agregar Informe Externo</h1>
-<p>Paciente: {{ paciente.nombre }}</p>
+<p>Paciente: {{ paciente.nombres_paciente }} {{ paciente.primer_apellido_paciente }}</p>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -7,4 +7,4 @@
     <button type="submit" class="btn btn-primary">Guardar Informe</button>
 </form>
 
-<a href="{% url 'informes_paciente' rut_paciente=paciente.rut %}" class="btn btn-secondary">Cancelar</a>
+<a href="{% url 'informe_paciente' pk=paciente.rut_paciente %}" class="btn btn-secondary">Cancelar</a>

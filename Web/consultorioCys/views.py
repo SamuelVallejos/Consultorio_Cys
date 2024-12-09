@@ -52,16 +52,37 @@ from .forms import InformeExternoForm
 
 @login_required
 def agregar_doc_personal(request, rut_paciente):
-    paciente = get_object_or_404(Paciente, rut=rut_paciente)
+    paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
     if request.method == 'POST':
         form = InformeExternoForm(request.POST, request.FILES)
         if form.is_valid():
-            informe = form.save(commit=False)
-            informe.paciente = paciente
+            # Obtener los datos del formulario
+            titulo = form.cleaned_data['titulo_informe']
+            rut_doctor = form.cleaned_data['rut_doctor']
+            nombre_doctor = form.cleaned_data['nombre_doctor']
+            documento = form.cleaned_data['documentos_extra']
+
+            # Intenta relacionar con un doctor existente
+            try:
+                doctor = Doctor.objects.get(rut_doctor=rut_doctor)
+            except Doctor.DoesNotExist:
+                doctor = None  # Si no existe, deja el campo vacío
+
+            # Crear el informe
+            informe = Informe.objects.create(
+                titulo_informe=titulo,
+                paciente=paciente,
+                doctor=doctor,  # Puede ser None si no existe
+                documentos_extra=documento,
+                notas_doctor=nombre_doctor if not doctor else "",  # Solo guarda el nombre si no hay doctor
+            )
             informe.save()
-            return redirect('informes_paciente', rut_paciente=rut_paciente)
+
+            # Redirigir a la página historial_personal
+            return redirect('historial_personal')
     else:
         form = InformeExternoForm()
+
     return render(request, 'agregar_doc_personal.html', {'form': form, 'paciente': paciente})
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
@@ -284,6 +305,7 @@ def historial_personal(request):
 
     context = {
         'paciente': paciente,
+        'rut_paciente': paciente.rut_paciente,  # Utiliza el atributo correcto
         'informes': page_obj,  # Usar la página actual de informes
         'informe_reciente': informe_reciente,  # Informe más reciente
         'doctor': doctor,
@@ -332,13 +354,22 @@ def confirmacion_cita(request):
     paciente = get_object_or_404(Paciente, usuario=request.user)
 
     if request.method == 'POST':
+        # Manejo de cancelación de cita
+        if 'cancelar_cita' in request.POST:
+            cita_id = request.POST.get('cita_id')
+            cita = get_object_or_404(Cita, id=cita_id, paciente=paciente)
+            cita.finalizada = True
+            cita.save()
+            return redirect('confirmacion_cita')  # Redirigir para actualizar la lista de citas
+
+        # Manejo de activación de cita
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
 
         if not doctor_id or not fecha or not hora:
             return render(request, 'consultorioCys/confirmacion_cita.html', {
-                'error': 'Faltan datos necesarios para la confirmación de la cita.'
+                'error': 'No hay citas activadas'
             })
 
         doctor = get_object_or_404(Doctor, rut_doctor=doctor_id)
@@ -368,17 +399,19 @@ def confirmacion_cita(request):
             'hora': hora_obj.strftime("%H:%M"),
             'especialidad': doctor.especialidad_doctor,
             'ubicacion': f"{sede.clinica.nombre_clinica} - {sede.comuna_sede}, {sede.region_sede}" if sede else "Ubicación no disponible",
-            'citas': Cita.objects.filter(paciente=paciente, finalizada=0).distinct().order_by('fecha_cita', 'hora_cita')
+            'citas': Cita.objects.filter(paciente=paciente, finalizada=False).distinct().order_by('fecha_cita', 'hora_cita')
         }
 
         return render(request, 'consultorioCys/confirmacion_cita.html', context)
 
     elif request.method == 'GET':
-        citas = Cita.objects.filter(paciente=paciente, finalizada=0).distinct().order_by('fecha_cita', 'hora_cita')
+        # Mostrar citas activas
+        citas = Cita.objects.filter(paciente=paciente, finalizada=False).distinct().order_by('fecha_cita', 'hora_cita')
         context = {'citas': citas} if citas.exists() else {'error': 'No tienes citas activas en este momento.'}
 
         return render(request, 'consultorioCys/confirmacion_cita.html', context)
 
+    # Método no permitido
     return render(request, 'consultorioCys/confirmacion_cita.html', {
         'error': 'Método de solicitud no válido.'
     })
@@ -726,72 +759,69 @@ def paciente_info(request, rut_paciente):
         'informes': informes,
     })
 
-# Buscar pacientes
 @login_required
 def buscar_paciente(request, rut_paciente=None):
     if rut_paciente:
         try:
             paciente = get_object_or_404(Paciente, rut_paciente=rut_paciente)
             informes = Informe.objects.filter(paciente=paciente).order_by('-fecha_informe')
-
-            # Obtener la cita activa (confirmada y no finalizada) asociada al doctor autenticado
             cita_activa = Cita.objects.filter(
                 paciente=paciente,
                 doctor=request.user.doctor,
                 finalizada=False
             ).first()
 
-            # Guardar el diagnóstico seleccionado
-            if request.method == 'POST' and 'selected_diagnosis' in request.POST:
-                informe_id = request.POST.get('informe_id')
-                selected_diagnosis = request.POST.get('selected_diagnosis')
-
-                # Obtener el nombre del doctor
-                if hasattr(request.user, 'doctor'):
-                    doctor_name = f"{request.user.doctor.nombres_doctor} {request.user.doctor.primer_apellido_doctor}"
-                else:
-                    doctor_name = "Doctor desconocido"
-
-                try:
-                    informe = get_object_or_404(Informe, id_informe=informe_id)
-
-                    # Guardar el diagnóstico seleccionado y registrar su origen
-                    informe.notas_doctor = f"Diagnóstico seleccionado: {selected_diagnosis} (por: {doctor_name})"
-                    informe.save()
-
-                    messages.success(request, "Diagnóstico aplicado correctamente.")
+            if request.method == 'POST':
+                if 'finalizar_cita' in request.POST:
+                    cita_id = request.POST.get('cita_id')
+                    cita = get_object_or_404(Cita, id=cita_id, paciente=paciente, doctor=request.user.doctor)
+                    cita.finalizada = True
+                    cita.save()
+                    messages.success(request, "La cita ha sido finalizada correctamente.")
                     return redirect('buscar_paciente', rut_paciente=rut_paciente)
-                except Informe.DoesNotExist:
-                    messages.error(request, "El informe seleccionado no existe.")
 
-            # Analizar cada informe y generar diagnósticos sugeridos
+                if 'selected_diagnosis' in request.POST:
+                    informe_id = request.POST.get('informe_id')
+                    selected_diagnosis = request.POST.get('selected_diagnosis')
+
+                    if hasattr(request.user, 'doctor'):
+                        doctor_name = f"{request.user.doctor.nombres_doctor} {request.user.doctor.primer_apellido_doctor}"
+                    else:
+                        doctor_name = "Doctor desconocido"
+
+                    try:
+                        informe = get_object_or_404(Informe, id_informe=informe_id)
+
+                        informe.notas_doctor = f"Diagnóstico seleccionado: {selected_diagnosis} (por: {doctor_name})"
+                        informe.save()
+
+                        messages.success(request, "Diagnóstico aplicado correctamente.")
+                        return redirect('buscar_paciente', rut_paciente=rut_paciente)
+                    except Informe.DoesNotExist:
+                        messages.error(request, "El informe seleccionado no existe.")
+
             for informe in informes:
-                # Llamar a la función de análisis
                 analysis_result = analyze_informe(informe.descripcion_informe)
 
-                # Diagnóstico más probable
                 most_probable = analysis_result["most_probable"]
                 confidence = analysis_result["confidence"]
                 alternatives = analysis_result["alternatives"]
 
-                # Diagnósticos de la IA etiquetados
                 ia_diagnoses = [
                     {"text": f"{alt['diagnosis']} (sugerido por IA)", "confidence": alt["confidence"]}
                     for alt in alternatives
                 ]
 
-                # Incluir el diagnóstico del doctor como opción
                 doctor_diagnosis = [
                     {"text": f"{informe.notas_doctor or 'Sin diagnóstico previo'} (actual del doctor)", "confidence": None}
                 ]
 
-                # Combinar diagnósticos
                 informe.diagnosis_suggestions = doctor_diagnosis + ia_diagnoses
 
             return render(request, 'consultorioCys/buscar_paciente.html', {
                 'paciente': paciente,
                 'informes': informes,
-                'cita_activa': cita_activa,  # Pasar la cita activa al contexto
+                'cita_activa': cita_activa, 
             })
         except Paciente.DoesNotExist:
             messages.error(request, "Este RUT no corresponde a un paciente.")

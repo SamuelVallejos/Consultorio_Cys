@@ -122,7 +122,7 @@ class DoctorClinica(models.Model):
     
 class Informe(models.Model):
     id_informe = models.AutoField(primary_key=True)  # ID Informe
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)  # ID Doctor
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, null=True, blank=True)  # ID Doctor
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)  # ID Paciente
     clinica = models.ForeignKey(Clinica, on_delete=models.SET_NULL, null=True, blank=True)
     sede = models.ForeignKey(SedeClinica, on_delete=models.SET_NULL, null=True, blank=True)

@@ -155,12 +155,13 @@ class PagoForm(forms.Form):
     cvv = forms.CharField(max_length=3, min_length=3, label="CVV", widget=forms.PasswordInput)
 
 class InformeExternoForm(forms.ModelForm):
-    doctor = forms.CharField(max_length=255, required=True, label="Nombre del Doctor")  # Campo libre para el nombre del doctor
+    rut_doctor = forms.CharField(max_length=10, required=True, label="RUT del Doctor")  # Campo para RUT del doctor
+    nombre_doctor = forms.CharField(max_length=255, required=True, label="Nombre del Doctor")  # Campo para nombre del doctor
 
     class Meta:
         model = Informe
-        fields = ['titulo_informe', 'documentos_extra']  # Solo los campos relevantes
+        fields = ['titulo_informe', 'documentos_extra']  # Campos existentes que se van a usar
         labels = {
             'titulo_informe': 'Título del Informe',
             'documentos_extra': 'Documento Adjunto',
-            }
+        }
