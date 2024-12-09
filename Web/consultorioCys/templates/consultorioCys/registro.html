@@ -78,4 +78,16 @@
         <button type="submit" class="btn btn-primary">Registrar y Pagar</button>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const rutInput = document.getElementById('rut');
+
+    rutInput.addEventListener('input', () => {
+        let rut = rutInput.value.replace(/[^0-9kK-]/g, ''); // Permitir números, guion y la letra K
+        rutInput.value = rut.toUpperCase(); // Convertir a mayúsculas automáticamente
+    });
+});
+
+</script>
 {% endblock %}

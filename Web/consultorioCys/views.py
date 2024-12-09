@@ -1272,26 +1272,31 @@ class ValidarSuscripcionMiddleware:
 #Pagos
 
 def procesar_pago(request):
-    # Verificar si hay datos en la sesión
+    # Verificar datos temporales en sesión
     registro_data = request.session.get('registro_data')
     if not registro_data:
         messages.error(request, "No se encontraron datos para procesar el pago.")
         return redirect('registro')
 
     try:
-        # Obtener el plan seleccionado
+        # Limpiar y validar el RUT
+        rut = registro_data['rut'].strip().upper()
+        if len(rut) > 10:
+            messages.error(request, "El RUT excede el tamaño máximo permitido.")
+            return redirect('registro')
+
+        # Obtener plan seleccionado
         plan = Plan.objects.get(id_plan=registro_data['plan_id'])
         monto = plan.precio
         nueva_fecha_fin = now() + timedelta(days=30)  # Ejemplo: 30 días de suscripción inicial
 
         if request.method == 'POST':
             # Simular pago exitoso
-            # Aquí podrías integrar con un sistema de pago real si es necesario
             messages.success(request, "El pago fue exitoso. Completa tu registro.")
 
             # Crear Usuario
             usuario = Usuario.objects.create(
-                rut=registro_data['rut'],
+                rut=rut,  # RUT limpio y validado
                 nombre=registro_data['nombre'],
                 apellido=registro_data['apellido_paterno'],
                 email=registro_data['email'],
@@ -1302,7 +1307,7 @@ def procesar_pago(request):
             # Crear Paciente
             paciente = Paciente.objects.create(
                 usuario=usuario,
-                rut_paciente=registro_data['rut'],
+                rut_paciente=rut,
                 nombres_paciente=registro_data['nombre'],
                 primer_apellido_paciente=registro_data['apellido_paterno'],
                 segundo_apellido_paciente=registro_data['apellido_materno'],
@@ -1320,23 +1325,11 @@ def procesar_pago(request):
                 renovado=False,
             )
 
-            # Enviar correo de confirmación
-            try:
-                send_mail(
-                    subject="Confirmación de Pago y Registro",
-                    message=f"Hola {registro_data['nombre']},\n\nTu registro y pago del plan '{plan.nombre}' por ${monto} fue exitoso. Tu suscripción está activa hasta {nueva_fecha_fin.strftime('%d/%m/%Y')}.\n\nGracias por confiar en Consultorio Cys.",
-                    from_email="soporte@consultoriocys.com",
-                    recipient_list=[registro_data['email']],
-                    fail_silently=False,
-                )
-                messages.success(request, "Registro y pago completados exitosamente. Revisa tu correo para más detalles.")
-            except Exception as e:
-                messages.error(request, "El registro fue exitoso, pero no se pudo enviar el correo de confirmación.")
-
             # Limpiar datos de la sesión
             del request.session['registro_data']
 
-            return redirect('login')  # Redirigir al login después del registro
+            # Redirigir al login
+            return redirect('login')
 
         return render(request, 'consultorioCys/procesar_pago.html', {
             'plan': plan,
