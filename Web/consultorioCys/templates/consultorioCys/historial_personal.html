@@ -81,9 +81,15 @@
             </table>
 
             <!-- Tabla de Informes Médicos -->
-            <h3 class="text-primary mt-4 mb-3">
-                <i class="bi bi-journal-text me-2"></i>Informes Médicos
-            </h3>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-primary mt-4 mb-3">
+                    <i class="bi bi-journal-text me-2"></i>Informes Médicos
+                </h3>
+                <a href="{% url 'agregar_doc_personal' rut_paciente=paciente.rut %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Agregar Informe
+                </a>
+            </div>
             <table class="table table-bordered table-hover">
                 <thead class="table-light">
                     <tr>

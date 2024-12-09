@@ -14,6 +14,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name="logout"),
     path('mi_suscripcion/', views.mi_suscripcion, name="mi_suscripcion"),
     path('dashboard/doctor/', views.doctor_dashboard, name="doctor_dashboard"),
+    path('agregar_doc_personal/<str:rut_paciente>/', views.agregar_doc_personal, name='agregar_doc_personal'),
     path('doctor/add/', views.add_doctor_view, name="add_doctor"),
     path('cambiar_clave/<uidb64>/<token>/', views.cambiar_clave, name='cambiar_clave'),
     path('cambiar_clave_usuario/', views.cambiar_clave_usuario, name='cambiar_clave_usuario'),

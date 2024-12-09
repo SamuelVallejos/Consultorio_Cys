@@ -18,6 +18,9 @@
                             <p><strong>Hora:</strong> {{ cita.hora_cita }}</p>
                             <p><strong>Especialidad:</strong> {{ cita.doctor.especialidad_doctor }}</p>
                         </div>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-check-circle"></i> Finalizar Cita
+                        </button>
                     </div>
                 {% endfor %}
             {% else %}

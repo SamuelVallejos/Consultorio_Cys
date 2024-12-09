@@ -48,6 +48,21 @@ from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
 from .models import MetodoPago
 from .forms import PagoForm
+from .forms import InformeExternoForm
+
+@login_required
+def agregar_doc_personal(request, rut_paciente):
+    paciente = get_object_or_404(Paciente, rut=rut_paciente)
+    if request.method == 'POST':
+        form = InformeExternoForm(request.POST, request.FILES)
+        if form.is_valid():
+            informe = form.save(commit=False)
+            informe.paciente = paciente
+            informe.save()
+            return redirect('informes_paciente', rut_paciente=rut_paciente)
+    else:
+        form = InformeExternoForm()
+    return render(request, 'agregar_doc_personal.html', {'form': form, 'paciente': paciente})
 
 def handle_form_submission(request, form_class, template_name, success_url, instance=None, authenticate_user=False):
     """Utility function to handle form submissions."""

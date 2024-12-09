@@ -153,3 +153,14 @@ class PagoForm(forms.Form):
     vencimiento_mes = forms.ChoiceField(choices=[(str(i), f"{i:02d}") for i in range(1, 13)], label="Mes de Vencimiento")
     vencimiento_anio = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(now().year, now().year + 10)], label="Año de Vencimiento")
     cvv = forms.CharField(max_length=3, min_length=3, label="CVV", widget=forms.PasswordInput)
+
+class InformeExternoForm(forms.ModelForm):
+    doctor = forms.CharField(max_length=255, required=True, label="Nombre del Doctor")  # Campo libre para el nombre del doctor
+
+    class Meta:
+        model = Informe
+        fields = ['titulo_informe', 'documentos_extra']  # Solo los campos relevantes
+        labels = {
+            'titulo_informe': 'Título del Informe',
+            'documentos_extra': 'Documento Adjunto',
+            }
