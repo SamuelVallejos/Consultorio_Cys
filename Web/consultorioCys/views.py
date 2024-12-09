@@ -512,16 +512,12 @@ def seleccionar_doctor(request):
 
 @login_required
 def pedir_hora(request):
-    # Obtener el paciente asociado al usuario autenticado
     paciente = get_object_or_404(Paciente, usuario=request.user)
 
-    # Obtener la cantidad de citas activas
     citas_activas = Cita.objects.filter(paciente=paciente, confirmado=True, finalizada=0).count()
 
-    # Obtener la cita más reciente activa
     cita_existente = Cita.objects.filter(paciente=paciente, confirmado=True, finalizada=0).first()
 
-    # Manejo del límite de citas activas (máximo 3)
     if citas_activas >= 3:
         return render(request, 'confirmacion_cita.html', {
             'mensaje_error': 'No puedes agendar más de 3 citas activas. Cancela alguna para agendar una nueva.',
@@ -529,36 +525,29 @@ def pedir_hora(request):
             'cita_existente': cita_existente,
         })
 
-    # Código para manejar el agendamiento de una nueva cita
     especialidad_seleccionada = request.GET.get('especialidad') or request.POST.get('especialidad')
     sedes = []
     error_message = None
 
-    # Cargar las sedes si se selecciona una especialidad
     if especialidad_seleccionada:
         sedes = SedeClinica.objects.filter(
             doctorclinica__doctor__especialidad_doctor=especialidad_seleccionada
         ).distinct()
 
-    # Validar los campos en el formulario POST (cuando el usuario hace clic en "Buscar Doctores")
     if request.method == 'POST':
         especialidad = request.POST.get('especialidad')
         sede_id = request.POST.get('sede')
-        fecha = request.POST.get('fecha')  # Obtener la fecha del formulario
+        fecha = request.POST.get('fecha')
 
-        # Solo redirigir si todos los campos tienen valores
         if especialidad and sede_id and fecha:
             return redirect(
                 f"{reverse('seleccionar_doctor')}?especialidad={especialidad}&sede={sede_id}&fecha={fecha}"
             )
 
-        # Mostrar mensaje de error si falta algún campo
         error_message = "Por favor, seleccione la especialidad, la sede y la fecha antes de continuar."
 
-    # Obtener todas las especialidades disponibles
     especialidades = Doctor.objects.values_list('especialidad_doctor', flat=True).distinct()
 
-    # Renderizar la página de pedir hora
     return render(request, 'pedir_hora.html', {
         'especialidades': especialidades,
         'sedes': sedes,
@@ -569,7 +558,6 @@ def pedir_hora(request):
     })
 
 def sedes_por_especialidad(request, especialidad):
-    # Filtrar las sedes que tienen doctores con la especialidad seleccionada
     sedes = SedeClinica.objects.filter(
         doctorclinica__doctor__especialidad_doctor=especialidad
     ).distinct()

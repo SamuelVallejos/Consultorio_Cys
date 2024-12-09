@@ -85,6 +85,22 @@
         togglePassword.querySelector('i').classList.toggle('bi-eye-slash');
       });
     });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const rutInput = document.getElementById('rut');
+
+        rutInput.addEventListener('input', () => {
+            let rut = rutInput.value.replace(/[^0-9kK]/g, ''); // Eliminar caracteres no válidos
+            if (rut.length > 1) {
+                // Insertar el guion automáticamente antes del último carácter
+                rut = rut.slice(0, -1) + '-' + rut.slice(-1);
+            }
+            if (rut.length > 10) {
+                rut = rut.slice(0, 10);
+            }
+            rutInput.value = rut;
+        });
+    });
   </script>
 
   <!-- Estilos Personalizados -->

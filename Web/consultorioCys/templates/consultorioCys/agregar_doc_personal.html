@@ -37,4 +37,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const rutInput = document.getElementById('rutDoctor');
+
+        rutInput.addEventListener('input', () => {
+            let rut = rutInput.value.replace(/[^0-9kK]/g, '');
+
+            if (rut.length > 10) {
+                rut = rut.slice(0, 10);
+            }
+            if (rut.length > 1) {
+                rut = rut.slice(0, -1) + '-' + rut.slice(-1);
+            }
+            rutInput.value = rut;
+        });
+    });
+</script>
 {% endblock %}
