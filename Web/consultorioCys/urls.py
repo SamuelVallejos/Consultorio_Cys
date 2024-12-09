@@ -47,7 +47,9 @@ urlpatterns = [
     path('descargar_pdf/<path:path>/', views.descargar_como_pdf, name='descargar_como_pdf'),
     path('seleccionar-plan/', seleccionar_plan, name='seleccionar_plan'),
     path('renovar-suscripcion/', renovar_suscripcion, name='renovar_suscripcion'),
-    path('procesar-pago/', procesar_pago, name='procesar_pago'),
+    path('procesar_pago/', views.procesar_pago, name='procesar_pago'),
+    path('confirmar_pago/', views.confirmar_pago, name='confirmar_pago'),
+    path('pago_exitoso/', views.pago_exitoso, name='pago_exitoso'),
     path('historial-transacciones/', historial_transacciones, name='historial_transacciones'),
     path('renovar-suscripcion-vencida/<str:rut>/', views.renovar_suscripcion_vencida, name='renovar_suscripcion_vencida'),
 ]

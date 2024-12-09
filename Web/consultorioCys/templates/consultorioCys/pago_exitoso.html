@@ -1,0 +1,11 @@
+{% extends "consultorioCys/base_generic.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center text-success">¡Pago Exitoso!</h2>
+    <p class="text-center">{{ mensaje }}</p>
+    <div class="text-center mt-4">
+        <a href="{% url 'inicio' %}" class="btn btn-primary">Volver al inicio</a>
+    </div>
+</div>
+{% endblock %}

@@ -38,6 +38,7 @@ import datetime
 import random
 import string
 import os
+import json
 from .ai_processor import analyze_informe
 from django.http import JsonResponse
 from django.db.models import Q
@@ -50,6 +51,9 @@ from .models import MetodoPago
 from .forms import PagoForm
 from .forms import InformeExternoForm
 from django.db import transaction
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 @login_required
 def agregar_doc_personal(request, rut_paciente):
@@ -1279,58 +1283,12 @@ def procesar_pago(request):
         return redirect('registro')
 
     try:
-        # Limpiar y validar el RUT
-        rut = registro_data['rut'].strip().upper()
-        if len(rut) > 10:
-            messages.error(request, "El RUT excede el tamaño máximo permitido.")
-            return redirect('registro')
-
-        # Obtener plan seleccionado
+        # Obtener datos del plan
         plan = Plan.objects.get(id_plan=registro_data['plan_id'])
         monto = plan.precio
         nueva_fecha_fin = now() + timedelta(days=30)  # Ejemplo: 30 días de suscripción inicial
 
-        if request.method == 'POST':
-            # Simular pago exitoso
-            messages.success(request, "El pago fue exitoso. Completa tu registro.")
-
-            # Crear Usuario
-            usuario = Usuario.objects.create(
-                rut=rut,  # RUT limpio y validado
-                nombre=registro_data['nombre'],
-                apellido=registro_data['apellido_paterno'],
-                email=registro_data['email'],
-            )
-            usuario.set_password(registro_data['password'])
-            usuario.save()
-
-            # Crear Paciente
-            paciente = Paciente.objects.create(
-                usuario=usuario,
-                rut_paciente=rut,
-                nombres_paciente=registro_data['nombre'],
-                primer_apellido_paciente=registro_data['apellido_paterno'],
-                segundo_apellido_paciente=registro_data['apellido_materno'],
-                correo_paciente=registro_data['email'],
-                fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
-                genero_paciente=registro_data['genero'],
-            )
-
-            # Crear Suscripción
-            Suscripcion.objects.create(
-                paciente=paciente,
-                plan=plan,
-                fecha_inicio=now(),
-                fecha_fin=nueva_fecha_fin,
-                renovado=False,
-            )
-
-            # Limpiar datos de la sesión
-            del request.session['registro_data']
-
-            # Redirigir al login
-            return redirect('login')
-
+        # Renderizar página con detalles del pago y botón de PayPal
         return render(request, 'consultorioCys/procesar_pago.html', {
             'plan': plan,
             'monto': monto,
@@ -1341,53 +1299,95 @@ def procesar_pago(request):
         messages.error(request, "El plan seleccionado no existe.")
         return redirect('registro')
 
+PAYPAL_CLIENT_ID = "AfoO25OOyH4eQjoqqbIaQZoOAXZ1gM2QAkrA3HWmV1dzAOXRXzP-kuPYi7YYMjl-KJDW-VmN_RrgtoRM"
+PAYPAL_SECRET_KEY = "EBpd3GolDBAGrLdecFl_B45wFdIzejsQa7zQnV9Oo4zRaT5oMXMrzuXKt7at-8zdwj5S12kPeCNl_YpT"
+PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com" 
+
+@csrf_exempt
 def confirmar_pago(request):
-    if not request.session.get('registro_data'):
-        messages.error(request, "No se encontraron datos para completar el registro.")
-        return redirect('registro')
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+            order_id = body.get('orderID')
 
-    registro_data = request.session.pop('registro_data')  # Eliminar datos de la sesión
-    try:
-        # Crear Usuario
-        usuario = Usuario.objects.create(
-            rut=registro_data['rut'],
-            nombre=registro_data['nombre'],
-            apellido=registro_data['apellido_paterno'],
-            email=registro_data['email'],
-        )
-        usuario.set_password(registro_data['password'])
-        usuario.save()
+            # Obtener el Access Token de PayPal
+            auth_response = requests.post(
+                f"{PAYPAL_API_BASE}/v1/oauth2/token",
+                headers={
+                    "Accept": "application/json",
+                    "Accept-Language": "en_US",
+                },
+                data={"grant_type": "client_credentials"},
+                auth=(PAYPAL_CLIENT_ID, PAYPAL_SECRET_KEY),
+            )
+            if auth_response.status_code != 200:
+                return JsonResponse({'status': 'error', 'message': 'Error al autenticar con PayPal'}, status=400)
 
-        # Crear Paciente
-        paciente = Paciente.objects.create(
-            usuario=usuario,
-            rut_paciente=registro_data['rut'],
-            nombres_paciente=registro_data['nombre'],
-            primer_apellido_paciente=registro_data['apellido_paterno'],
-            segundo_apellido_paciente=registro_data['apellido_materno'],
-            correo_paciente=registro_data['email'],
-            fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
-            genero_paciente=registro_data['genero'],
-        )
+            access_token = auth_response.json().get("access_token")
 
-        # Crear Suscripción
-        plan = Plan.objects.get(id_plan=registro_data['plan_id'])
-        fecha_inicio = now()
-        fecha_fin = fecha_inicio + timedelta(days=30)  # Ejemplo: 1 mes
-        Suscripcion.objects.create(
-            paciente=paciente,
-            plan=plan,
-            fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin,
-            renovado=False,
-        )
+            # Validar el Order ID con PayPal
+            order_response = requests.get(
+                f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {access_token}",
+                },
+            )
+            if order_response.status_code != 200:
+                return JsonResponse({'status': 'error', 'message': 'Error al validar el pago con PayPal'}, status=400)
 
-        messages.success(request, "Registro completado exitosamente.")
-        return redirect('login')
+            order_data = order_response.json()
+            if order_data.get("status") != "COMPLETED":
+                return JsonResponse({'status': 'error', 'message': 'El pago no está completado'}, status=400)
 
-    except Exception as e:
-        messages.error(request, f"Error al completar el registro: {str(e)}")
-        return redirect('registro')
+            # Recuperar datos del registro
+            registro_data = request.session.get('registro_data')
+            if not registro_data:
+                return JsonResponse({'status': 'error', 'message': 'No se encontraron datos del registro'}, status=400)
+
+            # Crear el usuario
+            usuario = Usuario.objects.create(
+                rut=registro_data['rut'].strip().upper(),
+                nombre=registro_data['nombre'],
+                apellido=registro_data['apellido_paterno'],
+                email=registro_data['email'],
+            )
+            usuario.set_password(registro_data['password'])
+            usuario.save()
+
+            # Crear el paciente
+            paciente = Paciente.objects.create(
+                usuario=usuario,
+                rut_paciente=registro_data['rut'],
+                nombres_paciente=registro_data['nombre'],
+                primer_apellido_paciente=registro_data['apellido_paterno'],
+                segundo_apellido_paciente=registro_data['apellido_materno'],
+                correo_paciente=registro_data['email'],
+                fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
+                genero_paciente=registro_data['genero'],
+            )
+
+            # Crear la suscripción
+            plan = Plan.objects.get(id_plan=registro_data['plan_id'])
+            Suscripcion.objects.create(
+                paciente=paciente,
+                plan=plan,
+                fecha_inicio=now(),
+                fecha_fin=now() + timedelta(days=30),  # Suscripción de 30 días
+                renovado=False,
+            )
+
+            # Limpiar los datos de la sesión
+            del request.session['registro_data']
+
+            return JsonResponse({'status': 'success', 'message': 'Pago y registro completados correctamente'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+def pago_exitoso(request):
+    return render(request, 'consultorioCys/pago_exitoso.html', {'mensaje': 'El pago se realizó con éxito.'})
 
 def historial_transacciones(request):
     if not request.user.is_authenticated:

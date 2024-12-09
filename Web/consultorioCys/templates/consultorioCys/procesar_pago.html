@@ -11,9 +11,52 @@
             <p><strong>Fecha de Expiración:</strong> {{ nueva_fecha_fin|date:"d/m/Y" }}</p>
         </div>
     </div>
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-success mt-3">Confirmar y Pagar</button>
-    </form>
+    <div id="paypal-button-container" class="mt-4"></div>
 </div>
+
+<script src="https://www.paypal.com/sdk/js?client-id=AfoO25OOyH4eQjoqqbIaQZoOAXZ1gM2QAkrA3HWmV1dzAOXRXzP-kuPYi7YYMjl-KJDW-VmN_RrgtoRM&currency=USD"></script>
+<script>
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: '{{ monto }}' // Monto en dólares
+                    }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                // Enviar el orderID al backend
+                fetch('/confirmar_pago/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ orderID: data.orderID }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Pago completado con éxito. Redirigiendo...');
+                        window.location.href = "{% url 'pago_exitoso' %}";
+                    } else {
+                        alert('Error al procesar el pago: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al enviar el pago al backend:', error);
+                    alert('Hubo un error al procesar el pago.');
+                });
+            });
+        },
+        onCancel: function(data) {
+            alert('El pago fue cancelado.');
+        },
+        onError: function(err) {
+            alert('Hubo un error al procesar el pago.');
+        }
+    }).render('#paypal-button-container');
+</script>
 {% endblock %}
