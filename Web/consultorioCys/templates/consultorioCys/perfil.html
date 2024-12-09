@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi Cuenta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'consultorioCys/css/perfil.css' %}" />
 </head>
 
@@ -72,15 +73,6 @@
                 <span><strong>Género:</strong> {{ datos_usuario.genero }}</span>
               </div>
               {% endif %}
-
-              {% if datos_usuario.especialidad %}
-              <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span><strong>Especialidad:</strong> {{ datos_usuario.especialidad }}</span>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#editar-especialidad">
-                  <i class="bi bi-pencil text-primary"></i>
-                </a>
-              </div>
-              {% endif %}
             </div>
           </div>
 
@@ -128,7 +120,85 @@
       </div>
     </div>
   </div>
+
+  <!-- Modales -->
+  <!-- Modal Editar Email -->
+  <div class="modal fade" id="editar-email" tabindex="-1" aria-labelledby="editarEmailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editarEmailLabel">Editar Email</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" action="">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="nuevo-email" class="form-label">Nuevo Email</label>
+              <input type="email" class="form-control" id="nuevo-email" name="email" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Teléfono -->
+  <div class="modal fade" id="editar-telefono" tabindex="-1" aria-labelledby="editarTelefonoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editarTelefonoLabel">Editar Teléfono</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" action="">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="nuevo-telefono" class="form-label">Nuevo Teléfono</label>
+              <input type="text" class="form-control" id="nuevo-telefono" name="telefono" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Dirección -->
+  <div class="modal fade" id="editar-direccion" tabindex="-1" aria-labelledby="editarDireccionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editarDireccionLabel">Editar Dirección</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" action="">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="nueva-direccion" class="form-label">Nueva Dirección</label>
+              <input type="text" class="form-control" id="nueva-direccion" name="direccion" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
   {% endblock %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
