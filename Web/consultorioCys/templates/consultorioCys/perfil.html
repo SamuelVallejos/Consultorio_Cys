@@ -13,7 +13,7 @@
 
 <body>
   {% block content %}
-  <div class="container mt-5">
+  <div class="container mt-5" style="margin-bottom: 40px;">
     <div class="row">
       <!-- Barra de navegación de pestañas -->
       <div class="col-md-3">
@@ -41,20 +41,23 @@
             <h2 class="mb-4">Información Personal</h2>
             <div class="list-group shadow-sm">
               <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span><strong>Nombre:</strong> {{ datos_usuario.nombre }} {{ datos_usuario.apellido }}</span>
+                <span><strong>Nombre:</strong> {{ datos_usuario.nombre }} {{ datos_usuario.apellido }} </span>
               </div>
+
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span><strong>Email:</strong> {{ datos_usuario.email }}</span>
                 <a href="#" data-bs-toggle="modal" data-bs-target="#editar-email">
                   <i class="bi bi-pencil text-primary"></i>
                 </a>
               </div>
+
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span><strong>Teléfono:</strong> {{ datos_usuario.telefono }}</span>
                 <a href="#" data-bs-toggle="modal" data-bs-target="#editar-telefono">
                   <i class="bi bi-pencil text-primary"></i>
                 </a>
               </div>
+
               {% if datos_usuario.direccion %}
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span><strong>Dirección:</strong> {{ datos_usuario.direccion }}</span>
@@ -63,6 +66,13 @@
                 </a>
               </div>
               {% endif %}
+
+              {% if datos_usuario.genero %}
+              <div class="list-group-item d-flex justify-content-between align-items-center">
+                <span><strong>Género:</strong> {{ datos_usuario.genero }}</span>
+              </div>
+              {% endif %}
+
               {% if datos_usuario.especialidad %}
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span><strong>Especialidad:</strong> {{ datos_usuario.especialidad }}</span>
@@ -79,7 +89,7 @@
             <h2 class="mb-4">Seguridad</h2>
             <div class="list-group shadow-sm">
               <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span><strong>Contraseña:</strong></span>
+                <span><strong>Contraseña: ***********</strong></span>
                 <a href="{% url 'cambiar_clave_usuario' %}" class="text-decoration-none text-primary">
                   <i class="bi bi-chevron-right"></i>
                 </a>
@@ -105,7 +115,7 @@
                 <strong>Fecha de expiración:</strong> {{ suscripcion.fecha_fin|date:"d/m/Y" }}
               </div>
               <div class="list-group-item">
-                <strong>Precio:</strong> ${{ suscripcion.plan.precio }}
+                <strong>Precio:</strong> ${{ suscripcion.plan.precio|floatformat:0 }} CLP
               </div>
             </div>
             <a href="{% url 'renovar_suscripcion' %}" class="btn btn-warning mt-3">Renovar Plan</a>
@@ -115,79 +125,6 @@
             {% endif %}
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modales para editar -->
-  <!-- Modal para Editar Email -->
-  <div class="modal fade" id="editEmailModal" tabindex="-1" aria-labelledby="editEmailModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form method="POST" action="{% url 'perfil' %}">
-          {% csrf_token %}
-          <div class="modal-header">
-            <h5 class="modal-title" id="editEmailModalLabel">Editar Email</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-            <label for="email" class="form-label">Nuevo Email:</label>
-            <input type="email" name="email" id="email" class="form-control" value="{{ datos_usuario.email }}" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para Editar Teléfono -->
-  <div class="modal fade" id="editPhoneModal" tabindex="-1" aria-labelledby="editPhoneModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form method="POST" action="{% url 'perfil' %}">
-          {% csrf_token %}
-          <div class="modal-header">
-            <h5 class="modal-title" id="editPhoneModalLabel">Editar Teléfono</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-            <label for="telefono" class="form-label">Nuevo Teléfono:</label>
-            <input type="text" name="telefono" id="telefono" class="form-control" value="{{ datos_usuario.telefono }}"
-              required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para Editar Dirección -->
-  <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form method="POST" action="{% url 'perfil' %}">
-          {% csrf_token %}
-          <div class="modal-header">
-            <h5 class="modal-title" id="editAddressModalLabel">Editar Dirección</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-            <label for="direccion" class="form-label">Nueva Dirección:</label>
-            <input type="text" name="direccion" id="direccion" class="form-control"
-              value="{{ datos_usuario.direccion }}" required>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-          </div>
-        </form>
       </div>
     </div>
   </div>

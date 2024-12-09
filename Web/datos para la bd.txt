@@ -428,24 +428,16 @@ Plan.objects.create(
     id_plan=1,
     nombre='Plan 1 mes',
     descripcion='Acceso 1 mes al consultorio',
-    precio=2000,
+    precio=4500,
     tipo='Paciente'
 )
 
 Plan.objects.create(
-    id_plan=2,  # Clave primaria correcta
-    nombre='Plan X6 meses',
-    descripcion='Acceso por 6 meses al consultorio',
-    precio=10000,
-    tipo='Paciente'
-)
-
-Plan.objects.create(
-    id_plan=3,  # Clave primaria correcta
-    nombre='Plan 1 año',
-    descripcion='Acceso 1 año al consultorio',
-    precio=18000,
-    tipo='Paciente'
+    id_plan=2,
+    nombre='Plan 1 mes',
+    descripcion='Plan para Instituciones medicas',
+    precio=200000,
+    tipo='Institucion'
 )
 
 # Crear suscripción
@@ -466,14 +458,37 @@ exit()
 
 por si hay que eliminar los datos de la db
 
-from consultorioCys.models import Doctor, Paciente, Informe, Clinica, SedeClinica, Usuario, DoctorClinica, DisponibilidadDoctor, Plan, Suscripcion
+from consultorioCys.models import (
+    Usuario,
+    Doctor,
+    Paciente,
+    Clinica,
+    SedeClinica,
+    DoctorClinica,
+    DisponibilidadDoctor,
+    Plan,
+    Suscripcion,
+    Informe,
+    PacienteInforme,
+    Cita,
+    MetodoPago,
+    Transaccion,
+)
 
-Usuario.objects.all().delete()
+# Borrar en el orden adecuado para evitar problemas de restricciones de clave foránea
+Cita.objects.all().delete()
+DisponibilidadDoctor.objects.all().delete()
+PacienteInforme.objects.all().delete()
+Informe.objects.all().delete()
+Suscripcion.objects.all().delete()
+Plan.objects.all().delete()
+MetodoPago.objects.all().delete()
+Transaccion.objects.all().delete()
+DoctorClinica.objects.all().delete()
+SedeClinica.objects.all().delete()
+Clinica.objects.all().delete()
 Doctor.objects.all().delete()
 Paciente.objects.all().delete()
-Clinica.objects.all().delete()
-SedeClinica.objects.all().delete()
-Informe.objects.all().delete()
-DoctorClinica.objects.all().delete()
-Plan.objects.all().delete()
-Suscripcion.objects.all().delete()
+Usuario.objects.all().delete()
+
+print("Todos los datos han sido eliminados exitosamente.")

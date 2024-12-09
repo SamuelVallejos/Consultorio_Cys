@@ -49,6 +49,7 @@ from django.core.mail import send_mail
 from .models import MetodoPago
 from .forms import PagoForm
 from .forms import InformeExternoForm
+from django.db import transaction
 
 @login_required
 def agregar_doc_personal(request, rut_paciente):
@@ -123,70 +124,49 @@ def inicio(request):
 
 def registro_view(request):
     if request.method == 'POST':
+        # Capturar datos del formulario
         rut = request.POST['rut']
         nombre = request.POST['nombre']
-        apellido = request.POST['apellido']
+        apellido_paterno = request.POST['apellido_paterno']
+        apellido_materno = request.POST['apellido_materno']
         email = request.POST['email']
+        fecha_nacimiento = request.POST['fecha_nacimiento']
+        genero = request.POST['genero']
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
-        tipo_usuario = request.POST['tipo_usuario']
         plan_id = request.POST['plan']
-        tarjeta_numero = request.POST['tarjeta_numero']
-        tarjeta_tipo = request.POST['tarjeta_tipo']
 
+        # Validar contraseñas
         if password != confirm_password:
             messages.error(request, "Las contraseñas no coinciden.")
             return redirect('registro')
 
         try:
-            usuario = Usuario.objects.create(
-                rut=rut,
-                nombre=nombre,
-                apellido=apellido,
-                email=email,
-            )
-            usuario.set_password(password)
-            usuario.save()
-
-            if tipo_usuario == 'paciente':
-                Paciente.objects.create(
-                    usuario=usuario,
-                    rut_paciente=rut,
-                    nombres_paciente=nombre,
-                    primer_apellido_paciente=apellido,
-                    correo_paciente=email,
-                    telefono_paciente=request.POST.get('telefono_paciente'),
-                    direccion_paciente=request.POST.get('direccion_paciente'),
-                )
-            elif tipo_usuario == 'doctor':
-                Doctor.objects.create(
-                    usuario=usuario,
-                    rut_doctor=rut,
-                    nombres_doctor=nombre,
-                    primer_apellido_doctor=apellido,
-                    correo_doctor=email,
-                    especialidad_doctor=request.POST.get('especialidad_doctor'),
-                )
-
-            # Crear suscripción
+            # Obtener datos del plan seleccionado
             plan = Plan.objects.get(id_plan=plan_id)
-            Suscripcion.objects.create(
-                paciente=Paciente.objects.get(usuario=usuario) if tipo_usuario == 'paciente' else None,
-                plan=plan,
-                fecha_inicio=now(),
-                fecha_fin=now() + timedelta(days=30),  # Vigencia de 30 días
-                renovado=False,
-            )
-
-            messages.success(request, "Registro y suscripción completados correctamente.")
-            return redirect('login')
-
-        except Exception as e:
-            messages.error(request, f"Error al registrar usuario: {str(e)}")
+            
+            # Redirigir a la página de procesar pago con datos temporales
+            request.session['registro_data'] = {
+                'rut': rut,
+                'nombre': nombre,
+                'apellido_paterno': apellido_paterno,
+                'apellido_materno': apellido_materno,
+                'email': email,
+                'fecha_nacimiento': fecha_nacimiento,
+                'genero': genero,
+                'password': password,
+                'plan_id': plan.id_plan,
+            }
+            return redirect('procesar_pago')
+        except Plan.DoesNotExist:
+            messages.error(request, "El plan seleccionado no existe.")
             return redirect('registro')
 
-    planes = Plan.objects.all()
-    return render(request, 'consultorioCys/registro.html', {'planes': planes})
+    # Obtener planes para el formulario
+    planes_pacientes = Plan.objects.filter(tipo='Paciente')
+    return render(request, 'consultorioCys/registro.html', {
+        'planes_pacientes': planes_pacientes,
+    })
 
 @login_required
 def cambiar_clave_usuario(request):
@@ -706,20 +686,36 @@ def mi_suscripcion(request):
     suscripcion = None
     dias_restantes = None
     plan_actual = None
+    fecha_expiracion = None
 
     # Verificar si el usuario está asociado a un paciente
     if hasattr(usuario, 'paciente'):
         paciente = usuario.paciente
+        # Obtener la última suscripción activa del paciente
         suscripcion = Suscripcion.objects.filter(paciente=paciente).last()
 
         if suscripcion:
             plan_actual = suscripcion.plan
-            dias_restantes = (suscripcion.fecha_fin - now()).days if suscripcion.fecha_fin else None
+            # Calcular la fecha de expiración dependiendo del plan
+            if plan_actual:
+                if "6 meses" in plan_actual.nombre:
+                    fecha_expiracion = suscripcion.fecha_inicio + timedelta(days=6*30)  # 6 meses
+                elif "1 año" in plan_actual.nombre:
+                    fecha_expiracion = suscripcion.fecha_inicio + timedelta(days=365)  # 1 año
+                else:
+                    fecha_expiracion = suscripcion.fecha_fin  # Por defecto
+
+                # Calcular los días restantes
+                dias_restantes = (fecha_expiracion - now()).days
+                # Si la suscripción ya ha vencido, poner días restantes a 0
+                if dias_restantes < 0:
+                    dias_restantes = 0
 
     return render(request, 'consultorioCys/mi_suscripcion.html', {
         'suscripcion': suscripcion,
         'plan_actual': plan_actual,
         'dias_restantes': dias_restantes,
+        'fecha_expiracion': fecha_expiracion,
     })
 
 def logout_view(request):
@@ -1215,7 +1211,7 @@ def descargar_como_pdf(request, path):
     pdf.save()
 
     return response
-@login_required
+
 def seleccionar_plan(request):
     if request.method == 'POST':
         plan_id = request.POST.get('plan_id')  # Obtener el id_plan enviado desde el formulario
@@ -1237,6 +1233,7 @@ def seleccionar_plan(request):
         return redirect('registro')  # Redirigir a la página de registro
     planes = Plan.objects.all()
     return render(request, 'consultorioCys/seleccionar_plan.html', {'planes': planes})
+
 @login_required
 def renovar_suscripcion(request):
     try:
@@ -1275,65 +1272,130 @@ class ValidarSuscripcionMiddleware:
 #Pagos
 
 def procesar_pago(request):
-    if not request.user.is_authenticated:
-        return redirect('login')  # Redirigir a login si no está autenticado
+    # Verificar si hay datos en la sesión
+    registro_data = request.session.get('registro_data')
+    if not registro_data:
+        messages.error(request, "No se encontraron datos para procesar el pago.")
+        return redirect('registro')
 
-    # Validar si el usuario tiene un método de pago registrado
-    metodo_pago = MetodoPago.objects.filter(usuario=request.user).last()
-    if not metodo_pago:
-        messages.error(request, "No tienes un método de pago registrado. Por favor, agrega uno antes de continuar.")
-        return redirect('perfil')
+    try:
+        # Obtener el plan seleccionado
+        plan = Plan.objects.get(id_plan=registro_data['plan_id'])
+        monto = plan.precio
+        nueva_fecha_fin = now() + timedelta(days=30)  # Ejemplo: 30 días de suscripción inicial
 
-    # Obtener la suscripción actual del usuario
-    suscripcion = Suscripcion.objects.filter(usuario=request.user).last()
+        if request.method == 'POST':
+            # Simular pago exitoso
+            # Aquí podrías integrar con un sistema de pago real si es necesario
+            messages.success(request, "El pago fue exitoso. Completa tu registro.")
 
-    if not suscripcion:
-        messages.error(request, "No tienes una suscripción activa para renovar.")
-        return redirect('seleccionar_plan')
+            # Crear Usuario
+            usuario = Usuario.objects.create(
+                rut=registro_data['rut'],
+                nombre=registro_data['nombre'],
+                apellido=registro_data['apellido_paterno'],
+                email=registro_data['email'],
+            )
+            usuario.set_password(registro_data['password'])
+            usuario.save()
 
-    plan = suscripcion.plan
-    monto = plan.precio  # Precio del plan
-    nueva_fecha_fin = max(suscripcion.fecha_fin, now()) + timedelta(days=30)  # Extender 30 días
-
-    if request.method == 'POST':
-        form = PagoForm(request.POST)
-        if form.is_valid():
-            # Registrar transacción
-            transaccion = Transaccion.objects.create(
-                usuario=request.user,
-                plan=plan,
-                monto=monto,
-                estado="Exitoso"
+            # Crear Paciente
+            paciente = Paciente.objects.create(
+                usuario=usuario,
+                rut_paciente=registro_data['rut'],
+                nombres_paciente=registro_data['nombre'],
+                primer_apellido_paciente=registro_data['apellido_paterno'],
+                segundo_apellido_paciente=registro_data['apellido_materno'],
+                correo_paciente=registro_data['email'],
+                fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
+                genero_paciente=registro_data['genero'],
             )
 
-            # Actualizar suscripción
-            suscripcion.fecha_fin = nueva_fecha_fin
-            suscripcion.renovado = True
-            suscripcion.save()
+            # Crear Suscripción
+            Suscripcion.objects.create(
+                paciente=paciente,
+                plan=plan,
+                fecha_inicio=now(),
+                fecha_fin=nueva_fecha_fin,
+                renovado=False,
+            )
 
             # Enviar correo de confirmación
             try:
                 send_mail(
-                    subject="Confirmación de Pago",
-                    message=f"Hola {request.user.nombre},\n\nTu pago para el plan '{plan.nombre}' por ${monto} fue exitoso. Tu suscripción está extendida hasta {nueva_fecha_fin.strftime('%d/%m/%Y')}.\n\nGracias por confiar en Consultorio Cys.",
+                    subject="Confirmación de Pago y Registro",
+                    message=f"Hola {registro_data['nombre']},\n\nTu registro y pago del plan '{plan.nombre}' por ${monto} fue exitoso. Tu suscripción está activa hasta {nueva_fecha_fin.strftime('%d/%m/%Y')}.\n\nGracias por confiar en Consultorio Cys.",
                     from_email="soporte@consultoriocys.com",
-                    recipient_list=[request.user.email],
+                    recipient_list=[registro_data['email']],
                     fail_silently=False,
                 )
-                messages.success(request, "El pago fue procesado exitosamente. Se ha enviado un correo de confirmación.")
+                messages.success(request, "Registro y pago completados exitosamente. Revisa tu correo para más detalles.")
             except Exception as e:
-                messages.error(request, "El pago fue exitoso, pero no se pudo enviar el correo de confirmación.")
-            
-            return redirect('perfil')
-    else:
-        form = PagoForm()
+                messages.error(request, "El registro fue exitoso, pero no se pudo enviar el correo de confirmación.")
 
-    return render(request, 'consultorioCys/procesar_pago.html', {
-        'form': form,
-        'plan': plan,
-        'monto': monto,
-        'nueva_fecha_fin': nueva_fecha_fin,
-    })
+            # Limpiar datos de la sesión
+            del request.session['registro_data']
+
+            return redirect('login')  # Redirigir al login después del registro
+
+        return render(request, 'consultorioCys/procesar_pago.html', {
+            'plan': plan,
+            'monto': monto,
+            'nueva_fecha_fin': nueva_fecha_fin,
+        })
+
+    except Plan.DoesNotExist:
+        messages.error(request, "El plan seleccionado no existe.")
+        return redirect('registro')
+
+def confirmar_pago(request):
+    if not request.session.get('registro_data'):
+        messages.error(request, "No se encontraron datos para completar el registro.")
+        return redirect('registro')
+
+    registro_data = request.session.pop('registro_data')  # Eliminar datos de la sesión
+    try:
+        # Crear Usuario
+        usuario = Usuario.objects.create(
+            rut=registro_data['rut'],
+            nombre=registro_data['nombre'],
+            apellido=registro_data['apellido_paterno'],
+            email=registro_data['email'],
+        )
+        usuario.set_password(registro_data['password'])
+        usuario.save()
+
+        # Crear Paciente
+        paciente = Paciente.objects.create(
+            usuario=usuario,
+            rut_paciente=registro_data['rut'],
+            nombres_paciente=registro_data['nombre'],
+            primer_apellido_paciente=registro_data['apellido_paterno'],
+            segundo_apellido_paciente=registro_data['apellido_materno'],
+            correo_paciente=registro_data['email'],
+            fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
+            genero_paciente=registro_data['genero'],
+        )
+
+        # Crear Suscripción
+        plan = Plan.objects.get(id_plan=registro_data['plan_id'])
+        fecha_inicio = now()
+        fecha_fin = fecha_inicio + timedelta(days=30)  # Ejemplo: 1 mes
+        Suscripcion.objects.create(
+            paciente=paciente,
+            plan=plan,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            renovado=False,
+        )
+
+        messages.success(request, "Registro completado exitosamente.")
+        return redirect('login')
+
+    except Exception as e:
+        messages.error(request, f"Error al completar el registro: {str(e)}")
+        return redirect('registro')
+
 def historial_transacciones(request):
     if not request.user.is_authenticated:
         return redirect('login')

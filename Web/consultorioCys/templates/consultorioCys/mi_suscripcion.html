@@ -1,7 +1,7 @@
 {% extends "consultorioCys/base_generic.html" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5" style="margin-bottom: 40px;">
     <h2 class="text-center">Mi Suscripción</h2>
     <div class="card shadow-sm mt-4">
         <div class="card-header bg-primary text-white">
@@ -18,10 +18,12 @@
                     {% if dias_restantes > 0 %}
                         {{ dias_restantes }} día(s)
                     {% else %}
-                        <span class="text-danger">Suscripción vencida</span>
+                        <span class="text-danger">Tu suscripción ha vencido</span>
                     {% endif %}
                 </p>
-                <a href="{% url 'renovar_suscripcion' %}" class="btn btn-primary">Renovar Suscripción</a>
+                {% if dias_restantes > 0 %}
+                    <a href="{% url 'renovar_suscripcion' %}" class="btn btn-primary">Renovar Suscripción</a>
+                {% endif %}
             {% else %}
                 <p class="text-danger">No tienes una suscripción activa. Por favor, selecciona un plan.</p>
                 <a href="{% url 'seleccionar_plan' %}" class="btn btn-primary">Seleccionar un Plan</a>

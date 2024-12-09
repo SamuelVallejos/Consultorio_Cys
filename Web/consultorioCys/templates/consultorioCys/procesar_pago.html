@@ -3,23 +3,17 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="text-center">Procesar Pago</h2>
-    <div class="card mt-4">
+    <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Detalles de Renovación</h4>
-            <ul class="list-unstyled">
-                <li><strong>Plan:</strong> {{ plan.nombre }}</li>
-                <li><strong>Monto:</strong> ${{ monto }}</li>
-                <li><strong>Extensión Hasta:</strong> {{ nueva_fecha_fin|date:"d/m/Y" }}</li>
-            </ul>
+            <h5 class="card-title">Detalles del Pago</h5>
+            <p><strong>Plan:</strong> {{ plan.nombre }}</p>
+            <p><strong>Monto:</strong> ${{ monto|floatformat:0 }} CLP</p>
+            <p><strong>Fecha de Expiración:</strong> {{ nueva_fecha_fin|date:"d/m/Y" }}</p>
         </div>
     </div>
-
-    <form method="POST" class="mt-4">
+    <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-success">Confirmar y Pagar</button>
-        </div>
+        <button type="submit" class="btn btn-success mt-3">Confirmar y Pagar</button>
     </form>
 </div>
 {% endblock %}
