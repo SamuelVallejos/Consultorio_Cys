@@ -358,11 +358,25 @@ def confirmacion_cita(request):
         if 'cancelar_cita' in request.POST:
             cita_id = request.POST.get('cita_id')
             cita = get_object_or_404(Cita, id=cita_id, paciente=paciente)
+
+            # Buscar la disponibilidad asociada y marcarla como disponible
+            disponibilidad = DisponibilidadDoctor.objects.filter(
+                doctor=cita.doctor,
+                fecha=cita.fecha_cita,
+                hora=cita.hora_cita
+            ).first()
+
+            if disponibilidad:
+                disponibilidad.disponible = True
+                disponibilidad.save()
+
+            # Marcar la cita como finalizada
             cita.finalizada = True
             cita.save()
+
             return redirect('confirmacion_cita')  # Redirigir para actualizar la lista de citas
 
-        # Manejo de creación de cita
+        # Manejo de activación de cita
         doctor_id = request.POST.get('doctor_id')
         fecha = request.POST.get('fecha')
         hora = request.POST.get('hora')
@@ -459,20 +473,31 @@ def finalizar_cita(request, cita_id):
 @login_required
 def seleccionar_doctor(request):
     especialidad_seleccionada = request.GET.get('especialidad')
-    fecha = request.GET.get('fecha')  # Verifica si el parámetro coincide con el nombre del campo del formulario
-
-    print(f"Especialidad seleccionada: {especialidad_seleccionada}")
-    print(f"Fecha recibida: {fecha}")  # Esto debería mostrar el valor de la fecha enviada
+    fecha = request.GET.get('fecha')  # Fecha seleccionada desde el formulario
 
     doctores = Doctor.objects.filter(especialidad_doctor=especialidad_seleccionada)
     doctores_con_horarios = []
 
+    hora_actual = datetime.datetime.now().time()  # Hora actual
+    fecha_actual = str(datetime.date.today())  # Fecha actual en formato "YYYY-MM-DD"
+
     for doctor in doctores:
-        horas_disponibles = DisponibilidadDoctor.objects.filter(
-            doctor=doctor,
-            fecha=fecha,
-            disponible=True
-        ).values_list('hora', flat=True)
+        # Filtrar horas disponibles basadas en la fecha
+        if fecha == fecha_actual:
+            # Mostrar solo horas mayores a la hora actual si la fecha es hoy
+            horas_disponibles = DisponibilidadDoctor.objects.filter(
+                doctor=doctor,
+                fecha=fecha,
+                hora__gte=hora_actual,
+                disponible=True
+            ).values_list('hora', flat=True)
+        else:
+            # Mostrar todas las horas disponibles para fechas futuras
+            horas_disponibles = DisponibilidadDoctor.objects.filter(
+                doctor=doctor,
+                fecha=fecha,
+                disponible=True
+            ).values_list('hora', flat=True)
 
         doctores_con_horarios.append({
             'doctor': doctor,

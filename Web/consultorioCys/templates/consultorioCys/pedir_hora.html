@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Seleccionar Horario </h2>
+    <h2 class="text-center mb-4">Seleccionar Horario</h2>
 
     <!-- Mostrar mensaje de error si existe -->
     {% if error_message %}
@@ -53,4 +53,49 @@
         <button type="submit" class="btn btn-primary">Buscar Doctores</button>
     </form>
 </div>
+
+<script>
+    // Bloquear fechas pasadas y permitir hoy con restricciones de hora
+    const fechaInput = document.getElementById('fecha');
+    const today = new Date();
+
+    // Formatear la fecha actual
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    // Establecer el mínimo como la fecha de hoy
+    fechaInput.min = `${year}-${month}-${day}`;
+
+    // Controlar el evento de cambio en el campo de fecha
+    fechaInput.addEventListener('change', (event) => {
+        const selectedDate = new Date(event.target.value);
+        const timeSelects = document.querySelectorAll('select[name="hora"]');
+
+        if (selectedDate.toDateString() === today.toDateString()) {
+            const currentHour = today.getHours();
+            const currentMinutes = today.getMinutes();
+
+            timeSelects.forEach(select => {
+                // Deshabilitar horas anteriores a la hora actual
+                [...select.options].forEach(option => {
+                    const [hour, minute] = option.value.split(':').map(Number);
+                    if (hour < currentHour || (hour === currentHour && minute < currentMinutes)) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+            });
+        } else {
+            // Habilitar todas las opciones si no es hoy
+            timeSelects.forEach(select => {
+                [...select.options].forEach(option => {
+                    option.disabled = false;
+                });
+            });
+        }
+    });
+</script>
+
 {% endblock %}
