@@ -135,30 +135,52 @@
               </tbody>
             </table>
 
-
+            <!-- suscripciones -->
             <h4 style="text-align: start;">Mis suscripciones</h4>
             {% if suscripcion %}
-            <div class="list-group shadow-sm">
-              <div class="list-group-item">
-                <strong>Plan actual:</strong> {{ suscripcion.plan.nombre }}
+            <div class="card shadow-sm mt-3">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="mb-1">{{ suscripcion.plan.nombre }}</h5>
+                  <p class="mb-0 text-muted">{{ suscripcion.plan.descripcion }}</p>
+                </div>
+                <div>
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#suscripcionDetalles" aria-expanded="false" aria-controls="suscripcionDetalles">
+                    Administrar
+                  </button>
+                </div>
               </div>
-              <div class="list-group-item">
-                <strong>Descripción:</strong> {{ suscripcion.plan.descripcion }}
-              </div>
-              <div class="list-group-item">
-                <strong>Fecha de inicio:</strong> {{ suscripcion.fecha_inicio|date:"d/m/Y" }}
-              </div>
-              <div class="list-group-item">
-                <strong>Fecha de expiración:</strong> {{ suscripcion.fecha_fin|date:"d/m/Y" }}
-              </div>
-              <div class="list-group-item">
-                <strong>Precio:</strong> ${{ suscripcion.plan.precio|floatformat:0 }} CLP
+              <div class="collapse" id="suscripcionDetalles">
+                <div class="card-body">
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Fecha de inicio:</span>
+                      <span>{{ suscripcion.fecha_inicio|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Fecha de Expiración:</span>
+                      <span class="text-danger">{{ suscripcion.fecha_fin|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <strong>Precio:</strong>
+                      <span class="text-success">${{ suscripcion.plan.precio|floatformat:0 }} CLP</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Estado de la suscripción:</span>
+                      <span class="text-success">Activa</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
-            <a href="{% url 'renovar_suscripcion' %}" class="btn btn-warning mt-3">Renovar Plan</a>
             {% else %}
-            <p>No tienes una suscripción activa.</p>
-            <a href="{% url 'seleccionar_plan' %}" class="btn btn-primary">Seleccionar un plan</a>
+            <div class="alert alert-info mt-3" role="alert">
+              No tienes una suscripción activa.
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <a href="{% url 'seleccionar_plan' %}" class="btn btn-primary">Seleccionar un Plan</a>
+            </div>
             {% endif %}
           </div>
 
