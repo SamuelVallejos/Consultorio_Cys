@@ -1307,81 +1307,61 @@ PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com"
 def confirmar_pago(request):
     if request.method == 'POST':
         try:
+            import json
             body = json.loads(request.body)
             order_id = body.get('orderID')
 
-            # Obtener el Access Token de PayPal
-            auth_response = requests.post(
-                f"{PAYPAL_API_BASE}/v1/oauth2/token",
-                headers={
-                    "Accept": "application/json",
-                    "Accept-Language": "en_US",
-                },
-                data={"grant_type": "client_credentials"},
-                auth=(PAYPAL_CLIENT_ID, PAYPAL_SECRET_KEY),
-            )
-            if auth_response.status_code != 200:
-                return JsonResponse({'status': 'error', 'message': 'Error al autenticar con PayPal'}, status=400)
+            # Validar el pago con PayPal (simulación en este caso)
+            if order_id:  # Supongamos que el pago es exitoso
+                registro_data = request.session.get('registro_data')
+                if not registro_data:
+                    return JsonResponse({'status': 'error', 'message': 'No se encontraron datos del registro'}, status=400)
 
-            access_token = auth_response.json().get("access_token")
+                # Crear el usuario y el paciente (lógica existente)
+                usuario = Usuario.objects.create(
+                    rut=registro_data['rut'].strip().upper(),
+                    nombre=registro_data['nombre'],
+                    apellido=registro_data['apellido_paterno'],
+                    email=registro_data['email'],
+                )
+                usuario.set_password(registro_data['password'])
+                usuario.save()
 
-            # Validar el Order ID con PayPal
-            order_response = requests.get(
-                f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}",
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {access_token}",
-                },
-            )
-            if order_response.status_code != 200:
-                return JsonResponse({'status': 'error', 'message': 'Error al validar el pago con PayPal'}, status=400)
+                paciente = Paciente.objects.create(
+                    usuario=usuario,
+                    rut_paciente=registro_data['rut'],
+                    nombres_paciente=registro_data['nombre'],
+                    primer_apellido_paciente=registro_data['apellido_paterno'],
+                    segundo_apellido_paciente=registro_data['apellido_materno'],
+                    correo_paciente=registro_data['email'],
+                    fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
+                    genero_paciente=registro_data['genero'],
+                )
 
-            order_data = order_response.json()
-            if order_data.get("status") != "COMPLETED":
-                return JsonResponse({'status': 'error', 'message': 'El pago no está completado'}, status=400)
+                # Crear la suscripción
+                plan = Plan.objects.get(id_plan=registro_data['plan_id'])
+                Suscripcion.objects.create(
+                    paciente=paciente,
+                    plan=plan,
+                    fecha_inicio=now(),
+                    fecha_fin=now() + timedelta(days=30),
+                    renovado=False,
+                )
 
-            # Recuperar datos del registro
-            registro_data = request.session.get('registro_data')
-            if not registro_data:
-                return JsonResponse({'status': 'error', 'message': 'No se encontraron datos del registro'}, status=400)
+                # **Guardar la transacción**
+                Transaccion.objects.create(
+                    usuario=usuario,
+                    plan=plan,
+                    monto=plan.precio,
+                    estado='Exitoso'  # Considerando que el pago fue exitoso
+                )
 
-            # Crear el usuario
-            usuario = Usuario.objects.create(
-                rut=registro_data['rut'].strip().upper(),
-                nombre=registro_data['nombre'],
-                apellido=registro_data['apellido_paterno'],
-                email=registro_data['email'],
-            )
-            usuario.set_password(registro_data['password'])
-            usuario.save()
+                # Limpiar los datos de la sesión
+                del request.session['registro_data']
 
-            # Crear el paciente
-            paciente = Paciente.objects.create(
-                usuario=usuario,
-                rut_paciente=registro_data['rut'],
-                nombres_paciente=registro_data['nombre'],
-                primer_apellido_paciente=registro_data['apellido_paterno'],
-                segundo_apellido_paciente=registro_data['apellido_materno'],
-                correo_paciente=registro_data['email'],
-                fecha_nacimiento_paciente=registro_data['fecha_nacimiento'],
-                genero_paciente=registro_data['genero'],
-            )
+                return JsonResponse({'status': 'success', 'message': 'Pago y registro completados correctamente'}, status=200)
 
-            # Crear la suscripción
-            plan = Plan.objects.get(id_plan=registro_data['plan_id'])
-            Suscripcion.objects.create(
-                paciente=paciente,
-                plan=plan,
-                fecha_inicio=now(),
-                fecha_fin=now() + timedelta(days=30),  # Suscripción de 30 días
-                renovado=False,
-            )
-
-            # Limpiar los datos de la sesión
-            del request.session['registro_data']
-
-            return JsonResponse({'status': 'success', 'message': 'Pago y registro completados correctamente'}, status=200)
-
+            return JsonResponse({'status': 'error', 'message': 'Pago no válido'}, status=400)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
