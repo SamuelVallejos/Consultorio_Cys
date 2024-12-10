@@ -54,6 +54,7 @@ from django.db import transaction
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from .forms import MetodoPagoForm
 
 @login_required
 def agregar_doc_personal(request, rut_paciente):
@@ -605,21 +606,35 @@ def login_view(request):
 @login_required
 def perfil_view(request):
     usuario = request.user
+    transacciones = Transaccion.objects.filter(usuario=usuario).order_by('-fecha')
+    metodos_pago = MetodoPago.objects.filter(usuario=usuario)
 
-    # Variables iniciales
+    for metodo in metodos_pago:
+        metodo.ultimos_digitos = metodo.tarjeta_numero[-4:] 
+        
+    if request.method == 'POST' and 'tarjeta_tipo' in request.POST:
+        form_metodo_pago = MetodoPagoForm(request.POST)
+        if form_metodo_pago.is_valid():
+            metodo = form_metodo_pago.save(commit=False)
+            metodo.usuario = usuario
+            metodo.save()
+            messages.success(request, 'Método de pago agregado correctamente.')
+            return redirect('perfil')
+    else:
+        form_metodo_pago = MetodoPagoForm()
+
     plan_actual = None
     fecha_fin = None
     suscripcion = None
     datos_usuario = {}
 
-    # Si el usuario es un paciente
     if hasattr(usuario, 'paciente'):
         paciente = usuario.paciente
         suscripcion = Suscripcion.objects.filter(paciente=paciente).order_by('-fecha_inicio').first()
         if suscripcion:
             plan_actual = suscripcion.plan
             fecha_fin = suscripcion.fecha_fin
-        # Datos específicos del paciente
+
         datos_usuario = {
             'nombre': paciente.nombres_paciente,
             'apellido': f"{paciente.primer_apellido_paciente} {paciente.segundo_apellido_paciente or ''}".strip(),
@@ -630,8 +645,7 @@ def perfil_view(request):
             'direccion': paciente.direccion_paciente,
         }
 
-        # Actualizar datos del paciente
-        if request.method == 'POST':
+        if request.method == 'POST' and 'email' in request.POST:  
             email = request.POST.get('email')
             telefono = request.POST.get('telefono')
             direccion = request.POST.get('direccion')
@@ -646,7 +660,6 @@ def perfil_view(request):
             messages.success(request, 'Tus datos se han actualizado correctamente.')
             return redirect('perfil')
 
-    # Si el usuario es un doctor
     elif hasattr(usuario, 'doctor'):
         doctor = usuario.doctor
         datos_usuario = {
@@ -658,9 +671,7 @@ def perfil_view(request):
             'especialidad': doctor.especialidad_doctor,
         }
 
-        # Actualizar datos del doctor
-        if request.method == 'POST':
-            email = request.POST.get('email')
+        if request.method == 'POST' and 'especialidad' in request.POST: 
             telefono = request.POST.get('telefono')
             especialidad = request.POST.get('especialidad')
 
@@ -680,7 +691,37 @@ def perfil_view(request):
         'plan_actual': plan_actual,
         'fecha_fin': fecha_fin,
         'suscripcion': suscripcion,
+        'transacciones': transacciones, 
+        'metodos_pago': metodos_pago, 
+        'form_metodo_pago': form_metodo_pago, 
     })
+
+@login_required
+def agregar_metodo_pago(request):
+    if request.method == 'POST':
+        form_metodo_pago = MetodoPagoForm(request.POST)
+        if form_metodo_pago.is_valid():
+            metodo = form_metodo_pago.save(commit=False)
+            metodo.usuario = request.user
+            metodo.save()
+            messages.success(request, 'Método de pago agregado correctamente.')
+            return redirect('perfil')
+    else:
+        form_metodo_pago = MetodoPagoForm()
+
+    return render(request, 'consultorioCys/agregar_metodo_pago.html', {
+        'form_metodo_pago': form_metodo_pago,
+    })
+
+@login_required
+def eliminar_metodo_pago(request, pk):
+    try:
+        metodo = MetodoPago.objects.get(pk=pk, usuario=request.user)
+        metodo.delete()
+        messages.success(request, 'Método de pago eliminado correctamente.')
+    except MetodoPago.DoesNotExist:
+        messages.error(request, 'Método de pago no encontrado.')
+    return redirect('perfil')
 
 @login_required
 def mi_suscripcion(request):

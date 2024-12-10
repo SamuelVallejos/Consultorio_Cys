@@ -30,6 +30,10 @@
             href="#pagos-suscripciones">
             Pagos y suscripciones
           </a>
+          <a class="nav-link text-dark fw-bold" id="historial-transacciones-tab" data-bs-toggle="tab"
+            href="#historial-transacciones">
+            Historial de Transacciones
+          </a>
         </nav>
       </div>
 
@@ -39,7 +43,7 @@
           <!-- Información Personal -->
           <div class="tab-pane show active" id="informacion-personal" role="tabpanel"
             aria-labelledby="informacion-personal-tab">
-            <h2 class="mb-4">Información Personal</h2>
+            <h4 style="text-align: start;">Información Personal</h4>
             <div class="list-group shadow-sm">
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span><strong>Nombre:</strong> {{ datos_usuario.nombre }} {{ datos_usuario.apellido }} </span>
@@ -78,7 +82,7 @@
 
           <!-- Seguridad -->
           <div class="tab-pane" id="seguridad" role="tabpanel" aria-labelledby="seguridad-tab">
-            <h2 class="mb-4">Seguridad</h2>
+            <h4 style="text-align: start;">Seguridad</h4>
             <div class="list-group shadow-sm">
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <span><strong>Contraseña: ***********</strong></span>
@@ -91,30 +95,127 @@
 
           <!-- Pagos y suscripciones -->
           <div class="tab-pane" id="pagos-suscripciones" role="tabpanel" aria-labelledby="pagos-suscripciones-tab">
-            <h2 class="mb-4">Pagos y suscripciones</h2>
+            <h4 class="d-flex justify-content-between align-items-center">
+              Mis Métodos de Pago
+              <a href="{% url 'agregar_metodo_pago' %}" class="btn btn-primary btn-sm">
+                Agregar Método
+              </a>
+            </h4>
+
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tipo</th>
+                  <th>Número</th>
+                  <th>Vencimiento</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for metodo in metodos_pago %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ metodo.tarjeta_tipo }}</td>
+                  {% load custom_filters %}
+                  <td>**** **** **** {{ metodo.tarjeta_numero|ultimos_digitos }}</td>
+                  <td>{{ metodo.vencimiento|date:"m/Y" }}</td>
+                  <td>
+                    <form method="POST" action="{% url 'eliminar_metodo_pago' metodo.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center">No tienes métodos de pago registrados.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+            <!-- suscripciones -->
+            <h4 style="text-align: start;">Mis suscripciones</h4>
             {% if suscripcion %}
-            <div class="list-group shadow-sm">
-              <div class="list-group-item">
-                <strong>Plan actual:</strong> {{ suscripcion.plan.nombre }}
+            <div class="card shadow-sm mt-3">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="mb-1">{{ suscripcion.plan.nombre }}</h5>
+                  <p class="mb-0 text-muted">{{ suscripcion.plan.descripcion }}</p>
+                </div>
+                <div>
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#suscripcionDetalles" aria-expanded="false" aria-controls="suscripcionDetalles">
+                    Administrar
+                  </button>
+                </div>
               </div>
-              <div class="list-group-item">
-                <strong>Descripción:</strong> {{ suscripcion.plan.descripcion }}
-              </div>
-              <div class="list-group-item">
-                <strong>Fecha de inicio:</strong> {{ suscripcion.fecha_inicio|date:"d/m/Y" }}
-              </div>
-              <div class="list-group-item">
-                <strong>Fecha de expiración:</strong> {{ suscripcion.fecha_fin|date:"d/m/Y" }}
-              </div>
-              <div class="list-group-item">
-                <strong>Precio:</strong> ${{ suscripcion.plan.precio|floatformat:0 }} CLP
+              <div class="collapse" id="suscripcionDetalles">
+                <div class="card-body">
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Fecha de inicio:</span>
+                      <span>{{ suscripcion.fecha_inicio|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Fecha de Expiración:</span>
+                      <span class="text-danger">{{ suscripcion.fecha_fin|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <strong>Precio:</strong>
+                      <span class="text-success">${{ suscripcion.plan.precio|floatformat:0 }} CLP</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Estado de la suscripción:</span>
+                      <span class="text-success">Activa</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
-            <a href="{% url 'renovar_suscripcion' %}" class="btn btn-warning mt-3">Renovar Plan</a>
             {% else %}
-            <p>No tienes una suscripción activa.</p>
-            <a href="{% url 'seleccionar_plan' %}" class="btn btn-primary">Seleccionar un plan</a>
+            <div class="alert alert-info mt-3" role="alert">
+              No tienes una suscripción activa.
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <a href="{% url 'seleccionar_plan' %}" class="btn btn-primary">Seleccionar un Plan</a>
+            </div>
             {% endif %}
+          </div>
+
+          <!-- Historial de Transacciones -->
+          <div class="tab-pane" id="historial-transacciones" role="tabpanel"
+            aria-labelledby="historial-transacciones-tab">
+            <h4 style="text-align: start;">Historial de Transacciones</h4>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Plan</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for transaccion in transacciones %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ transaccion.plan.nombre }}</td>
+                    <td>${{ transaccion.monto|floatformat:0 }}</td>
+                    <td>{{ transaccion.fecha|date:"d/m/Y" }}</td>
+                    <td>{{ transaccion.estado }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="5" class="text-center">No hay transacciones registradas.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
