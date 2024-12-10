@@ -723,7 +723,7 @@ def eliminar_metodo_pago(request, pk):
         messages.error(request, 'Método de pago no encontrado.')
     return redirect('perfil')
 
-@login_required
+
 def mi_suscripcion(request):
     usuario = request.user
 
@@ -1267,7 +1267,7 @@ def seleccionar_plan(request):
             # Si no hay un paciente asociado, redirigir o manejar el error
             messages.error(request, "No estás registrado como paciente. Por favor, completa tu perfil primero.")
             return redirect('registro')  # Redirigir al registro
-
+            
         # Crear la suscripción
         fecha_fin = now() + timedelta(days=30)  # Duración de 1 mes
         Suscripcion.objects.create(
