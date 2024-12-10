@@ -195,6 +195,7 @@ class Suscripcion(models.Model):
     fecha_inicio = models.DateTimeField(default=timezone.now)
     fecha_fin = models.DateTimeField(null=True, blank=True)
     renovado = models.BooleanField(default=False)
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.paciente.nombres_paciente} - {self.plan.nombre}"

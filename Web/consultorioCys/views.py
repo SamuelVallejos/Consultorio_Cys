@@ -1457,20 +1457,21 @@ def renovar_suscripcion_vencida(request, rut):
     except Paciente.DoesNotExist:
         messages.error(request, 'El RUT ingresado no corresponde a un paciente válido.')
         return redirect('login')
-    
+
 @login_required
 def cancelar_suscripcion(request, suscripcion_id):
     if request.method == "POST":
+        # Obtener la suscripción asociada al usuario autenticado
         suscripcion = get_object_or_404(Suscripcion, id=suscripcion_id, paciente__usuario=request.user)
-
-        # Validación adicional (opcional): Verificar si está activa
-        if suscripcion.fecha_fin < now():
-            messages.error(request, "No puedes cancelar una suscripción vencida.")
-            return redirect('perfil')
-
-        suscripcion.delete()  # Elimina la suscripción
+        
+        # Cambiar el valor de 'activo' a 0 (inactivo)
+        suscripcion.activo = 0
+        suscripcion.save()
+        
+        # Mensaje de confirmación
         messages.success(request, "Tu suscripción ha sido cancelada exitosamente.")
-        return redirect('perfil')  # Cambia 'perfil' por la vista correspondiente a tu perfil
+        return redirect('perfil')  # Cambiar 'perfil' por la vista correspondiente al perfil del usuario
     else:
+        # Si no se usa el método POST
         messages.error(request, "Operación no permitida.")
         return redirect('perfil')
