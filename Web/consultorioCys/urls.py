@@ -53,6 +53,7 @@ urlpatterns = [
     path('perfil/metodos_pago/eliminar/<int:pk>/', views.eliminar_metodo_pago, name='eliminar_metodo_pago'),
     path('renovar-suscripcion-vencida/<str:rut>/', views.renovar_suscripcion_vencida, name='renovar_suscripcion_vencida'),
     path('cancelar-suscripcion/<int:suscripcion_id>/', views.cancelar_suscripcion, name='cancelar_suscripcion'),
+    path('reactivar-suscripcion/<int:suscripcion_id>/', views.reactivar_suscripcion, name='reactivar_suscripcion'),
 ]
 
 if settings.DEBUG:

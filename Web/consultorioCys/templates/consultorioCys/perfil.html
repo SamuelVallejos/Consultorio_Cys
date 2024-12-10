@@ -168,13 +168,24 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                       <span>Estado de la suscripción:</span>
+                      {% if suscripcion.activo %}
                       <span class="text-success">Activa</span>
+                      {% else %}
+                      <span class="text-danger">Cancelada</span>
+                      {% endif %}
                     </li>
                   </ul>
-                  <form method="POST" action="{% url 'cancelar_suscripcion' suscripcion.id %}" class="mt-3">
+                  {% if suscripcion.activo %}
+                  <form method="POST" action="{% url 'cancelar_suscripcion' suscripcion.id %}" class="mt-3" style="text-align: end;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Cancelar Suscripción</button>
                   </form>
+                  {% else %}
+                  <form method="POST" action="{% url 'reactivar_suscripcion' suscripcion.id %}" class="mt-3" style="text-align: end;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Reactivar Suscripción</button>
+                  </form>
+                  {% endif %}
                 </div>
               </div>
             </div>

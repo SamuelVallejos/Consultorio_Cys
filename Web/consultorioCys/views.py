@@ -1475,3 +1475,15 @@ def cancelar_suscripcion(request, suscripcion_id):
         # Si no se usa el método POST
         messages.error(request, "Operación no permitida.")
         return redirect('perfil')
+    
+def reactivar_suscripcion(request, suscripcion_id):
+    # Filtrar correctamente por paciente y activo=False
+    suscripcion = get_object_or_404(Suscripcion, id=suscripcion_id, paciente__usuario=request.user, activo=False)
+
+    # Reactivar la suscripción
+    suscripcion.activo = True
+    suscripcion.save()
+
+    # Mensaje de confirmación
+    messages.success(request, "Tu suscripción ha sido reactivada exitosamente.")
+    return redirect('perfil')  # Ajusta la redirección según corresponda
