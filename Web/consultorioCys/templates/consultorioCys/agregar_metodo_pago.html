@@ -1,0 +1,32 @@
+{% extends 'consultorioCys/base_generic.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Agregar Método de Pago</h2>
+    <form method="POST" action="{% url 'agregar_metodo_pago' %}">
+        {% csrf_token %}
+
+        <!-- Campo para el tipo de tarjeta -->
+        <div class="mb-3">
+            <label for="tarjeta_tipo" class="form-label">Tarjeta Tipo</label>
+            <input type="text" class="form-control" id="tarjeta_tipo" name="tarjeta_tipo" placeholder="Ejemplo: Visa" required>
+        </div>
+
+        <!-- Campo para los últimos 4 dígitos de la tarjeta -->
+        <div class="mb-3">
+            <label for="tarjeta_numero" class="form-label">Tarjeta Número</label>
+            <input type="text" class="form-control" id="tarjeta_numero" name="tarjeta_numero" placeholder="Últimos 4 dígitos" maxlength="4" required>
+        </div>
+
+        <!-- Campo para la fecha de vencimiento -->
+        <div class="mb-3">
+            <label for="vencimiento" class="form-label">Fecha de Vencimiento</label>
+            <input type="date" class="form-control" id="vencimiento" name="vencimiento" required>
+        </div>
+
+        <!-- Botones para enviar o cancelar -->
+        <button type="submit" class="btn btn-primary">Guardar Método</button>
+        <a href="{% url 'perfil' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

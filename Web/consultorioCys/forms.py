@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Group
-from .models import Doctor, Paciente, Informe, Cita
+from .models import Doctor, Paciente, Informe, Cita, MetodoPago
 from django.utils.timezone import now
 
 class RUTAuthenticationForm(forms.Form):
@@ -135,8 +135,6 @@ class PacienteForm(forms.ModelForm):
         model = Paciente
         fields = ['rut_paciente', 'nombres_paciente', 'primer_apellido_paciente', 'segundo_apellido_paciente', 'correo_paciente', 'telefono_paciente', 'fecha_nacimiento_paciente', 'direccion_paciente', 'genero_paciente', 'archivo']
 
-#Formulario de cita
-
 class CitaForm(forms.ModelForm):
     class Meta:
         model = Cita
@@ -153,6 +151,16 @@ class PagoForm(forms.Form):
     vencimiento_mes = forms.ChoiceField(choices=[(str(i), f"{i:02d}") for i in range(1, 13)], label="Mes de Vencimiento")
     vencimiento_anio = forms.ChoiceField(choices=[(str(i), str(i)) for i in range(now().year, now().year + 10)], label="Año de Vencimiento")
     cvv = forms.CharField(max_length=3, min_length=3, label="CVV", widget=forms.PasswordInput)
+
+class MetodoPagoForm(forms.ModelForm):
+    class Meta:
+        model = MetodoPago
+        fields = ['tarjeta_tipo', 'tarjeta_numero', 'vencimiento']
+        widgets = {
+            'tarjeta_tipo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Visa'}),
+            'tarjeta_numero': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Últimos 4 dígitos'}),
+            'vencimiento': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'MM/AAAA', 'type': 'date'}),
+        }
 
 class InformeExternoForm(forms.ModelForm):
     rut_doctor = forms.CharField(max_length=10, required=True, label="RUT del Doctor")  # Campo para RUT del doctor

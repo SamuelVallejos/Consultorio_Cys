@@ -2,8 +2,6 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import seleccionar_plan, renovar_suscripcion, procesar_pago, historial_transacciones
-
 
 urlpatterns = [
     path('', views.inicio, name="inicio"),
@@ -45,12 +43,14 @@ urlpatterns = [
     path('finalizar_cita/<int:cita_id>/', views.finalizar_cita, name='finalizar_cita'),
     path('generar_pdf/<int:informe_id>/', views.generar_pdf, name='generar_pdf'),
     path('descargar_pdf/<path:path>/', views.descargar_como_pdf, name='descargar_como_pdf'),
-    path('seleccionar-plan/', seleccionar_plan, name='seleccionar_plan'),
-    path('renovar-suscripcion/', renovar_suscripcion, name='renovar_suscripcion'),
+    path('seleccionar-plan/', views.seleccionar_plan, name='seleccionar_plan'),
+    path('renovar-suscripcion/', views.renovar_suscripcion, name='renovar_suscripcion'),
     path('procesar_pago/', views.procesar_pago, name='procesar_pago'),
     path('confirmar_pago/', views.confirmar_pago, name='confirmar_pago'),
     path('pago_exitoso/', views.pago_exitoso, name='pago_exitoso'),
-    path('historial-transacciones/', historial_transacciones, name='historial_transacciones'),
+    path('historial-transacciones/', views.historial_transacciones, name='historial_transacciones'),
+    path('perfil/metodos_pago/agregar/', views.agregar_metodo_pago, name='agregar_metodo_pago'),
+    path('perfil/metodos_pago/eliminar/<int:pk>/', views.eliminar_metodo_pago, name='eliminar_metodo_pago'),
     path('renovar-suscripcion-vencida/<str:rut>/', views.renovar_suscripcion_vencida, name='renovar_suscripcion_vencida'),
 ]
 
