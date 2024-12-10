@@ -171,6 +171,10 @@
                       <span class="text-success">Activa</span>
                     </li>
                   </ul>
+                  <form method="POST" action="{% url 'cancelar_suscripcion' suscripcion.id %}" class="mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Cancelar Suscripción</button>
+                  </form>
                 </div>
               </div>
             </div>
